@@ -1,0 +1,180 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+
+
+{% block title %}Home{% endblock %}
+
+{% block fileStyle %}
+
+<link rel="stylesheet" href="{% static 'css/main_home.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-white">
+
+    <!-- الخلفية -->
+    <div class="hero-bg"></div>
+
+    <!-- المحتوى -->
+    <div class="container h-100 d-flex flex-column justify-content-center">
+
+        <h1 class="display-4 fw-bold">Empowering Saudi <br><span class="text-light">Sports Excellence</span></h1>
+        <p class="lead mb-4 hero-text" style="font-weight: 350;">
+            Join the Kingdom's sports transformation. Connect with world-class academies, expert coaches, and
+            comprehensive programs designed to develop championship athletes aligned with Vision 2030 goals.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <a href="#" class="btn btn-success btn-lg px-4">
+                <i class="bi bi-person-plus-fill me-2"></i> Register Player
+            </a>
+            <a href="#" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-geo-alt-fill text-success me-2"></i> Explore Academies
+            </a>
+        </div>
+
+
+        <div
+            class="stats-box bg-dark bg-opacity-50 p-4 rounded d-flex flex-wrap gap-5 w-50 flex-row justify-content-center">
+            <div>
+                <h3 class="fw-bold">500+</h3>
+                <p class="mb-0">Certified Academies</p>
+            </div>
+            <div>
+                <h3 class="fw-bold">15k+</h3>
+                <p class="mb-0">Young Athletes</p>
+            </div>
+            <div>
+                <h3 class="fw-bold">30+</h3>
+                <p class="mb-0">Sports Programs</p>
+            </div>
+            <div>
+                <h3 class="fw-bold">13</h3>
+                <p class="mb-0">Regions</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+<section class="pb-5 pt-5 mt-5 text-center">
+    <div class="container">
+
+        <!-- Title -->
+        <h2 class=" mb-3" style="font-size: 38px;">Preparing for History</h2>
+        <p class="text-muted mb-5 w-50 m-auto fs-5">
+            Saudi Arabia is set to host the world's biggest sporting events. Join our academies to develop
+            the next generation of champions and be part of the Kingdom's sporting legacy.
+        </p>
+
+        <!-- Cards Row -->
+        <div class="row g-4 justify-content-center w-100 m-auto">
+
+            <!-- Card 1 -->
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border-0 shadow-lg">
+                    <div class="position-relative">
+                        <img src="{% static 'images/worldcup2034.jpg' %}" class="card-img-top card-img-fixed"
+                            alt="FIFA World Cup">
+                    </div>
+                    <div class="card-body text-start">
+                        <h5 class="fw-bold">FIFA World Cup 2034</h5>
+                        <p class="text-muted small"><i class="bi bi-calendar-event me-2"></i>2034 &nbsp; <i
+                                class="bi bi-geo-alt me-2"></i>Saudi Arabia</p>
+                        <p>The Kingdom will host the world's most prestigious football tournament. Our football
+                            academies are preparing the next generation of Saudi champions.</p>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <div><span class="fw-bold">48</span><br><small>Nations</small></div>
+                            <div><span class="fw-bold">58B+</span><br><small>Viewers</small></div>
+                        </div>
+
+                        <p class="fw-bold">Football Development Programs:</p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Elite Youth Football Training</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Goalkeeper Specialist Programs</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Professional Pathway Development
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border-0 shadow-lg">
+                    <div class="position-relative">
+                        <img src="{% static 'images/asia2027.jpg' %}" class="card-img-top card-img-fixed"
+                            alt="AFC Asian Cup 2027">
+                    </div>
+                    <div class="card-body text-start">
+                        <h5 class="fw-bold">AFC Asian Cup 2027</h5>
+                        <p class="text-muted small"><i class="bi bi-calendar-event me-2"></i>2027 &nbsp; <i
+                                class="bi bi-geo-alt me-2"></i>Saudi Arabia</p>
+                        <p>The Kingdom will host Asia's premier football tournament for the first time, bringing
+                            together the continent’s best national teams. Saudi academies are preparing young talent to
+                            shine on this historic stage.</p>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <div><span class="fw-bold">24</span><br><small>Teams</small></div>
+                            <div><span class="fw-bold">10</span><br><small>Stadiums</small></div>
+                        </div>
+
+                        <p class="fw-bold">Football Development Programs:</p>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>National Team Pathway Programs</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Elite Football Academies</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Grassroots Football Initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Call to Action -->
+        <div class="row mt-5">
+            <div class="col-md-10 mx-auto">
+                <div class="bg-success bg-opacity-10 p-4 rounded shadow-sm">
+                    <div class="row text-center g-4">
+                        <div class="col-md-4">
+                            <i class="bi bi-clock-history display-5 text-success mb-2"></i>
+                            <h5 class="fw-bold">Next 10 Years</h5>
+                            <p class="text-muted small">Unprecedented sporting events coming to the Kingdom</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-people-fill display-5 text-success mb-2"></i>
+                            <h5 class="fw-bold">50,000+</h5>
+                            <p class="text-muted small">Young athletes to be developed for these events</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="bi bi-trophy-fill display-5 text-success mb-2"></i>
+                            <h5 class="fw-bold">World-Class</h5>
+                            <p class="text-muted small">Training facilities and coaching programs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final CTA -->
+        <div class="mt-5">
+            <h4 class="fw-bold">Be Part of Sporting History</h4>
+            <p class="text-muted">Join our academies today and help build the foundation for Saudi Arabia's sporting
+                excellence.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="#" class="btn btn-success px-4">Get Involved Today</a>
+                <a href="#" class="btn btn-outline-success px-4">Explore Programs</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+{% endblock %}
