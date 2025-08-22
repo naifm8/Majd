@@ -1,0 +1,85 @@
+
+/* Hero Section */
+.hero {
+    position: relative;
+    background: url("/static/images/contact.jpg") center/contain no-repeat; 
+    color: #fff;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+/* Overlay color on top of image */
+.hero .overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 153, 102, 0.85);
+    z-index: 1;
+}
+
+/* Content inside hero */
+.hero-content {
+    position: relative;
+    z-index: 2;  /* يخلي النص فوق الـ overlay */
+    width: 70%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Hero content */
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 400;
+    margin: 20px 0;
+}
+
+.hero h1 span {
+    color: #aef7d5; 
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+/* Button inside hero */
+.hero .btn {
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-content {
+        width: 90%;   /* على الشاشات الصغيرة العرض يكبر */
+    }
+
+    .hero h1 {
+        font-size: 2rem; /* يصغر الخط */
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+}
+
+/* Get In Touch div */
+.get-in-touch {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+/* أيقونة */
+.get-in-touch i {
+    margin-right: 6px;
+    font-size: 0.85rem;
+}
+
