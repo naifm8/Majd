@@ -3,3 +3,24 @@ body{
     flex-direction: column;
     min-height: 100vh;
 }
+
+/* Base nav-link style */
+.navbar-nav .nav-link {
+    font-weight: 550;
+    color: #212529;
+    border-radius: 6px; 
+    padding: 6px 12px;
+    transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.navbar-nav .nav-link:hover {
+    background-color: #e6f7ef; 
+    color: #198754 !important; 
+}
+
+/* active link effect */
+.navbar-nav .nav-link.active {
+    background-color: #009966;
+    color: #fff !important;
+}
