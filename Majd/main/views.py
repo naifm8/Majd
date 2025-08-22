@@ -1,17 +1,25 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .forms import ContactForm
+from django.contrib import messages
 
 def main_home_view(request):
     return render(request, "main/main_home.html")
 
 
 def contact_view(request):
-    form = ContactForm(request.POST)
+    
+    if request.method == "POST":
+        form = ContactForm(request.POST)  
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Message sent successfully.", "alert-success")
+            return redirect("main:contact_view") 
+        else:
+            messages.error(request, "Please fix the errors below.", "alert-danger")
+    else:
+        form = ContactForm()
 
-    if request.method == "POST" and form.is_valid():
-        form.save()
-
-    return render(request, "main/contact_us.html" ,{"form": form})
+    return render(request, "main/contact_us.html", {"form": form})
 
 
