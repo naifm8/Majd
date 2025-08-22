@@ -77,9 +77,189 @@
     margin-bottom: 20px;
 }
 
-/* أيقونة */
+
 .get-in-touch i {
     margin-right: 6px;
     font-size: 0.85rem;
 }
+
+/* Section background just below the hero */
+.contact-section {
+  background: linear-gradient(180deg, #f2fff8 0%, #eefaf5 40%, #f7fffb 100%);
+}
+
+/* Soft card look */
+.card-soft {
+  background: #fff;
+  border: 1px solid #cbeedd;
+  border-radius: 14px;
+}
+.card-soft2 {
+  background: linear-gradient(180deg, #f2fff8 0%, #eefaf5 40%, #f7fffb 100%);
+  border: 1px solid #b4f0d3;
+  border-radius: 14px;
+}
+.card-soft h5, .card-soft h6 { color: #155d4a; }
+.card-soft p { color: #3c816f;}
+.card-soft2 h6 { color: #155d4a; }
+
+.card-info {
+    color: #018a59 !important;
+}
+
+/* Form elements */
+.form-control, .form-select {
+  border: 1px solid #bfead9;
+  border-radius: 10px;
+  background: #f5f5f5;
+  box-shadow: none;
+}
+.form-control:focus, .form-select:focus, textarea:focus {
+  border-color: #33b78c;
+  box-shadow: 0 0 0 0.2rem rgba(0,153,102,0.15);
+}
+textarea.form-control { resize: vertical; }
+
+/* Submit button */
+.btn-submit {
+  background: #009966;
+  color: #fff;
+  border: 1px solid #00895d;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  transition: transform .05s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn-submit:hover {
+  background: #018a59;
+}
+.btn-submit:active {
+  transform: translateY(1px);
+}
+
+/* Info rows in right cards */
+.info-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px dashed #e6f6ef;
+}
+.info-row:last-child { border-bottom: none; }
+
+/* Icon circle */
+.icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #009966;
+  background: #e8fbf3;
+  border: 1px solid #bfead9;
+  flex-shrink: 0;
+}
+
+/* Partnership list */
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: #1f3b2e;
+}
+.list-item i {
+  color: #009966;
+}
+
+/* Outline button */
+.btn-outline {
+  background: #f7fffb;
+  border: 1px solid #bfead9;
+  color: #0f5132;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  transition: background .2s ease, border-color .2s ease;
+}
+.btn-outline:hover {
+  background: #e8fbf3;
+  border-color: #99ddc7;
+  background-color: #aef7d5;
+}
+
+/* Responsive tweaks */
+@media (max-width: 991.98px) {
+  .card-soft {
+    padding: 1.25rem !important;
+  }
+}
+
+.errorlist {
+  display: none;
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper .form-select {
+  padding-right: 2rem;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* keep select clickable */
+  color: #009966;      
+  font-size: 1rem;
+}
+
+.card-title {
+    color: #155d4a;
+}
+
+/* Regional Presence */
+.regional-section {
+  background: linear-gradient(180deg, #f7fffb 0%, #fbfffe 100%);
+}
+
+.regional-section h5 {
+  color: #155d4a;
+  font-weight: 600;
+}
+
+.regional-section p {
+    color: #009966 !important;
+}
+
+.regional-section a {
+    color: #00895d;
+}
+
+/* Region cards */
+.region-card {
+  background: #ffffff;
+  border: 1px solid #cbeedd;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transition: transform .12s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.region-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+  border-color: #99ddc7;
+}
+
+.region-card i.bi-geo-alt,
+.region-card i.bi-envelope {
+  color: #009966;
+}
+
 
