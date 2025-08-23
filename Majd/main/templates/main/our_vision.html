@@ -1,0 +1,218 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+
+
+{% block title %}Contact Us{% endblock %}
+
+{% block fileStyle %}
+
+<link rel="stylesheet" href="{% static 'css/my_styles.css' %}">
+
+{% endblock %}
+
+{% block content %}
+
+
+<section class="hero">
+    <div class="overlay"></div>
+    <div class="hero-content text-center">
+        <div class="get-in-touch">
+            <i class="fa-solid fa-bullseye"></i> Saudi Vision 2030
+        </div>
+        <h1>Building the Future of <span>Saudi<br>Sports</span></h1>
+        <p>
+            SportConnect is at the heart of Saudi Arabia's transformation into a global sports
+            powerhouse, developing champions and creating opportunities for every athlete.
+        </p>
+
+        <a href="#" class="cta-button">
+            <i class="fas fa-heart"></i>
+            Join Our Mission
+            <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+</section>
+
+<section class="vision-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="vision-title">Our Vision for Saudi Sports</h2>
+                <p class="vision-description">
+                    Aligned with Saudi Vision 2030, we're creating a comprehensive sports ecosystem that empowers
+                    athletes, supports academies, and builds a healthier nation.
+                </p>
+
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3 class="feature-title">Champion Development</h3>
+                        <p class="feature-description">
+                            Develop world-class athletes who compete at the highest international levels and bring glory
+                            to the Kingdom.
+                        </p>
+                        <div class="excellence-features">
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                Elite training programs
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                International partnerships
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                Olympic preparation
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="feature-title">Community Engagement</h3>
+                        <p class="feature-description">
+                            Increase sports participation across all segments of society, promoting health, wellness,
+                            and social cohesion.
+                        </p>
+                        <div class="excellence-features">
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                               Grassroots programs
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                Women's sports development
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                Inclusive accessibility
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="feature-title">Global Recognition</h3>
+                        <p class="feature-description">
+                            Position Saudi Arabia as a leading destination for international sporting events and sports
+                            tourism.
+                        </p>
+                        <div class="excellence-features">
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                               Mega-event hosting
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                Sports tourism
+                            </div>
+                            <div class="excellence-feature">
+                                <span class="material-symbols-outlined">
+                                    check_circle
+                                </span>
+                                International recognition
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="timeline-section" id="ksa-world-stage">
+  <div class="container">
+
+    <div class="text-center mb-2">
+      <span class="section-badge">Major Events Timeline</span>
+      <h2 class="vision-title">Saudi Arabia on the World Stage</h2>
+      <p class="feature-description">
+        The Kingdom is set to host unprecedented sporting events that will showcase our capabilities
+        and inspire the next generation of athletes.
+      </p>
+    </div>
+
+    <div class="timeline">
+
+      <!-- الحدث 1 (يسار) -->
+      <div class="timeline-row row align-items-center">
+        <span class="timeline-dot"><i class="fa-solid fa-circle-dot icon-green icon-tight"></i></span>
+        <div class="col-md-6" data-side="left">
+          <div class="timeline-card">
+            <span class="event-year">2027</span>
+            <h5 class="fw-bold">Asian Winter Games</h5>
+            <p>NEOM hosts the first-ever winter games in the Middle East.</p>
+          </div>
+        </div>
+        <div class="col-md-6 d-none d-md-block"></div>
+      </div>
+
+      <!-- الحدث 2 (يمين) -->
+      <div class="timeline-row row align-items-center">
+        <span class="timeline-dot"><i class="fa-solid fa-circle-dot icon-green icon-tight"></i></span>
+        <div class="col-md-6 d-none d-md-block"></div>
+        <div class="col-md-6" data-side="right">
+          <div class="timeline-card">
+            <span class="event-year">2029</span>
+            <h5 class="fw-bold">NEOM Winter Olympics Bid</h5>
+            <p>Potential Olympic winter sports showcase in the futuristic city.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- الحدث 3 (يسار – بطاقة خضراء متدرجة) -->
+      <div class="timeline-row row align-items-center">
+        <span class="timeline-dot"><i class="fa-regular fa-star icon-green icon-tight"></i></span>
+        <div class="col-md-6" data-side="left">
+          <div class="timeline-card gradient">
+            <span class="event-year">2030</span>
+            <h5 class="fw-bold">Vision 2030 Achievement</h5>
+            <p>Complete transformation of Saudi sports landscape.</p>
+          </div>
+        </div>
+        <div class="col-md-6 d-none d-md-block"></div>
+      </div>
+
+      <!-- الحدث 4 (يمين – بطاقة خضراء متدرجة) -->
+      <div class="timeline-row row align-items-center">
+        <span class="timeline-dot"><i class="fa-solid fa-trophy icon-green icon-tight"></i></span>
+        <div class="col-md-6 d-none d-md-block"></div>
+        <div class="col-md-6" data-side="right">
+          <div class="timeline-card gradient">
+            <span class="event-year">2034</span>
+            <h5 class="fw-bold">FIFA World Cup</h5>
+            <p>The world's biggest sporting event comes to Saudi Arabia.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /timeline -->
+  </div><!-- /container -->
+</section>
+
+
+{% endblock %}

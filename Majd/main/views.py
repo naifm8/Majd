@@ -11,3 +11,6 @@ def contact_view(request):
     return render(request, "main/contact_us.html")
 
 
+def our_vision_view(request):
+    
+    return render(request, "main/our_vision.html")
