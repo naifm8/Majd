@@ -1,0 +1,164 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Create Your Account - MAJD{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="register-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="register-form">
+                    <!-- Header with Icon and Title -->
+                    <div class="text-center mb-4">
+                        <div class="role-icon mx-auto mb-3">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <h1 class="form-title">Create Your Account</h1>
+                        <p class="subtitle">Complete your account setup to access your personalized dashboard</p>
+                        
+                        <!-- Progress Indicator - Horizontal Dashes -->
+                        <div class="progress-dashes">
+                            <div class="progress-dash active"></div>
+                            <div class="progress-dash"></div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Role Display -->
+                    {% if pre_selected_role %}
+                    <div class="selected-role-display mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="selected-role-icon me-3">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <div>
+                                <div class="selected-role-label">Selected Role</div>
+                                <div class="selected-role-value">{{ pre_selected_role|title }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if messages %}
+                        <div class="messages">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="error-feedback">{{ form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="error-feedback">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                {{ form.password1 }}
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y password-toggle" style="z-index: 10;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="error-feedback">{{ form.password1.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                            <div class="position-relative">
+                                {{ form.password2 }}
+                                <button type="button" class="btn btn-link position-absolute end-0 top-50 translate-middle-y password-toggle" style="z-index: 10;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="error-feedback">{{ form.password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Hidden fields for pre-selected role -->
+                        {% if pre_selected_role %}
+                            <input type="hidden" name="user_type" value="{{ pre_selected_role }}">
+                        {% else %}
+                        <div class="form-group">
+                            <label class="form-label">Account Type <span class="text-danger">*</span></label>
+                            {{ form.user_type }}
+                            {% if form.user_type.errors %}
+                                <div class="error-feedback">{{ form.user_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Create Account
+                        </button>
+                    </form>
+
+                    <div class="login-link">
+                        <p class="mb-0">Already have an account? 
+                            <a href="{% url 'accounts:login' %}">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Password toggle functionality
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const input = this.previousElementSibling;
+        const icon = this.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+});
+</script>
+{% endblock %}
