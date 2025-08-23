@@ -22,4 +22,7 @@ def contact_view(request):
 
     return render(request, "main/contact_us.html", {"form": form})
 
+def subscriptions_view(request):
+
+    return render(request, "main/subscriptions_page.html")
 
