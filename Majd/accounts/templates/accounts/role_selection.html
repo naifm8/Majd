@@ -1,0 +1,147 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Choose Your Role - MAJD{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="role-selection-container">
+    <div class="container">
+        <!-- Back Link -->
+        <div class="text-start">
+            <a href="{% url 'main:main_home_view' %}" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Home
+            </a>
+        </div>
+        
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="d-flex justify-content-center mb-3">
+                <div class="role-icon">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+            </div>
+            <h1 class="main-title">Choose Your Role</h1>
+            <p class="subtitle">Select the role that best describes you to get started with MAJD</p>
+            
+            <!-- Progress Indicator -->
+            <div class="progress-indicator">
+                <div class="progress-dot active"></div>
+                <div class="progress-dot"></div>
+            </div>
+        </div>
+        
+        <!-- Role Cards -->
+        <div class="roles-grid">
+            <!-- Parent Role -->
+            <div class="role-card" data-role="parent">
+                <div class="role-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <h3 class="role-title">Parent</h3>
+                <p class="role-description">Sign up to register children, view attendance, reports, and payments.</p>
+                <ul class="role-features">
+                    <li><i class="bi bi-check-circle"></i> Register Children</li>
+                    <li><i class="bi bi-check-circle"></i> Track Attendance</li>
+                    <li><i class="bi bi-check-circle"></i> View Reports</li>
+                    <li><i class="bi bi-check-circle"></i> Manage Payments</li>
+                </ul>
+            </div>
+            
+            <!-- Academy Manager Role -->
+            <div class="role-card" data-role="academy">
+                <div class="role-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                <h3 class="role-title">Academy Manager</h3>
+                <p class="role-description">Create a new academy profile and manage programs, users, and reports.</p>
+                <ul class="role-features">
+                    <li><i class="bi bi-check-circle"></i> Create Academy</li>
+                    <li><i class="bi bi-check-circle"></i> Manage Programs</li>
+                    <li><i class="bi bi-check-circle"></i> User Management</li>
+                    <li><i class="bi bi-check-circle"></i> Analytics & Reports</li>
+                </ul>
+            </div>
+            
+            <!-- Coach Role -->
+            <div class="role-card" data-role="coach">
+                <div class="role-icon">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <h3 class="role-title">Coach</h3>
+                <p class="role-description">Get assigned to an academy to manage sessions, attendance, and evaluations.</p>
+                <ul class="role-features">
+                    <li><i class="bi bi-check-circle"></i> Manage Sessions</li>
+                    <li><i class="bi bi-check-circle"></i> Track Attendance</li>
+                    <li><i class="bi bi-check-circle"></i> View Evaluations</li>
+                    <li><i class="bi bi-check-circle"></i> Track Progress</li>
+                </ul>
+            </div>
+            
+            <!-- Student Role -->
+            <div class="role-card" data-role="player">
+                <div class="role-icon">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <h3 class="role-title">Student</h3>
+                <p class="role-description">Access your schedule, evaluations, and event registrations.</p>
+                <ul class="role-features">
+                    <li><i class="bi bi-check-circle"></i> View Schedule</li>
+                    <li><i class="bi bi-check-circle"></i> Track Progress</li>
+                    <li><i class="bi bi-check-circle"></i> View Evaluations</li>
+                    <li><i class="bi bi-check-circle"></i> Register for Events</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Continue Button -->
+        <div class="text-center">
+            <button id="continueBtn" class="btn continue-btn" disabled>
+                Continue with Selected Role
+            </button>
+        </div>
+        
+        <!-- Sign In Link -->
+        <div class="signin-link">
+            <p>Already have an account? <a href="{% url 'accounts:login' %}">Sign in here</a></p>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleCards = document.querySelectorAll('.role-card');
+    const continueBtn = document.getElementById('continueBtn');
+    let selectedRole = null;
+    
+    // Add click event to role cards
+    roleCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            roleCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Get the selected role
+            selectedRole = this.dataset.role;
+            
+            // Enable continue button
+            continueBtn.disabled = false;
+        });
+    });
+    
+    // Continue button click event
+    continueBtn.addEventListener('click', function() {
+        if (selectedRole) {
+            // Redirect to registration with pre-selected role
+            window.location.href = `{% url 'accounts:register' %}?role=${selectedRole}`;
+        }
+    });
+});
+</script>
+{% endblock %}
