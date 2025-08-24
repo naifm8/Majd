@@ -1,4 +1,3 @@
-# accounts/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -20,7 +19,7 @@ class TrainerProfile(models.Model):
     certifications = models.TextField(blank=True)
     specialty = models.CharField(max_length=100, blank=True)
     years_of_experience = models.PositiveIntegerField(null=True, blank=True)
-    position= models.CharField(blank=True)
+    position= models.CharField(blank=True, max_length=100)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True
     )
 

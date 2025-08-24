@@ -1,0 +1,74 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Sign In - MAJD{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-form">
+    <a href="{% url 'main:main_home_view' %}" class="back-link">
+      <i class="bi bi-arrow-left"></i> Back to Home
+    </a>
+
+    <div class="login-icon"><i class="bi bi-arrow-right"></i></div>
+    <h1 class="login-title">Welcome Back</h1>
+    <p class="login-subtitle">Sign in to your MAJD account</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control"
+               placeholder="Enter your username"
+               value="{{ request.POST.username|default:'' }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-input-group">
+          <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" required>
+          <button type="button" class="password-toggle" onclick="togglePassword()">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="signin-btn">Sign In</button>
+    </form>
+
+    <div class="signup-link">
+      <span>Don't have an account? </span>
+      <a href="{% url 'accounts:register_view' %}">Sign up here</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword() {
+  const passwordInput = document.getElementById('password');
+  const toggleBtn = document.querySelector('.password-toggle i');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    toggleBtn.classList.remove('bi-eye');
+    toggleBtn.classList.add('bi-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    toggleBtn.classList.remove('bi-eye-slash');
+    toggleBtn.classList.add('bi-eye');
+  }
+}
+</script>
+{% endblock %}
