@@ -1,0 +1,178 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}About{% endblock %}
+
+{% block fileStyle %}
+
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+
+{% endblock %}
+
+
+{% block content %}
+<section class="about-hero">
+    <div class="container text-center py-5">
+        <h1 class="display-5 mb-3" style="font-weight: 450; font-size: 55px;">About Us</h1>
+        <p class="lead text-muted mx-auto hero-subtitle" style="font-weight: 450;">
+            We provide academies with a complete system to manage students, coaches, and training programs,
+            with dashboards, communication tools, and online payments.
+        </p>
+    </div>
+</section>
+
+<section class="about-cards">
+    <div class="container py-4">
+        <div class="row g-4">
+            <!-- Mission -->
+            <div class="col-12 col-lg-4">
+                <div class="about-card h-100">
+                    <div class="icon-badge">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h3 class="about-card-title">Our Mission</h3>
+                    <p class="about-card-text">
+                        To empower sports academies with innovative technology and comprehensive management tools that
+                        help them grow, connect with students, and create exceptional training experiences that develop
+                        athletic potential.
+                    </p>
+                    <ul class="about-list">
+                        <li><i class="bi bi-check-circle"></i> Streamlined academy operations</li>
+                        <li><i class="bi bi-check-circle"></i> Enhanced student engagement</li>
+                        <li><i class="bi bi-check-circle"></i> Sustainable growth support</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Vision -->
+            <div class="col-12 col-lg-4">
+                <div class="about-card h-100">
+                    <div class="icon-badge">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <h3 class="about-card-title">Our Vision</h3>
+                    <p class="about-card-text">
+                        To be the leading platform that connects and empowers sports academies worldwide, fostering
+                        excellence in
+                        athletic development and creating pathways to sporting success for athletes at every level.
+                    </p>
+                    <ul class="about-list">
+                        <li><i class="bi bi-check-circle"></i> Global academy network</li>
+                        <li><i class="bi bi-check-circle"></i> Excellence in sports education</li>
+                        <li><i class="bi bi-check-circle"></i> Future sports champions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Values -->
+            <div class="col-12 col-lg-4">
+                <div class="about-card h-100">
+                    <div class="icon-badge">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <h3 class="about-card-title">Our Values</h3>
+                    <p class="about-card-text">
+                        We believe in professionalism, transparency, and innovation. Our commitment to these values
+                        drives
+                        everything we do, ensuring trust and excellence in every interaction with our academy partners
+                        and their
+                        athletes.
+                    </p>
+                    <ul class="about-list">
+                        <li><i class="bi bi-shield-check"></i> Professional excellence</li>
+                        <li><i class="bi bi-people"></i> Complete transparency</li>
+                        <li><i class="bi bi-lightbulb"></i> Continuous innovation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="about-features">
+    <div class="container text-center py-5">
+        <h2 class="mb-3" style="font-size: 35px; font-weight: 400;">Everything Your Academy Needs</h2>
+        <p class="text-muted mb-5" style="font-size: 19px;">
+            Our comprehensive platform provides all the tools you need to manage and grow your sports academy
+            effectively.
+        </p>
+
+        <div class="row g-4">
+            <!-- Student Management -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h5 class="fw-semibold">Student Management</h5>
+                    <p class="text-muted small">
+                        Easily manage student enrollment, progress tracking, and communication with families.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Coach Coordination -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h5 class="fw-semibold">Coach Coordination</h5>
+                    <p class="text-muted small">
+                        Streamline coach assignments, schedules, and performance monitoring tools.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Program Management -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h5 class="fw-semibold">Program Management</h5>
+                    <p class="text-muted small">
+                        Create and manage training programs with detailed scheduling and curriculum tools.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Payment Processing -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h5 class="fw-semibold">Payment Processing</h5>
+                    <p class="text-muted small">
+                        Secure online payments and subscription management for your academy operations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call To Action Section -->
+<section class="about-cta text-center text-white py-5">
+    <div class="container py-5">
+        <h2 class="mb-4" style="font-weight: 450; font-size: 40px;">Ready to Transform Your Academy?</h2>
+        <p class="mb-4 lead" style="font-weight: 450;">
+            Join hundreds of academies already using SportConnect to streamline their operations,
+            engage with students, and grow their programs effectively.
+        </p>
+
+        <a href="" class="btn btn-light btn-lg cta-btn mt-4">
+            <i class="bi bi-trophy me-2"></i> Register Your Academy <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+
+        <p class="small mt-3-50 mt-2">
+            Get started in minutes with our easy setup process
+        </p>
+    </div>
+</section>
+
+
+
+{% endblock %}
