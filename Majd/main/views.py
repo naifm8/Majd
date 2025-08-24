@@ -3,8 +3,11 @@ from django.http import HttpResponse
 from .forms import ContactForm
 from django.contrib import messages
 
+
+
 def main_home_view(request):
     return render(request, "main/main_home.html")
+
 
 
 def contact_view(request):
@@ -22,10 +25,19 @@ def contact_view(request):
 
     return render(request, "main/contact_us.html", {"form": form})
 
+
+
 def subscriptions_view(request):
 
     return render(request, "main/subscriptions_page.html")
 
+
+
 def our_vision_view(request):
     
     return render(request, "main/our_vision.html")
+
+
+def about_view(request):
+    return render(request, "main/about.html")
+
