@@ -26,3 +26,6 @@ def subscriptions_view(request):
 
     return render(request, "main/subscriptions_page.html")
 
+def our_vision_view(request):
+    
+    return render(request, "main/our_vision.html")
