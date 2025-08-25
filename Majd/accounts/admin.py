@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from .models import User, AcademyAdminProfile, TrainerProfile, ParentProfile, Child
+from .models import User, AcademyAdminProfile, TrainerProfile, ParentProfile
+from parents.models import Child
 
 # Register your models here.
 
