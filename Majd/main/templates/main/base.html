@@ -60,13 +60,33 @@
 
                 <!-- Buttons -->
                 <div class="d-flex gap-2">
-                    <a href="#" class="btn btn-outline-secondary">Sign In</a>
-                    <a href="#" class="btn btn-success">Get Started</a>
+                    {% if request.user.is_authenticated %}
+                    <a href="{% url 'accounts:log_out' %}" class="btn btn-outline-secondary">Log out</a>
+                    {% else %}
+                    <a href="{% url 'accounts:login_view' %}" class="btn btn-outline-secondary">Sign In</a>
+                    <a href="{% url 'accounts:selection_view' %}" class="btn btn-success">Get Started</a>
+                    {% endif %}
+
                 </div>
             </div>
         </div>
     </nav>
 
+
+    {% if messages %}
+    <div class="messages">
+    {% for message in messages %}
+        <div class="alert
+            {% if 'error' in message.tags or 'danger' in message.tags %}alert-danger
+            {% elif 'success' in message.tags %}alert-success
+            {% else %}alert-info{% endif %}
+            alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    </div>
+    {% endif %}
     <!-- Main -->
     <main style="flex: 1;">
         {% block content %}
