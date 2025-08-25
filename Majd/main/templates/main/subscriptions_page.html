@@ -1,0 +1,257 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Subscriptions{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/subscriptions_page.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="hero-section text-center">
+  <div class="container">
+    <h2 class="mb-2">Choose Your Academy Plan</h2>
+    <p class="text-muted mb-4">
+      Select the perfect subscription plan for your sports academy. Upgrade or downgrade at any time.
+    </p>
+
+    <!-- Billing Toggle (no discount badge) -->
+    <div class="billing-toggle d-inline-flex align-items-center gap-2">
+      <button class="toggle-btn active" id="btn-monthly">Monthly</button>
+      <button class="toggle-btn" id="btn-yearly">Yearly</button>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section py-4 py-md-5">
+  <div class="container">
+    <div class="row g-4 justify-content-center">
+
+      <!-- Starter -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card-pricing h-100">
+          <div class="plan-icon bg-soft-primary"><i class="bi bi-app"></i></div>
+          <h5 class="plan-title">Starter</h5>
+          <p class="plan-subtitle">Perfect for small academies getting started</p>
+
+          <div class="plan-price">
+            <span class="currency">SAR</span>
+            <!-- set YOUR yearly and monthly numbers here -->
+            <span class="amount" data-monthly="199" data-yearly="2,199">199</span>
+            <span class="per" data-month="/month" data-year="/year">/month</span>
+          </div>
+
+          <ul class="plan-features">
+            <li><i class="bi bi-check-circle text-success"></i> Up to 50 students</li>
+            <li><i class="bi bi-check-circle text-success"></i> 2 coaches included</li>
+            <li><i class="bi bi-check-circle text-success"></i> Basic progress tracking</li>
+            <li><i class="bi bi-check-circle text-success"></i> Email support</li>
+            <li><i class="bi bi-check-circle text-success"></i> Mobile app access</li>
+            <li><i class="bi bi-check-circle text-success"></i> Basic reporting</li>
+            <li><i class="bi bi-check-circle text-success"></i> Student profiles</li>
+            <li class="muted"><i class="bi bi-dash-circle"></i> Limited to 2 sports programs</li>
+            <li class="muted"><i class="bi bi-dash-circle"></i> Basic analytics only</li>
+          </ul>
+
+          <a href="#" class="btn btn-dark w-100">Get Started</a>
+        </div>
+      </div>
+
+      <!-- Professional (featured) -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card-pricing featured h-100">
+          <div class="most-popular">Most Popular</div>
+          <div class="plan-icon bg-soft-success"><i class="bi bi-star"></i></div>
+          <h5 class="plan-title">Professional</h5>
+          <p class="plan-subtitle">Ideal for growing academies with multiple programs</p>
+
+          <div class="plan-price">
+            <span class="currency">SAR</span>
+            <span class="amount" data-monthly="499" data-yearly="5,799">499</span>
+            <span class="per" data-month="/month" data-year="/year">/month</span>
+          </div>
+
+          <ul class="plan-features">
+            <li><i class="bi bi-check-circle text-success"></i> Up to 200 students</li>
+            <li><i class="bi bi-check-circle text-success"></i> 10 coaches included</li>
+            <li><i class="bi bi-check-circle text-success"></i> Advanced progress tracking</li>
+            <li><i class="bi bi-check-circle text-success"></i> Priority email & phone support</li>
+            <li><i class="bi bi-check-circle text-success"></i> Mobile app access</li>
+            <li><i class="bi bi-check-circle text-success"></i> Advanced reporting & analytics</li>
+            <li><i class="bi bi-check-circle text-success"></i> Student & parent portals</li>
+            <li><i class="bi bi-check-circle text-success"></i> Unlimited sports programs</li>
+            <li><i class="bi bi-check-circle text-success"></i> Custom branding</li>
+            <li><i class="bi bi-check-circle text-success"></i> Payment processing</li>
+            <li><i class="bi bi-check-circle text-success"></i> Event management</li>
+            <li><i class="bi bi-check-circle text-success"></i> Marketing tools</li>
+          </ul>
+
+          <a href="#" class="btn btn-success w-100">Get Started</a>
+        </div>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="col-md-6 col-lg-4">
+        <div class="card-pricing h-100">
+          <div class="plan-icon bg-soft-purple"><i class="bi bi-building"></i></div>
+          <h5 class="plan-title">Enterprise</h5>
+          <p class="plan-subtitle">Complete solution for large academies and organizations</p>
+
+          <div class="plan-price">
+            <span class="currency">SAR</span>
+            <span class="amount" data-monthly="999" data-yearly="11,699">999</span>
+            <span class="per" data-month="/month" data-year="/year">/month</span>
+          </div>
+
+          <ul class="plan-features">
+            <li><i class="bi bi-check-circle text-success"></i> Unlimited students</li>
+            <li><i class="bi bi-check-circle text-success"></i> Unlimited coaches</li>
+            <li><i class="bi bi-check-circle text-success"></i> AI‑powered analytics</li>
+            <li><i class="bi bi-check-circle text-success"></i> 24/7 dedicated support</li>
+            <li><i class="bi bi-check-circle text-success"></i> Mobile app access</li>
+            <li><i class="bi bi-check-circle text-success"></i> White‑label solution</li>
+            <li><i class="bi bi-check-circle text-success"></i> Multi‑location management</li>
+            <li><i class="bi bi-check-circle text-success"></i> Advanced integrations</li>
+            <li><i class="bi bi-check-circle text-success"></i> Custom development</li>
+            <li><i class="bi bi-check-circle text-success"></i> API access</li>
+            <li><i class="bi bi-check-circle text-success"></i> Priority feature requests</li>
+            <li><i class="bi bi-check-circle text-success"></i> Dedicated account manager</li>
+            <li><i class="bi bi-check-circle text-success"></i> Advanced security features</li>
+            <li><i class="bi bi-check-circle text-success"></i> Custom reporting</li>
+            <li><i class="bi bi-check-circle text-success"></i> Bulk operations</li>
+          </ul>
+
+          <a href="#" class="btn btn-dark w-100">Get Started</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Benefits -->
+<section class="benefits-section py-4 py-md-5">
+  <div class="container">
+    <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
+      <div class="row g-4 text-center">
+
+        <div class="col-md-4">
+          <div class="benefit-item">
+            <div class="benefit-icon bg-soft-blue"><i class="bi bi-shield-check"></i></div>
+            <h6 class="benefit-title">Secure & Reliable</h6>
+            <p class="text-muted mb-0 small">
+              Bank‑level security with 99.9% uptime guarantee. Your data is safe with us.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="benefit-item">
+            <div class="benefit-icon bg-soft-green"><i class="bi bi-chat-dots"></i></div>
+            <h6 class="benefit-title">24/7 Support</h6>
+            <p class="text-muted mb-0 small">
+              Get help when you need it with our dedicated support team available around the clock.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="benefit-item">
+            <div class="benefit-icon bg-soft-purple"><i class="bi bi-lightning-charge"></i></div>
+            <h6 class="benefit-title">Easy Setup</h6>
+            <p class="text-muted mb-0 small">
+              Get started in minutes with our intuitive setup process and migration tools.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section py-4 py-md-5">
+  <div class="container">
+
+    <h5 class="text-center mb-4">Frequently Asked Questions</h5>
+
+    <div class="row g-3 g-md-4">
+      <div class="col-md-6">
+        <div class="faq-card p-3 p-md-4 w-100 h-100">
+          <h6 class="mb-2 text-success">Can I change my plan later?</h6>
+          <p class="mb-0 text-muted small">
+            Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="faq-card p-3 p-md-4 w-100 h-100">
+          <h6 class="mb-2 text-success">Is there a free trial?</h6>
+          <p class="mb-0 text-muted small">
+            All plans come with a 14‑day free trial. No credit card required to get started.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="faq-card p-3 p-md-4 w-100 h-100">
+          <h6 class="mb-2 text-success">What payment methods do you accept?</h6>
+          <p class="mb-0 text-muted small">
+            We accept all major credit cards, bank transfers, and local payment methods in Saudi Arabia.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="faq-card p-3 p-md-4 w-100 h-100">
+          <h6 class="mb-2 text-success">Can I cancel anytime?</h6>
+          <p class="mb-0 text-muted small">
+            Yes, you can cancel your subscription at any time. Your account will remain active until the end of your billing period.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+  
+
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const btnMonthly = document.getElementById("btn-monthly");
+  const btnYearly  = document.getElementById("btn-yearly");
+  const amounts    = document.querySelectorAll(".plan-price .amount");
+  const perLabels  = document.querySelectorAll(".plan-price .per");
+
+  function setMode(mode) {
+    // mode = 'month' or 'year'
+    const isYear = mode === "year";
+
+    // toggle button active state
+    btnMonthly.classList.toggle("active", !isYear);
+    btnYearly.classList.toggle("active",  isYear);
+
+    // update amounts & units
+    amounts.forEach(a => {
+      a.textContent = isYear ? a.dataset.yearly : a.dataset.monthly;
+    });
+    perLabels.forEach(p => {
+      p.textContent = isYear ? p.dataset.year : p.dataset.month;
+    });
+  }
+
+  btnMonthly.addEventListener("click", () => setMode("month"));
+  btnYearly .addEventListener("click", () => setMode("year"));
+
+  // OPTIONAL: start on yearly (uncomment if you want default yearly)
+  // setMode("year");
+});
+</script>
+
+{% endblock %}

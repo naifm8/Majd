@@ -1,14 +1,10 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-
-
 {% block title %}Contact Us{% endblock %}
 
 {% block fileStyle %}
-
 <link rel="stylesheet" href="{% static 'css/contact_page.css' %}">
-
 {% endblock %}
 
 {% block content %}
@@ -25,12 +21,287 @@
             we're here to help build the future of Saudi sports together.
         </p>
     </div>
-
 </section>
 
+<!-- Contact Section -->
+<section class="contact-section">
+  <div class="container py-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {{message.tags}} alert-dismissible fade show" role="alert">
+                {{message}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="row g-4">
 
+      <!-- Left: Contact Form -->
+      <div class="col-lg-7">
+        <div class="card-soft p-4 p-md-5" style="box-shadow: 0 8px 24px rgba(0,0,0,0.08);">
+          <h5 class="mb-1">Send us a Message</h5>
+          <p class="text-muted mb-4">Fill out the form below and we'll get back to you as soon as possible.</p>
 
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
 
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                {{ form.full_name }}
+                {{ form.full_name.errors }}
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                {{ form.email }}
+                {{ form.email.errors }}
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Organization</label>
+                {{ form.organization }}
+                {{ form.organization.errors }}
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone }}
+                {{ form.phone.errors }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Inquiry Type <span class="text-danger">*</span></label>
+                <div class="select-wrapper position-relative">
+                  {{ form.inquiry_type }}
+                  <i class="bi bi-chevron-down select-icon"></i>
+                </div>
+                {{ form.inquiry_type.errors }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Subject <span class="text-danger">*</span></label>
+                {{ form.subject }}
+                {{ form.subject.errors }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Message <span class="text-danger">*</span></label>
+                {{ form.message }}
+                {{ form.message.errors }}
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn-submit w-100 d-flex align-items-center justify-content-center gap-3">
+                  <i class="bi bi-send"></i>
+                  <span>Send Message</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right side cards -->
+      <div class="col-lg-5">
+        <!-- Contact Info -->
+        <div class="card-soft p-4 mb-4">
+          <h6 class="mb-3">Contact Information</h6>
+          <div class="info-row">
+            <div class="icon-circle"><i class="bi bi-geo-alt"></i></div>
+            <div>
+              <div class="card-title fw-semibold">Headquarters</div>
+              <div class="card-info text-muted small">King Abdullah Sports City<br>Jeddah, Saudi Arabia</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="icon-circle"><i class="bi bi-envelope"></i></div>
+            <div>
+              <div class="card-title fw-semibold">Email</div>
+              <div class="card-info text-muted small">info@sportconnect.sa</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="icon-circle"><i class="bi bi-telephone"></i></div>
+            <div>
+              <div class="card-title fw-semibold">Phone</div>
+              <div class="card-info text-muted small">+966 11 234 5678</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="icon-circle"><i class="bi bi-clock"></i></div>
+            <div>
+              <div class="card-title fw-semibold">Business Hours</div>
+              <div class="card-info text-muted small">Sun – Thu: 8:00 AM – 6:00 PM<br>Fri – Sat: Closed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Partnership -->
+        <div class="card-soft2 p-4 mb-4">
+          <h6 class="mb-3">
+            <i class="bi bi-handshake me-2"></i> Partnership Opportunities
+          </h6>
+          <ul class="list-unstyled mb-4">
+            <li class="card-info list-item"><i class="bi bi-trophy"></i> Sports Academy Partnerships</li>
+            <li class="card-info list-item"><i class="bi bi-briefcase"></i> Corporate Sponsorships</li>
+            <li class="card-info list-item"><i class="bi bi-globe2"></i> International Collaborations</li>
+            <li class="card-info list-item"><i class="bi bi-cpu"></i> Technology Integrations</li>
+          </ul>
+          <a href="#" class="btn-outline w-100 d-flex align-items-center justify-content-center gap-2" style="text-decoration: none;">
+            <i class="bi bi-stars"></i> Join Our Platform
+          </a>
+        </div>
+
+        <!-- Need Quick Help -->
+        <div class="card-soft p-4">
+          <h6 class="mb-3">Need Quick Help?</h6>
+          <div class="card-title mb-3 p-3 rounded" style="background-color:#f0faf6; font-weight: 500;">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            For Academies
+            <div class="card-info small text-muted">Registration, profile setup, and program management</div>
+          </div>
+          <div class="card-title mb-3 p-3 rounded" style="background-color:#f0faf6; font-weight: 500;">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            For Parents
+            <div class="card-info small text-muted">Account setup, program enrollment, and payment support</div>
+          </div>
+          <div class="card-title mb-3 p-3 rounded" style="background-color:#f0faf6; font-weight: 500;">
+            <i class="bi bi-check-circle text-success me-2"></i>
+            For Partners
+            <div class="card-info small text-muted">Sponsorship opportunities and collaboration discussions</div>
+          </div>
+          <hr style="color: #009966 !important;">
+          <p class="small text-center text-muted" style="color: #009966 !important;">Average response time: 2–4 hours during business days</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Regional Presence -->
+<section class="regional-section py-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h5 class="mb-2">Regional Presence</h5>
+      <p class="text-muted mb-0">
+        SportConnect operates across all 13 regions of Saudi Arabia, bringing sports opportunities closer
+        to every community.
+      </p>
+    </div>
+
+    <div class="row g-3 g-md-4 justify-content-center">
+
+      <!-- Riyadh -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Riyadh</div>
+              <div class="text-muted small">Central Region</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:riyadh@sportconnect.sa" class="small text-decoration-none">riyadh@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jeddah -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Jeddah</div>
+              <div class="text-muted small">Western Region</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:jeddah@sportconnect.sa" class="small text-decoration-none">jeddah@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dammam -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Dammam</div>
+              <div class="text-muted small">Eastern Region</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:eastern@sportconnect.sa" class="small text-decoration-none">eastern@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabuk -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Tabuk</div>
+              <div class="text-muted small">Northern Region</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:tabuk@sportconnect.sa" class="small text-decoration-none">tabuk@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Abha -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Abha</div>
+              <div class="text-muted small">Southern Region</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:abha@sportconnect.sa" class="small text-decoration-none">abha@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ha'il -->
+      <div class="col-md-6 col-lg-4">
+        <div class="region-card d-flex flex-column gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            <div>
+              <div class="fw-semibold">Ha'il</div>
+              <div class="text-muted small">North Central</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-envelope"></i>
+            <a href="mailto:hail@sportconnect.sa" class="small text-decoration-none">hail@sportconnect.sa</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 
 {% endblock %}
