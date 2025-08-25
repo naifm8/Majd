@@ -82,6 +82,11 @@ class Child(models.Model):
     def __str__(self):
         full = f"{self.first_name} {self.last_name}".strip()
         return f"Child<{full} of {self.parent.user}>"
+    
+    
+    class Meta:   # 👈 هنا نعدل الاسم
+        verbose_name = "Child"
+        verbose_name_plural = "Children"
 
 
 
