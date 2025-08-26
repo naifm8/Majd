@@ -5,5 +5,5 @@ app_name = "parents"
 
 
 urlpatterns = [
-    path('dashboard/', views.dashboard_view, name='dashboard_view'),
+    path('dashboard/overview/', views.dashboard_view, name='dashboard_view'),
 ]
