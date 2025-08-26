@@ -43,7 +43,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{% url 'parents:my_children_view' %}" class="nav-link {% if request.path == '/parents/dashboard/children/' %}active{% endif %}">
                             <i class="bi bi-people me-2"></i> My Children
                         </a>
                     </li>

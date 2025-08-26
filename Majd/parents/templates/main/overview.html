@@ -25,7 +25,7 @@
             </div>
             <div class="text-end">
 
-                <p class="mt-2 mb-0 fw-bold text-center" style="font-size: large;">2</p>
+                <p class="mt-2 mb-0 fw-bold text-center" style="font-size: large;">{{children_count}}</p>
                 <p>Children Registered</p>
             </div>
         </div>
@@ -36,7 +36,7 @@
     <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center">
       <div>
         <h6 class="text-muted mb-1">Children</h6>
-        <h4 class="fw-bold mb-0">2</h4>
+        <h4 class="fw-bold mb-0">{{children_count}}</h4>
       </div>
       <i class="bi bi-people fs-3 text-success"></i>
     </div>
@@ -85,59 +85,56 @@
                         <h5 class="fw-bold mb-0">Your Children</h5>
                         <a href="#" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Add Child</a>
                     </div>
-
+                    <!-- later we will put for loop and dynamic data instaed of child1, child2, ... -->
                     <!-- Child 1 -->
-                    <div class="card p-3 mb-3 border rounded">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">A</div>
-                            <div>
-                                <strong>Alex Johnson</strong><br>
-                                <small class="text-muted">Age 12 • Soccer • Elite Soccer Academy</small>
-                            </div>
-                            <span class="badge bg-success ms-auto">A+</span>
-                        </div>
-                        <div class="mb-2">
-                            <small>Attendance</small>
-                            <div class="progress mb-2" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 95%;"></div>
-                            </div>
-                            <small>Progress</small>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 88%;"></div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-3">
-                            <button class="btn btn-outline-success btn-sm"><i class="bi bi-eye"></i> View Details</button>
-                            <button class="btn btn-outline-success btn-sm"><i class="bi bi-calendar-event"></i> Schedule</button>
-                            <small class="text-muted">Next Session: Today 4:00 PM</small>
-                        </div>
-                    </div>
 
-                    <!-- Child 2 -->
-                    <div class="card p-3 border rounded">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">E</div>
-                            <div>
-                                <strong>Emma Johnson</strong><br>
-                                <small class="text-muted">Age 10 • Swimming • Aquatic Swimming</small>
+                        {% if children %}
+                            {% for child in children %}
+                            <div class="card p-3 mb-3 border rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">{{ child.first_name|slice:":1"|upper }}</div>
+                                    <div>
+                                        <strong>{{ child.first_name }} {{ child.last_name }}</strong><br>
+                                        <small class="text-muted">{% if child.age %} Age {{ child.age }} {% endif %} {% if child.gender == "M" %} • Male {% elif child.gender == "F" %} • Female {% endif %}  • Soccer • Elite Soccer Academy</small>
+                                    </div>
+                                    <span class="badge bg-success ms-auto">A+</span>
+                                </div>
+                                <div class="mb-2">
+                                    <small>Attendance</small>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: 95%;"></div>
+                                    </div>
+                                    <small>Progress</small>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: 88%;"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                <!-- Next Session Info -->
+                                <div class="mb-2">
+                                    <small class="text-muted">Next Session:</small>
+                                    <strong class="text-dark"> Today 4:00 PM</strong>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex">
+                                    <button class="btn btn-outline-success flex-fill me-2">
+                                    <i class="bi bi-eye me-1"></i> View Details
+                                    </button>
+                                    <button class="btn btn-outline-success flex-fill">
+                                    <i class="bi bi-calendar-event me-1"></i> Schedule
+                                    </button>
+                                </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="mb-2">
-                            <small>Attendance</small>
-                            <div class="progress mb-2" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 92%;"></div>
-                            </div>
-                            <small>Progress</small>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 91%;"></div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-3">
-                            <button class="btn btn-outline-success btn-sm"><i class="bi bi-eye"></i> View Details</button>
-                            <button class="btn btn-outline-success btn-sm"><i class="bi bi-calendar-event"></i> Schedule</button>
-                            <small class="text-muted">Next Session: Tomorrow 3:30 PM</small>
-                        </div>
-                    </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No children registered yet.</p>
+                        {% endif %}
+
+
+
+      
                 </div>
             </div>
         </div>
@@ -169,13 +166,16 @@
             </div>
 
             <!-- Payment Due -->
-            <div class="card border-warning shadow-sm">
-                <div class="card-body">
-                    <h6 class="fw-bold text-warning"><i class="bi bi-exclamation-triangle me-2"></i> Payment Due</h6>
-                    <p class="mb-2 text-muted">Equipment fee for Alex Johnson is due in 3 days.</p>
-                    <button class="btn btn-warning text-white w-100">Pay Now</button>
-                </div>
-            </div>
+<div class="card shadow-sm payment-due-card">
+  <div class="card-body">
+    <h6 class="fw-bold text-warning mb-2">
+      <i class="bi bi-exclamation-circle me-2"></i> Payment Due
+    </h6>
+    <p class="mb-3 text-muted">Equipment fee for Alex Johnson is due in 3 days.</p>
+    <button class="btn btn-success text-white px-4">Pay Now</button>
+  </div>
+</div>
+
         </div>
     </div>
 </div>

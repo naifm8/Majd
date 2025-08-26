@@ -139,3 +139,18 @@
 .stat-card small {
     font-size: 13px;
 }
+
+.payment-due-card {
+    border-left: 5px solid #f0ad4e;   /* Bootstrap warning color */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.payment-due-card .card-body {
+    padding: 15px 18px;
+}
+
+.payment-due-card h6 {
+    font-size: 15px;
+    font-weight: 600;
+}

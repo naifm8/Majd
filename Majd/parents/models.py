@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay, Now
 from django.db.models import IntegerField, Case, When, Value, Q, F
-
+from academies.models import Program
 from accounts.models import ParentProfile
 
 # Create your models here.    
@@ -37,13 +37,17 @@ class Child(models.Model):
         MALE   = "M", "Male"
         FEMALE = "F", "Female"
 
+
+
     parent = models.ForeignKey(ParentProfile, on_delete=models.CASCADE, related_name='children')
     first_name = models.CharField(max_length=100)
     last_name  = models.CharField(max_length=100, blank=True)
     gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
+    programs = models.ManyToManyField(Program, related_name="children", blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
     objects = ChildQuerySet.as_manager()
+
 
 
 
