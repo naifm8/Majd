@@ -88,7 +88,7 @@ class SessionSlot(models.Model):
         SATURDAY  = "sat", "Saturday"
 
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="slots")
-    weekday = models.IntegerField(choices=Weekday.choices)
+    weekday = models.CharField(choices=Weekday.choices)
     start_time = models.TimeField()
     end_time   = models.TimeField()
 
