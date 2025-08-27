@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from accounts.models import Child
 from .models import PlayerProfile
+from academies.models import TrainingClass
 
 
 def player_dashboard_view(request, child_id):
@@ -13,7 +14,7 @@ def player_dashboard_view(request, child_id):
             "error": "No player profile found for this child."
         })
 
-    # ✅ Skills progress (من PlayerSkill)
+    # ✅ Skills progress
     skills = player.skills.all()
     if skills.exists():
         total_progress = 0
@@ -24,20 +25,24 @@ def player_dashboard_view(request, child_id):
     else:
         skills_avg_progress = 0
 
-    # ✅ Evaluations history
-    evaluations = player.evaluations.select_related("coach", "session").all()
+    # ✅ Evaluations history (على مستوى TrainingClass)
+    evaluations = player.evaluations.select_related("coach", "training_class").all()
 
-    # ✅ Sessions
-    next_session = (player.player_sessions
-                    .filter(session__start_at__gte=timezone.now())
-                    .select_related("session", "session__coach")
-                    .order_by("session__start_at")
-                    .first())
+    # ✅ Next TrainingClass
+    next_class = (TrainingClass.objects
+                  .filter(session__in=player.player_sessions.values("session"),
+                          date__gte=timezone.now().date())
+                  .order_by("date", "start_time")
+                  .first())
 
-    upcoming_sessions = (player.player_sessions
-                         .filter(session__start_at__gte=timezone.now())
-                         .select_related("session", "session__coach")
-                         .order_by("session__start_at"))
+    # ✅ Upcoming TrainingClasses
+    upcoming_classes = (TrainingClass.objects
+                        .filter(session__in=player.player_sessions.values("session"),
+                                date__gte=timezone.now().date())
+                        .order_by("date", "start_time"))
+
+    # ✅ Attendance records
+    attendances = player.class_attendances.select_related("training_class").order_by("-training_class__date")
 
     # ✅ Achievements
     achievements = player.achievements.order_by("-date_awarded")[:5]
@@ -46,12 +51,13 @@ def player_dashboard_view(request, child_id):
         "child": child,
         "player": player,
         "skills": skills,
-        "skills_avg_progress": skills_avg_progress,   # التقدّم من الـ skills
-        "avg_progress": player.avg_progress,          # المتوسط من التقييمات
-        "grade": player.current_grade,                # الدرجة من التقييمات
-        "next_session": next_session,
-        "upcoming_sessions": upcoming_sessions,
+        "skills_avg_progress": skills_avg_progress,   # من PlayerSkill
+        "avg_progress": player.avg_progress,          # من Evaluations
+        "grade": player.current_grade,                # الدرجة
+        "next_class": next_class,
+        "upcoming_classes": upcoming_classes,
+        "attendances": attendances,
         "achievements": achievements,
-        "evaluations": evaluations,                   # نمرر التقييمات للـ tab
+        "evaluations": evaluations,
     }
     return render(request, "player/dashboard.html", context)
