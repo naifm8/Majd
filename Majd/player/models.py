@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.db.models import Avg
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from accounts.models import Child, TrainerProfile
+from accounts.models import TrainerProfile
+from parents.models import Child
 from academies.models import Academy, Session, TrainingClass
 
 
