@@ -7,4 +7,4 @@ from .models import User, AcademyAdminProfile, TrainerProfile, ParentProfile
 admin.site.register(AcademyAdminProfile)
 admin.site.register(TrainerProfile)
 admin.site.register(ParentProfile)
-
+admin.site.register(Child)
