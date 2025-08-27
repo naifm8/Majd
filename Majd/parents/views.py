@@ -136,3 +136,32 @@ def schedule_view(request):
     schedule_items = sorted(schedule_items, key=lambda x: (x["class"].date, x["class"].start_time))
 
     return render(request, "main/schedule.html", {"schedule_items": schedule_items})
+
+@login_required
+def payments_view(request):
+    
+    # hard coded data for view the frontend
+    payments = [
+        {"child": {"first_name": "Alex", "last_name": "Johnson"},
+         "description": "Monthly Training Fee",
+         "academy_name": "Elite Soccer Academy",
+         "status": "paid",
+         "amount": 150,
+         "date": "2024-03-01"},
+        {"child": {"first_name": "Emma", "last_name": "Johnson"},
+         "description": "Swimming Lessons",
+         "academy_name": "AquaLife Swimming",
+         "status": "paid",
+         "amount": 120,
+         "date": "2024-03-01"},
+    ]
+
+    return render(request, "main/payments.html", {
+        "payments": payments,
+        "total_paid": 345,
+        "outstanding": 75,
+        "next_payment": {"amount": 270, "date": "2024-04-01"},
+        "upcoming": [],
+        "methods": [],
+    })
+
