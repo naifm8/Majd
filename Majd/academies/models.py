@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from accounts.models import TrainerProfile, AcademyAdminProfile
 
+
 # Create your models here.
 
 class Academy(models.Model):
@@ -21,11 +22,6 @@ class Academy(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-# current_year = timezone.now().year
-# academies = Academy.objects.annotate(
-#     years_experience=Case(When(establishment_year__isnull=True, then=Value(None)), default=Value(current_year) - F("establishment_year"), output_field=IntegerField(),)
-# )
 
 
 class Program(models.Model):
