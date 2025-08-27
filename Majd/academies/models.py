@@ -48,7 +48,6 @@ class Program(models.Model):
         return f"{self.title} ({self.get_sport_type_display()})"
 
 
-
 class Session(models.Model):
 
     class Level(models.TextChoices):
@@ -61,9 +60,9 @@ class Session(models.Model):
         FEMALE = "female", "Female"
         MIX    = "mix", "Mix"
 
-    program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="sessions")
+    program = models.ForeignKey("academies.Program", on_delete=models.CASCADE, related_name="sessions")
     title = models.CharField(max_length=120)
-    trainer = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="sessions")
+    trainer = models.ForeignKey("accounts.TrainerProfile", on_delete=models.SET_NULL, null=True, blank=True, related_name="sessions")
     age_min = models.PositiveIntegerField(default=6)
     age_max = models.PositiveIntegerField(default=16)
     gender = models.CharField(max_length=6, choices=Gender.choices, default=Gender.MIX)
@@ -75,6 +74,26 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.title} - {self.program.title}"
 
+    # ✅ توليد الحصص الفعلية من الـ Slots
+    def generate_classes(self):
+        from datetime import timedelta
+        from .models import TrainingClass  # import داخلي عشان ما يصير circular import
+
+        current_date = self.start_date
+        while current_date <= self.end_date:
+            weekday_str = current_date.strftime("%a").lower()[:3]  # مثال: "mon"
+            for slot in self.slots.all():
+                if slot.weekday == weekday_str:
+                    TrainingClass.objects.get_or_create(
+                        session=self,
+                        slot=slot,
+                        date=current_date,
+                        defaults={
+                            "start_time": slot.start_time,
+                            "end_time": slot.end_time,
+                        }
+                    )
+            current_date += timedelta(days=1)
 
 
 class SessionSlot(models.Model):
@@ -88,11 +107,31 @@ class SessionSlot(models.Model):
         SATURDAY  = "sat", "Saturday"
 
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="slots")
-    weekday = models.CharField(choices=Weekday.choices)
+    weekday = models.CharField(max_length=10, choices=Weekday.choices)
     start_time = models.TimeField()
     end_time   = models.TimeField()
+    
+    
+class TrainingClass(models.Model):
+    session = models.ForeignKey("academies.Session", on_delete=models.CASCADE, related_name="classes")
+    slot = models.ForeignKey("academies.SessionSlot", on_delete=models.SET_NULL, null=True, blank=True, related_name="classes")
 
+    date = models.DateField()
+    start_time = models.TimeField()   # منسوخة من slot وقت التوليد
+    end_time   = models.TimeField()   # منسوخة من slot وقت التوليد
 
+    topic = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ["date", "start_time"]  # ✅ يترتب تلقائي
+        unique_together = ("session", "date", "start_time")  # ✅ يمنع التكرار
+
+    def __str__(self):
+        return f"{self.session.title} - {self.date} ({self.topic or 'General'})"
+    
+    
+    
 
 # TODO later
 # class AcademyPlan(models.Model):
