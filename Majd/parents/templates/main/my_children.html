@@ -1,0 +1,247 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Children{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mt-2">Manage Children</h3>
+            <p class="text-muted">Add and manage your children's sports profiles</p>
+        </div>
+        <a href="#" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> Add Child
+        </a>
+    </div>
+
+    <!-- Children Grid -->
+    <div class="row g-4">
+        {% for child in children %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <!-- Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3"
+                                 style="width: 45px; height: 45px;">
+                                {{ child.first_name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <h5 class="mb-0">{{ child.first_name }} {{ child.last_name }}</h5>
+                                <small class="text-muted">Age {{ child.age }}</small>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="#" class="text-muted me-2"><i class="bi bi-pencil"></i></a>
+                            <a href="#" class="text-danger"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <p class="mb-1"><strong>Primary Sport:</strong> 
+                        <span class="badge bg-light text-dark border">{{ child.primary_sport|default:"-" }}</span>
+                    </p>
+                    <p class="mb-1"><strong>Skill Level:</strong> 
+                        <span class="badge bg-warning-subtle text-dark">{{ child.skill_level|default:"-" }}</span>
+                    </p>
+                    <p class="mb-1"><strong>Birth Date:</strong> {{ child.date_of_birth|date:"n/j/Y" }}</p>
+
+                    <!-- Academies -->
+                    <p class="mb-1"><strong>Academies:</strong></p>
+                    {% with child.programs.all as child_programs %}
+                            {% if child_programs %}
+                                {% for program in child_programs %}
+                                    <span class="badge bg-light text-dark border me-1">
+                                        {{ program.academy.name }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <small class="text-muted">Not enrolled</small>
+                            {% endif %}
+                        {% endwith %}
+
+                    <!-- Medical Notes -->
+                    {% if child.medical_notes %}
+                    <div class="alert alert-warning py-2 px-3 small mt-2">
+                        {{ child.medical_notes }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 mt-3">
+                        <!-- Sessions Button -->
+                        <button class="btn btn-outline-success flex-fill" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#sessionsModal{{ child.id }}">
+                            <i class="bi bi-calendar-event me-1"></i> Sessions
+                        </button>
+
+                        <a href="#" class="btn btn-outline-success flex-fill">
+                            <i class="bi bi-chat-dots me-1"></i> Chat
+                        </a>
+                    </div>
+
+
+                    <!-- Emergency Contact -->
+                    <p class="small text-muted mt-3 mb-0">
+                        Emergency: {{ child.parent.user.get_full_name|default:child.parent.user.username }}<br>
+                        {{ child.parent.phone|default:"No phone available" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+<!-- 🔹 Sessions Modal for this child -->
+<div class="modal fade" id="sessionsModal{{ child.id }}" tabindex="-1" aria-labelledby="sessionsModalLabel{{ child.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sessionsModalLabel{{ child.id }}">
+          <i class="bi bi-calendar-event text-success me-2"></i>
+          {{ child.first_name }}'s Sessions
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% with child.programs.all as child_programs %}
+          {% for program in child_programs %}
+            {% for session in program.sessions.all %}
+              <div class="card mb-3 shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                  <!-- Title + Status -->
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="fw-bold mb-0">{{ session.title }}</h6>
+                      <small class="text-muted">{{ program.academy.name }}</small>
+                    </div>
+                    <span class="badge 
+                      {% if session.status == 'upcoming' %} bg-success-subtle text-success 
+                      {% elif session.status == 'scheduled' %} bg-primary-subtle text-primary 
+                      {% else %} bg-secondary-subtle text-dark {% endif %}">
+                      {{ session.status|default:"scheduled" }}
+                    </span>
+                  </div>
+
+                  <!-- Date / Time / Location -->
+                  <div class="d-flex flex-wrap text-muted small mb-2 mt-2">
+                    <span class="me-3"><i class="bi bi-calendar3 me-1"></i> 
+                      {{ session.start_date|date:"M j, Y" }}
+                    </span>
+                    <span class="me-3"><i class="bi bi-clock me-1"></i> 
+                      {{ session.slots.first.start_time|time:"g:i A" }} - {{ session.slots.first.end_time|time:"g:i A" }}
+                    </span>
+                    <span class="me-3"><i class="bi bi-geo-alt me-1"></i> {{ session.location|default:"TBD" }}</span>
+                  </div>
+
+                  <!-- Coach / Type -->
+                  <div class="row small mb-2">
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Coach:</strong> {{ session.trainer.user.get_full_name|default:"Unassigned" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Session Type:</strong> {{ session.get_level_display }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Focus Area -->
+                  <p class="mb-2 small"><strong>Focus Area:</strong> {{ session.focus_area|default:"-" }}</p>
+
+                  <!-- Buttons -->
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-outline-success btn-sm flex-fill">
+                      <i class="bi bi-eye me-1"></i> View Details
+                    </a>
+                    <a href="#" class="btn btn-outline-success btn-sm flex-fill">
+                      <i class="bi bi-chat-dots me-1"></i> Contact Coach
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <p class="text-muted">No sessions scheduled for {{ program.title }}.</p>
+            {% endfor %}
+          {% empty %}
+            <p class="text-muted">This child is not enrolled in any programs.</p>
+          {% endfor %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Coach Modal -->
+<div class="modal fade" id="chatModal{{ session.id }}" tabindex="-1" aria-labelledby="chatModalLabel{{ session.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="chatModalLabel{{ session.id }}">
+          <i class="bi bi-chat-dots text-success me-2"></i>
+          Chat with {{ session.trainer.user.get_full_name|default:"Coach" }}
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+        <!-- Example chat messages -->
+        <div class="mb-3">
+          <div class="d-flex flex-column">
+            <!-- Coach message -->
+            <div class="align-self-start bg-light border rounded p-2 mb-2" style="max-width: 70%;">
+              <strong>{{ session.trainer.user.get_full_name|default:"Coach" }}</strong><br>
+              Hello! Alex has been doing great in training. His ball control has improved significantly.
+              <div class="small text-muted mt-1">2:30 PM</div>
+            </div>
+
+            <!-- Parent message -->
+            <div class="align-self-end bg-success text-white rounded p-2 mb-2" style="max-width: 70%;">
+              Thank you for the update! How is he doing with teamwork?
+              <div class="small text-light mt-1">2:45 PM</div>
+            </div>
+
+            <!-- Coach reply -->
+            <div class="align-self-start bg-light border rounded p-2 mb-2" style="max-width: 70%;">
+              <strong>{{ session.trainer.user.get_full_name|default:"Coach" }}</strong><br>
+              He's becoming a great team player. Very supportive of his teammates and shows leadership qualities.
+              <div class="small text-muted mt-1">3:00 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat input -->
+      <div class="modal-footer">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="Type your message...">
+          <button class="btn btn-success" type="button">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+        {% empty %}
+        <p class="text-muted">No children registered yet. Add your first child.</p>
+
+
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+<style>
+    .card {
+    border-radius: 12px;
+}
+
+.card .alert {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.card .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+</style>

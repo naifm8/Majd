@@ -16,7 +16,7 @@ class Academy(models.Model):
     latitude  = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     establishment_year = models.PositiveIntegerField(default=timezone.now().year, blank=True)
-    owner = models.ForeignKey(AcademyAdminProfile, on_delete=models.CASCADE, related_name="owned_academies")
+    owner = models.OneToOneField(AcademyAdminProfile, on_delete=models.CASCADE, related_name="owned_academies")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

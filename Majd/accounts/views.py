@@ -5,12 +5,15 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from .models import TrainerProfile, ParentProfile, AcademyAdminProfile, Child
+from .models import TrainerProfile, ParentProfile, AcademyAdminProfile
 from django.db import transaction, IntegrityError
 from django.urls import reverse
 
 from .models import AcademyAdminProfile, TrainerProfile, ParentProfile
 
+def ensure_role_groups():
+    for name in ["academy_admin", "trainer", "parent"]:
+        Group.objects.get_or_create(name=name)
 
 User = get_user_model()
 
@@ -109,6 +112,3 @@ def log_out(request: HttpRequest):
 
     return redirect(request.GET.get("next", "/"))
 
-def ensure_role_groups():
-    for name in ["academy_admin", "trainer", "parent"]:
-        Group.objects.get_or_create(name=name)
