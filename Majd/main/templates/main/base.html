@@ -88,10 +88,21 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:dashboard_view' %}">
-                                        <i class="bi bi-people me-2"></i> Dashboard
-                                    </a>
+                                    {% if request.user.groups.all.0.name == "parent" %}
+                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:dashboard_view' %}">
+                                            <i class="bi bi-people me-2"></i> Dashboard
+                                        </a>
+                                    {% elif request.user.groups.all.0.name == "trainer" %}
+                                        <a class="dropdown-item d-flex align-items-center" href="#">
+                                            <i class="bi bi-people me-2"></i> Dashboard
+                                        </a>
+                                    {% elif request.user.groups.all.0.name == "academy_admin" %}
+                                        <a class="dropdown-item d-flex align-items-center" href="#">
+                                            <i class="bi bi-people me-2"></i> Dashboard
+                                        </a>
+                                    {% endif %}
                                 </li>
+
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center" href="#">
                                         <i class="bi bi-gear me-2"></i> Settings
