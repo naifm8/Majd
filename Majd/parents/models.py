@@ -37,8 +37,6 @@ class Child(models.Model):
         MALE   = "M", "Male"
         FEMALE = "F", "Female"
 
-
-
     parent = models.ForeignKey(ParentProfile, on_delete=models.CASCADE, related_name='children')
     first_name = models.CharField(max_length=100)
     last_name  = models.CharField(max_length=100, blank=True)
@@ -47,9 +45,6 @@ class Child(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
     objects = ChildQuerySet.as_manager()
-
-
-
 
     def __str__(self):
         full = f"{self.first_name} {self.last_name}".strip()
