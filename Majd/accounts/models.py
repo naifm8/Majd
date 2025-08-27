@@ -5,6 +5,7 @@ from django.conf import settings
 
 
 
+
 class AcademyAdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='academy_admin_profile')
     # academy = 
@@ -21,9 +22,11 @@ class TrainerProfile(models.Model):
     position= models.CharField(blank=True, max_length=100)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True
     )
-
+    
+    academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
+     
     def __str__(self):
-        return f"TrainerProfile<{self.user}>"
+        return f"{self.user.username} ({self.academy.name if self.academy else 'No Academy'})"
 
 
 class ParentProfile(models.Model):
