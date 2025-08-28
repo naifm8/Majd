@@ -64,16 +64,24 @@
                     <!-- Academies -->
                     <p class="mb-1"><strong>Academies:</strong></p>
                     {% with child.programs.all as child_programs %}
-                            {% if child_programs %}
+                        {% if child_programs %}
+                            <div class="d-flex flex-column gap-2">
                                 {% for program in child_programs %}
-                                    <span class="badge bg-light text-dark border me-1">
-                                        {{ program.academy.name }}
-                                    </span>
+                                    <div class="d-flex align-items-center justify-content-between rounded px-2 py-1">
+                                        <span class="badge bg-light text-dark border">
+                                            {{ program.academy.name }}
+                                        </span>
+                                        <a href="#" class="text-success ms-2" title="View Academy">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
                                 {% endfor %}
-                            {% else %}
-                                <small class="text-muted">Not enrolled</small>
-                            {% endif %}
-                        {% endwith %}
+                            </div>
+                        {% else %}
+                            <small class="text-muted">Not enrolled</small>
+                        {% endif %}
+                    {% endwith %}
+
 
                     <!-- Medical Notes -->
                     {% if child.medical_notes %}

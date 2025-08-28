@@ -12,5 +12,10 @@ urlpatterns = [
     path('children/delete/<int:child_id>/', views.delete_child_view, name='delete_child_view'),
     path('schedule/', views.schedule_view, name='schedule_view'),
     path('payments/', views.payments_view, name='payments_view'),
+    path('reports/', views.reports_view, name='reports_view'),
+    path("subscriptions/", views.subscriptions_view, name="subscriptions_view"),
+    path("settings/", views.settings_view, name="settings_view"),
+
+
 
 ]

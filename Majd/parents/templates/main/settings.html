@@ -1,0 +1,332 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="mb-4">
+    <h3 class="fw-bold">Settings</h3>
+    <p class="text-muted">Manage your account settings, preferences, and privacy options</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="view-toggle bg-light p-1 rounded-pill d-inline-flex">
+      <button id="profileBtn" class="btn btn-sm px-4 btn-success rounded-pill tab-active">Profile</button>
+      <button id="notificationsBtn" class="btn btn-sm px-4 btn-light rounded-pill text-success">Notifications</button>
+      <button id="privacyBtn" class="btn btn-sm px-4 btn-light rounded-pill text-success">Privacy</button>
+      <button id="accountBtn" class="btn btn-sm px-4 btn-light rounded-pill text-success">Account</button>
+    </div>
+  </div>
+
+  <!-- Profile Section -->
+  <div id="profileSection">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center"
+                 style="width: 60px; height: 60px; font-size: 22px;">
+              J
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">Profile Information</h5>
+              <small class="text-muted">Update your personal information</small>
+            </div>
+          </div>
+          <a href="#" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-pencil-square"></i> Edit
+          </a>
+        </div>
+
+        <!-- Form-like Display -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Full Name</label>
+            <input type="text" class="form-control" value="John Demo (Parent)" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Email Address</label>
+            <input type="email" class="form-control" value="demo.parent@sportconnect.com" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Phone Number</label>
+            <input type="text" class="form-control" value="+1 (555) 123-4567" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Location</label>
+            <input type="text" class="form-control" value="San Diego, CA" disabled>
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-muted">Bio</label>
+            <textarea class="form-control" rows="2" disabled>Demo parent account - exploring SportConnect features</textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Emergency Contact</label>
+            <input type="text" class="form-control" value="-" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Emergency Phone</label>
+            <input type="text" class="form-control" value="-" disabled>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Notifications Section -->
+<div id="notificationsSection" style="display:none;">
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-bell fs-4 text-success me-2"></i>
+        <div>
+          <h5 class="fw-bold mb-0">Notification Preferences</h5>
+          <small class="text-muted">Choose how you want to be notified</small>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">Email Notifications</p>
+          <small class="text-muted">Receive notifications via email</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">SMS Notifications</p>
+          <small class="text-muted">Receive notifications via text message</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox">
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">Session Reminders</p>
+          <small class="text-muted">Get reminded about upcoming sessions</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">Payment Reminders</p>
+          <small class="text-muted">Get notified about upcoming payments</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">Progress Reports</p>
+          <small class="text-muted">Get notified when new reports are available</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="mb-0 fw-semibold">Achievements</p>
+          <small class="text-muted">Get notified about your children's achievements</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <!-- Option Item -->
+      <div class="d-flex justify-content-between align-items-center py-2">
+        <div>
+          <p class="mb-0 fw-semibold">Emergency Alerts</p>
+          <small class="text-muted">Important safety and emergency notifications</small>
+        </div>
+        <div class="form-check form-switch m-0">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- Privacy Section -->
+<div id="privacySection" style="display:none;">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-shield-lock text-success me-2 fs-5"></i>
+        <div>
+          <h5 class="fw-bold mb-0">Privacy Settings</h5>
+          <p class="text-muted small mb-0">Control your privacy and data sharing</p>
+        </div>
+      </div>
+
+      <!-- Toggle Items -->
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="fw-semibold mb-0">Share Progress with Coaches</p>
+          <small class="text-muted">Allow coaches to see detailed progress reports</small>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox">
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <div>
+          <p class="fw-semibold mb-0">Allow Messages</p>
+          <small class="text-muted">Allow coaches and staff to send you messages</small>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" checked>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center py-2">
+        <div>
+          <p class="fw-semibold mb-0">Show Contact Information</p>
+          <small class="text-muted">Display your contact info to academy staff</small>
+        </div>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Account Section -->
+<div id="accountSection" style="display:none;">
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-person-gear text-success me-2 fs-5"></i>
+        <div>
+          <h5 class="fw-bold mb-0">Account Management</h5>
+          <p class="text-muted small mb-0">Manage your account and security settings</p>
+        </div>
+      </div>
+
+      <!-- List of actions -->
+      <div class="list-group border rounded overflow-hidden">
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 border-bottom">
+          <i class="bi bi-shield-lock me-2 text-secondary"></i> Change Password
+        </a>
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 border-bottom">
+          <i class="bi bi-credit-card me-2 text-secondary"></i> Manage Payment Methods
+        </a>
+        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0">
+          <i class="bi bi-cloud-download me-2 text-secondary"></i> Export My Data
+        </a>
+      </div>
+
+      <!-- Delete Account -->
+      <div class="mt-3 pt-3 border-top">
+        <a href="#" class="list-group-item list-group-item-action text-danger border-0 d-flex align-items-center py-3">
+          <i class="bi bi-trash me-2"></i> Delete Account
+        </a>
+        <small class="text-muted d-block mt-1">
+          This action cannot be undone. All your data will be permanently deleted.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+</div>
+{% endblock %}
+
+<style>
+.view-toggle {
+  border: 1px solid #e0e0e0;
+}
+.view-toggle .btn {
+  font-weight: 500;
+  border: none !important;
+  box-shadow: none !important;
+}
+.view-toggle .btn.tab-active {
+  background-color: #198754 !important;
+  color: #fff !important;
+}
+.view-toggle .btn:not(.tab-active) {
+  background: transparent;
+  color: #198754;
+}
+.view-toggle .btn:hover:not(.tab-active) {
+  background: #e6f4ec;
+}
+#notificationsSection .form-check-input {
+  width: 2.5em;
+  height: 1.3em;
+  cursor: pointer;
+}
+#notificationsSection p {
+  font-size: 0.95rem;
+}
+#notificationsSection small {
+  font-size: 0.8rem;
+}
+
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const sections = {
+    profileBtn: "profileSection",
+    notificationsBtn: "notificationsSection",
+    privacyBtn: "privacySection",
+    accountBtn: "accountSection",
+  };
+
+  function resetButtons() {
+    Object.keys(sections).forEach(btnId => {
+      const btn = document.getElementById(btnId);
+      btn.classList.remove("tab-active", "btn-success");
+      btn.classList.add("btn-light", "text-success");
+    });
+  }
+
+  Object.keys(sections).forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    btn.addEventListener("click", () => {
+      resetButtons();
+      btn.classList.add("tab-active", "btn-success");
+      btn.classList.remove("btn-light", "text-success");
+
+      Object.values(sections).forEach(secId => {
+        document.getElementById(secId).style.display = "none";
+      });
+      document.getElementById(sections[btnId]).style.display = "block";
+    });
+  });
+});
+</script>
+{% endblock %}

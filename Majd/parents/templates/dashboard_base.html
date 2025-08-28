@@ -54,12 +54,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{% url 'parents:reports_view' %}" class="nav-link {% if request.path == '/parents/reports/' %}active{% endif %}">
                             <i class="bi bi-file-text me-2"></i> Reports
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{% url 'parents:subscriptions_view' %}" class="nav-link {% if request.path == '/parents/subscriptions/' %}active{% endif %}">
                             <i class="bi bi-cash-stack me-2"></i> Subscription
                         </a>
                     </li>
@@ -69,7 +69,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{% url 'parents:settings_view' %}" class="nav-link {% if request.path == '/parents/settings/' %}active{% endif %}">
                             <i class="bi bi-gear me-2"></i> Settings
                         </a>
                     </li>

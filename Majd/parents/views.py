@@ -5,6 +5,7 @@ from accounts.models import ParentProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from academies.models import TrainingClass
+from datetime import date
 
 # Create your views here.
 
@@ -165,3 +166,124 @@ def payments_view(request):
         "methods": [],
     })
 
+@login_required
+def reports_view(request):
+    parent = getattr(request.user, "parent_profile", None)
+
+    if not parent:
+        return render(request, "reports/reports.html", {"reports": []})
+
+    # Fetch all children of this parent
+    children = Child.objects.filter(parent=parent)
+
+    reports = []
+    for child in children:
+        # if child has a linked player_profile, use attendance/progress
+        player_profile = getattr(child, "player_profile", None)
+
+        reports.append({
+            "child": child,
+            "academy_name": (
+                player_profile.academy.name if player_profile and player_profile.academy else "Not Assigned"
+            ),
+            "grade": player_profile.current_grade if player_profile else None,
+            "overall_progress": player_profile.avg_progress if player_profile else 0,
+            "attendance_rate": player_profile.attendance_rate if player_profile else 0,
+            # For demo purposes — you could fetch these from models later
+            "strengths": ["Speed", "Team Work", "Leadership"] if child.first_name == "Alex" else ["Freestyle", "Butterfly"],
+            "areas_for_improvement": ["Ball Control", "Defensive Positioning"] if child.first_name == "Alex" else ["Endurance"],
+            "last_report": date.today(),
+        })
+
+    return render(request, "main/reports.html", {"reports": reports})
+
+
+
+@login_required
+def subscriptions_view(request):
+    # Dummy subscriptions data (replace with QuerySet from your models)
+    subscriptions = [
+        {
+            "academy": {"name": "Elite Soccer Academy"},
+            "plan": "Premium Training",
+            "location": "Downtown Sports Complex",
+            "children": "Alex Johnson",
+            "features": ["Unlimited training sessions", "1-on-1 coaching sessions", "Performance analytics"],
+            "status": "Active",
+            "price": 450,
+            "next_payment": date(2024, 4, 15),
+        },
+        {
+            "academy": {"name": "AquaLife Swimming Academy"},
+            "plan": "Basic Swimming",
+            "location": "Aquatic Center North",
+            "children": "Emma Johnson",
+            "features": ["2 sessions per week", "Group coaching", "Swimming competitions"],
+            "status": "Active",
+            "price": 280,
+            "next_payment": date(2024, 4, 20),
+        },
+        {
+            "academy": {"name": "Tennis Pro Academy"},
+            "plan": "Intermediate",
+            "location": "City Tennis Center",
+            "children": "Alex Johnson",
+            "features": ["3 sessions per week", "Court access", "Equipment rental"],
+            "status": "Paused",
+            "price": 320,
+            "next_payment": date(2024, 5, 1),
+        },
+    ]
+
+    academies = [
+        {
+            "name": "Basketball Elite Training",
+            "location": "Sports Arena West",
+            "price": 380,
+            "rating": 4.8,
+            "features": ["Youth Development", "Competitive Training", "Skills Clinic"],
+        },
+        {
+            "name": "Martial Arts Academy",
+            "location": "Downtown Dojo",
+            "price": 250,
+            "rating": 4.9,
+            "features": ["Karate", "Taekwondo", "Self Defense"],
+        },
+        {
+            "name": "Athletic Performance Center",
+            "location": "North Fitness Complex",
+            "price": 420,
+            "rating": 4.7,
+            "features": ["Speed Training", "Strength Conditioning", "Sports Nutrition"],
+        },
+    ]
+
+    # Calculate totals
+    total_subscriptions = len(subscriptions)
+    active_subscriptions = sum(1 for s in subscriptions if s["status"] == "Active")
+    monthly_spend = sum(s["price"] for s in subscriptions if s["status"] == "Active")
+
+    context = {
+        "subscriptions": subscriptions,
+        "academies": academies,
+        "total_subscriptions": total_subscriptions,
+        "active_subscriptions": active_subscriptions,
+        "monthly_spend": monthly_spend,
+    }
+    return render(request, "main/subscriptions.html", context)
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def settings_view(request):
+    """
+    Render the settings page with tabs: Profile, Notifications, Privacy, Account.
+    """
+    
+    context = {
+        "user": request.user,
+    }
+    return render(request, "main/settings.html", context)
