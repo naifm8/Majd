@@ -42,8 +42,8 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto gap-4">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" style="font-weight: 550;" href="#">Academies</a>
-                    </li>
+                        <a class="nav-link" href="{% url 'academies:list' %}">Academies</a>
+                    </li>                    
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/subscriptions/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:subscriptions_view' %}">Subscriptions</a>
                     </li>
@@ -97,10 +97,10 @@
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
                                     {% elif request.user.groups.all.0.name == "academy_admin" %}
-                                        <a class="dropdown-item d-flex align-items-center" href="#">
+                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'academies:dashboard' %}">
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
-                                    {% endif %}
+                                      {% endif %} 
                                 </li>
 
                                 <li>

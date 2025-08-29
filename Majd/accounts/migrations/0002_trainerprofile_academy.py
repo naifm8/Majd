@@ -12,9 +12,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='trainerprofile',
-            name='academy',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='trainers', to='academies.academy'),
-        ),
+        # migrations.AddField(
+        #     model_name='trainerprofile',
+        #     name='academy',
+        #     field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='trainers', to='academies.academy'),
+        # ),
     ]

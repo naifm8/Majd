@@ -65,38 +65,6 @@ class PlayerSkill(models.Model):
         self.save(update_fields=["current_level"])
 
 
-# class TrainingProgram(models.Model):
-#     name = models.CharField(max_length=200, unique=True)
-#     description = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return self.name
-
-
-# class TrainingSession(models.Model):
-#     TRAINING = "training"
-#     ASSESSMENT = "assessment"
-#     TYPE_CHOICES = [(TRAINING, "Training"), (ASSESSMENT, "Assessment")]
-
-#     program = models.ForeignKey(
-#         TrainingProgram,
-#         on_delete=models.CASCADE,
-#         related_name="sessions",
-#         null=True, blank=True  
-#     )
-#     coach = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True)
-#     start_at = models.DateTimeField()
-#     end_at   = models.DateTimeField()
-#     location = models.CharField(max_length=200, blank=True)
-#     focus    = models.CharField(max_length=200, blank=True)
-#     session_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TRAINING)
-
-#     def __str__(self):
-#         if self.program:
-#             return f"{self.program.name} @ {self.start_at:%Y-%m-%d %H:%M}"
-#         return f"Session @ {self.start_at:%Y-%m-%d %H:%M}"
-
-
 class PlayerSession(models.Model):
     class Status(models.TextChoices):
         PRESENT  = "present", "Present"

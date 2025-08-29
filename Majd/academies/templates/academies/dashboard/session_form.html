@@ -1,0 +1,12 @@
+{% extends "academies/dashboard/base_dashboard.html" %}
+
+{% block content %}
+<div class="content-area">
+    <h3>{{ object|default:"New Session" }}</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save</button>
+    </form>
+</div>
+{% endblock %}
