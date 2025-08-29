@@ -76,6 +76,7 @@ def register_view(request: HttpRequest):
         last_name  = request.POST.get("last_name", "").strip()
         email      = request.POST.get("email", "").strip().lower()
 
+
         try:
             with transaction.atomic():
                 user = User.objects.create_user(username=username, email=email, password=password1, first_name=first_name, last_name=last_name,)

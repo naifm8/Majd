@@ -45,7 +45,7 @@
                         <a class="nav-link text-dark" style="font-weight: 550;" href="#">Academies</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark {% if '/subscriptions/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:subscriptions_view' %}">Subscriptions</a>
+                        <a class="nav-link text-dark {% if '/payment/plan-types/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'payment:plan_type_list' %}">Subscriptions</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/ourVision/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:our_vision_view' %}">Our Vision</a>
