@@ -37,12 +37,22 @@ class Child(models.Model):
         MALE   = "M", "Male"
         FEMALE = "F", "Female"
 
+    class SkillLevel(models.TextChoices):
+        BEGINNER     = "beginner", "Beginner"
+        INTERMEDIATE = "intermediate", "Intermediate"
+        ADVANCED     = "advanced", "Advanced"
+
     parent = models.ForeignKey(ParentProfile, on_delete=models.CASCADE, related_name='children')
     first_name = models.CharField(max_length=100)
     last_name  = models.CharField(max_length=100, blank=True)
     gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
     programs = models.ManyToManyField(Program, related_name="children", blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    primary_sport = models.CharField(max_length=100, blank=True)
+    skill_level = models.CharField(max_length=20, choices=SkillLevel.choices, default=SkillLevel.BEGINNER, blank=True)
+    medical_notes = models.TextField(blank=True, null=True)
+    emergency_contact_name  = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
     objects = ChildQuerySet.as_manager()
 
