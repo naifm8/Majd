@@ -3,12 +3,11 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
 from accounts.models import TrainerProfile, AcademyAdminProfile
-
-
-# Create your models here.
+from django.utils.text import slugify
 
 class Academy(models.Model):
     name = models.CharField(max_length=120, unique=True)
+    slug = models.SlugField(max_length=140, blank=True, null=True)
     logo = models.ImageField(upload_to="academies/logos/", blank=True, null=True)
     cover = models.ImageField(upload_to="academies/covers/", blank=True, null=True)
     description = models.TextField(max_length=500)
@@ -17,11 +16,19 @@ class Academy(models.Model):
     latitude  = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     establishment_year = models.PositiveIntegerField(default=timezone.now().year, blank=True)
-    owner = models.OneToOneField(AcademyAdminProfile, on_delete=models.CASCADE, related_name="owned_academies")
+    owner = models.OneToOneField(AcademyAdminProfile,on_delete=models.CASCADE,related_name="academy")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+
 
 
 class Program(models.Model):
@@ -70,7 +77,6 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.title} - {self.program.title}"
 
-    # ✅ توليد الحصص الفعلية من الـ Slots
     def generate_classes(self):
         from datetime import timedelta
         from .models import TrainingClass  # import داخلي عشان ما يصير circular import
@@ -128,13 +134,26 @@ class TrainingClass(models.Model):
     
     
     
+class PlanType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
-# TODO later
-# class AcademyPlan(models.Model):
-#     academy = models.ForeignKey(Academy, on_delete=models.CASCADE, related_name="plans")
-#     # TODO
-#     # PlanType = models.ForeignKey(plan)
-#     is_active = models.BooleanField(default=True)
+    def __str__(self):
+        return self.name
+
+
+# class SubscriptionPlan(models.Model):
+#     academy = models.ForeignKey(
+#         "academies.Academy",
+#         on_delete=models.CASCADE,
+#         related_name="plans"
+#     )
+#     name = models.CharField(max_length=100, default="Basic Plan")
+#     price = models.DecimalField(max_digits=8, decimal_places=2)
 #     duration_days = models.PositiveIntegerField(default=30)
+#     description = models.TextField(blank=True)
+#     is_active = models.BooleanField(default=True)
 
-#     def __str__(self): return f"{self.academy.name} - {self.name}"
+#     def __str__(self):
+#         return f"{self.name} - {self.academy.name}"
+
