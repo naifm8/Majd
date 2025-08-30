@@ -279,6 +279,10 @@
             <!-- Skills Tab -->
             <div class="tab-pane fade show active" id="skills" role="tabpanel">
               <h6 class="text-success mb-4">Skill Development</h6>
+              <div class="">
+                <div class="small text-muted">Average Skills Progress</div>
+                <div class="fw-bold fs-5 text-success">{{ skills_avg_progress }}%</div>
+              </div>
               {% for skill in skills %}
               <div class="mb-2 d-flex justify-content-between">
                 <strong>{{ skill.name }}</strong>
@@ -307,7 +311,7 @@
               <!-- Summary -->
               <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                 <div>
-                  <div class="small text-muted">Average Progress</div>
+                  <div class="small text-muted">General Average Progress</div>
                   <div class="fw-bold fs-5 text-success">{{ avg_progress }}%</div>
                 </div>
                 <div>
@@ -324,7 +328,7 @@
                       <th>#</th>
                       <th>Class Date</th>
                       <th>Coach</th>
-                      <th>Score</th>
+                      <th>General Score</th>
                       <th>Feedback</th>
                       <th>Date Added</th>
                     </tr>

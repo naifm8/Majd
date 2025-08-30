@@ -43,7 +43,7 @@ class Program(models.Model):
 
     academy = models.ForeignKey(Academy, on_delete=models.CASCADE, related_name="programs")
     title = models.CharField(max_length=120)
-    short_description = models.CharField(max_length=200, blank=True)
+    short_description = models.TextField(max_length=300, blank=True)
     image = models.ImageField(upload_to="programs/", blank=True, null=True)
     sport_type = models.CharField(max_length=20, choices=SportType.choices, default=SportType.FOOTBALL)
 
