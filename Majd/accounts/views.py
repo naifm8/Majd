@@ -1,16 +1,16 @@
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse, Http404
+from django.http import HttpRequest
 from django.contrib.auth import login
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from .models import TrainerProfile, ParentProfile, AcademyAdminProfile
+from .models import AcademyAdminProfile
 from django.db import transaction, IntegrityError
 from django.urls import reverse
 from accounts.models import AcademyAdminProfile
 from academies.models import Academy
-from django.middleware.csrf import rotate_token
+
 
 
 def ensure_role_groups():
@@ -27,30 +27,53 @@ def selection_view(request:HttpRequest):
 
 
 
-def login_view(request: HttpRequest):
-    login(request, user)
-    rotate_token(request)
+
+def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
 
         user = authenticate(request, username=username, password=password)
 
-        if user.groups.filter(name="academy_admin").exists():
-                profile = user.academy_admin_profile
-                academy = profile.academy
+        if user is not None:
+            login(request, user)
 
+            # 🎯 Redirect based on role
+            if user.groups.filter(name="academy_admin").exists():
+                profile = user.academy_admin_profile
+
+                # Ensure academy exists
+                if not hasattr(profile, "academy"):
+                    Academy.objects.create(
+                        name=f"{user.first_name or user.username} {user.last_name or ''} Academy".strip(),
+                        city="Unknown",
+                        owner=profile,
+                    )
+                    return redirect("academies:setup")
+
+                academy = profile.academy
                 if not academy.description or not academy.city:
                     return redirect("academies:setup")
-                return redirect("academies:detail", slug=academy.slug)
 
-        return redirect(request.GET.get("next", "/"))
+                # ✅ Academy admin → their academy detail page
+                return redirect("academies:dashboard")
+
+            elif user.groups.filter(name="trainer").exists():
+                # ✅ Trainer → dashboard (replace with your trainer dashboard URL)
+                return redirect("academies:programs")
+
+            elif user.groups.filter(name="parent").exists():
+                # ✅ Parent → academies list
+                return redirect("academies:list")
+
+            # Default: send to site home
+            return redirect(reverse("main:main_home_view"))
+
+        else:
+            messages.error(request, "Invalid username or password.")
+            return render(request, "accounts/login.html")
 
     return render(request, "accounts/login.html")
-
-
-
-
 
 
 User = get_user_model()

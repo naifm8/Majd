@@ -14,12 +14,11 @@ class PlayerProfile(models.Model):
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
-    attendance_rate = models.FloatField(default=0)         # 0..100
-    current_grade   = models.CharField(max_length=5, blank=True)  
-    avg_progress    = models.FloatField(default=0.0)       # متوسط درجات التقييمات (0..100)
+    attendance_rate = models.FloatField(default=0)
+    current_grade   = models.CharField(max_length=5, blank=True)
+    avg_progress    = models.FloatField(default=0.0)
 
     def recompute_progress_and_grade(self):
-        """يحسب المتوسط والتقدير من التقييمات"""
         avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0.0
         self.avg_progress = round(avg, 2)
 
@@ -115,14 +114,10 @@ class PlayerClassAttendance(models.Model):
     
 
 class Evaluation(models.Model):
-    """تقييم الكوتش بعد كل حصة TrainingClass"""
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="evaluations")
     coach  = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
     training_class = models.ForeignKey(TrainingClass, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
-
-    # ربط التقييم بمهارة (اختياري)
     skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
-
     score = models.PositiveIntegerField(help_text="0-100")  
     skill_score = models.PositiveSmallIntegerField(null=True, blank=True)       
     performance_score = models.PositiveSmallIntegerField(null=True, blank=True) 
