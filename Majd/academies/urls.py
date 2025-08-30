@@ -1,13 +1,25 @@
 from django.urls import path
 from .views import academy_list_view, AcademyDetailView, academy_setup_view, AcademyDashboardView
+
 from . import views
 
 app_name = "academies"
 
 urlpatterns = [
-    path("", academy_list_view, name="list"),
-    path("setup/", academy_setup_view, name="setup"),
-    path("dashboard/", AcademyDashboardView.as_view(), name="dashboard"),
-    path("<slug:slug>/", AcademyDetailView.as_view(), name="detail"),
+    path("", views.academy_list_view, name="list"),
+    path("setup/", views.academy_setup_view, name="setup"),
+    path("dashboard/", views.AcademyDashboardView, name="dashboard"),
+    path("<slug:slug>/", views.AcademyDetailView, name="detail"),
     path("<slug:slug>/join/", views.join_academy_view, name="join_academy_view"),
+    # Programs
+    path("dashboard/programs/", views.program_dashboard, name="programs"),
+    path("dashboard/programs/create/", views.program_create, name="program_create"),
+    path("dashboard/programs/<int:pk>/edit/", views.program_edit, name="program_edit"),
+    path("dashboard/programs/<int:pk>/delete/", views.program_delete, name="program_delete"),
+
+    # Sessions
+    path("dashboard/programs/<int:program_id>/sessions/create/", views.session_create, name="session_create"),
+    path("dashboard/sessions/<int:pk>/edit/", views.session_edit, name="session_edit"),
+    path("dashboard/sessions/<int:pk>/delete/", views.session_delete, name="session_delete"),
 ]
+
