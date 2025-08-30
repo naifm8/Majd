@@ -35,7 +35,12 @@
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3"
                                  style="width: 45px; height: 45px;">
-                                {{ child.first_name|slice:":1"|upper }}
+                                  {% if child.profile_image %}
+                                    <img src="{{ child.profile_image.url }}" alt="{{ child.first_name }}"
+                                        style="width: 100%; height: 100%; object-fit: contain;">
+                                  {% else %}
+                                    {{ child.first_name|slice:":1"|upper }}
+                                  {% endif %}
                             </div>
                             <div>
                                 <h5 class="mb-0">{{ child.first_name }} {{ child.last_name }}</h5>

@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse,HttpRequest
-from .models import Child
+from .models import Child, Enrollment
 from accounts.models import ParentProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from academies.models import TrainingClass
+from academies.models import Academy, TrainingClass
 from datetime import date
 
 # Create your views here.
@@ -274,8 +274,7 @@ def subscriptions_view(request):
     return render(request, "main/subscriptions.html", context)
 
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def settings_view(request):
@@ -287,3 +286,5 @@ def settings_view(request):
         "user": request.user,
     }
     return render(request, "main/settings.html", context)
+
+
