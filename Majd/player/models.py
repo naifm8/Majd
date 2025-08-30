@@ -49,7 +49,10 @@ class PlayerProfile(models.Model):
         
 
     def __str__(self):
-        return f"Player<{self.child.first_name} {self.child.last_name}>"
+        try:
+            return f"Player<{self.child.first_name} {self.child.last_name}>"
+        except:
+            return "❌ Broken PlayerProfile (Child not found)"
 
 
 class PlayerSkill(models.Model):
