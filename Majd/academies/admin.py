@@ -27,22 +27,22 @@ class AcademyAdmin(admin.ModelAdmin):
 class SessionInline(admin.TabularInline):
     model = Session
     extra = 1
-    fields = ("title", "trainer", "level", "start_date", "end_date")
+    fields = ("title", "trainer", "level", "start_datetime", "end_datetime")  # ✅ ✅
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ("title", "academy", "sport_type")
     list_filter = ("sport_type", "academy")
     search_fields = ("title",)
-    inlines = [SessionInline]
+    # inlines = [SessionInline]
 
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    list_display = ("title", "program", "trainer", "level", "gender", "capacity", "start_date", "end_date", "generate_classes_link")
-    list_filter = ("level", "gender", "program__academy")
+    list_display = ("title", "program", "trainer", "level", "gender", "capacity", "start_datetime", "end_datetime", "generate_classes_link")
+    list_filter = ("level", "gender")  # مؤقتًا نحذف البرنامج__أكاديمية
     search_fields = ("title",)
-    date_hierarchy = "start_date"
+    date_hierarchy = "start_datetime"
 
     # ✅ Action لتوليد الحصص
     actions = ["generate_training_classes"]

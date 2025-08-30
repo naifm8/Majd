@@ -13,11 +13,6 @@ class PlayerProfile(models.Model):
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
-<<<<<<< HEAD
-    attendance_rate = models.FloatField(default=0)
-    current_grade   = models.CharField(max_length=5, blank=True)
-    avg_progress    = models.FloatField(default=0.0)
-=======
     attendance_rate = models.FloatField(default=0)         # 0..100
     current_grade   = models.CharField(max_length=5, blank=True)  
     avg_progress    = models.FloatField(default=0.0)       # متوسط درجات التقييمات (0..100)
@@ -28,7 +23,6 @@ class PlayerProfile(models.Model):
             return 0.0
         total = sum(skill.current_level for skill in skills)
         return round(total / skills.count(), 1)
->>>>>>> 92ead6d (Some fixes on the player models 1)
 
     def recompute_progress_and_grade(self):
         avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0.0
