@@ -41,14 +41,15 @@ class Program(models.Model):
         TABLE_TENNIS  = "table_tennis", "Table Tennis"
         SWIMMING      = "swimming", "Swimming"
 
-    academy = models.ForeignKey(Academy, on_delete=models.CASCADE, related_name="programs")
+    academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="programs")
     title = models.CharField(max_length=120)
-    short_description = models.CharField(max_length=200, blank=True)
+    short_description = models.TextField(max_length=300, blank=True)
     image = models.ImageField(upload_to="programs/", blank=True, null=True)
     sport_type = models.CharField(max_length=20, choices=SportType.choices, default=SportType.FOOTBALL)
 
     def __str__(self):
-        return f"{self.title} ({self.get_sport_type_display()})"
+        academy_name = self.academy.name if self.academy else "❌ أكاديمية محذوفة"
+        return f"{self.title} ({academy_name})"
 
 
 class Session(models.Model):
@@ -71,8 +72,8 @@ class Session(models.Model):
     gender = models.CharField(max_length=6, choices=Gender.choices, default=Gender.MIX)
     level = models.CharField(max_length=12, choices=Level.choices, default=Level.BEGINNER)
     capacity = models.PositiveIntegerField(default=20)
-    start_date = models.DateField()
-    end_date   = models.DateField()
+    start_datetime = models.DateTimeField(null=True, blank=True)
+    end_datetime   = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.program.title}"
@@ -81,8 +82,10 @@ class Session(models.Model):
         from datetime import timedelta
         from .models import TrainingClass  # import داخلي عشان ما يصير circular import
 
-        current_date = self.start_date
-        while current_date <= self.end_date:
+        current_date = self.start_datetime.date()  # نحول datetime إلى date
+        end_date = self.end_datetime.date()
+
+        while current_date <= end_date:
             weekday_str = current_date.strftime("%a").lower()[:3]  # مثال: "mon"
             for slot in self.slots.all():
                 if slot.weekday == weekday_str:

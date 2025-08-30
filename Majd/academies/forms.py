@@ -19,7 +19,7 @@ class SessionForm(forms.ModelForm):
         fields = [
             "program", "title", "trainer",
             "age_min", "age_max", "gender", "level",
-            "capacity", "start_date", "end_date"
+            "capacity", "start_datetime", "end_datetime"  # ✅ بعد التعديل
         ]
 
 class SessionSlotForm(forms.ModelForm):
