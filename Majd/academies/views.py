@@ -60,14 +60,14 @@ def AcademyDetailView(request, slug):
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
-        "coaches": getattr(academy, "coaches", []).all() if hasattr(academy, "coaches") else [],
+        "coaches": academy.trainers.all(),  # ✅ هنا التعديل
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
     }
     return render(request, "academies/academy_detail.html", context)
-
-    
+ 
+ 
 
 @login_required
 def academy_setup_view(request):
