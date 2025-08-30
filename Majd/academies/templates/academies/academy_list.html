@@ -1,0 +1,88 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="py-5 text-center container">
+  <h2 class="fw-bold">Registered Academies</h2>
+  <p class="text-muted">Browse our network of verified sports academies. Each academy is carefully vetted to ensure quality training and professional coaching for your child.</p>
+
+  <div class="row text-center my-4">
+    <div class="col"><h5><strong>{{ total_academies }}+</strong><br><small>Total Academies</small></h5></div>
+    <div class="col"><h5><strong>{{ sport_choices|length }}+</strong><br><small>Sports Covered</small></h5></div>
+    <div class="col"><h5><strong>{{ total_players }}+</strong><br><small>Active Students</small></h5></div>
+    <div class="col"><h5><strong>{{ satisfaction_rate }}%</strong><br><small>Satisfaction Rate</small></h5></div>
+  </div>
+
+  <!-- Search & Filters -->
+  <form method="get" class="d-flex gap-2 justify-content-center mb-4">
+    <input type="text" name="search" class="form-control w-25" placeholder="Search by academy name..." value="{{ request.GET.search }}">
+    <select name="sport" class="form-select w-15">
+      <option value="">All Sports</option>
+      {% for key, value in sport_choices %}
+      <option value="{{ key }}" {% if request.GET.sport == key %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+    <select name="city" class="form-select w-15">
+      <option value="">All Cities</option>
+      {% for city in cities %}
+      <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>{{ city }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-success">Filter</button>
+  </form>
+
+  <p class="text-muted">Showing {{ academies|length }} of {{ total_academies }} academies</p>
+</section>
+
+<div class="container pb-5">
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for academy in academies %}
+    <div class="col">
+      <div class="card h-100 shadow">
+        {% if academy.cover %}
+        <img src="{{ academy.cover.url }}" class="card-img-top" style="max-height: 230px; object-fit: cover;">
+        {% endif %}
+
+        <div class="card-body">
+          <span class="badge bg-success mb-2">{{ academy.programs.first.sport_type|title }}</span>
+
+          <h5 class="card-title">{{ academy.name }}</h5>
+          <p class="card-text text-muted">{{ academy.description|truncatewords:18 }}</p>
+
+          <div class="mb-2">
+            <small class="text-muted me-3">
+              <i class="bi bi-geo-alt"></i> {{ academy.city }}
+            </small>
+            <small class="text-muted me-3">
+              <i class="bi bi-people"></i> {{ academy.registered_players }} Students
+            </small>
+            <small class="text-muted">
+              <i class="bi bi-calendar-check"></i> Est. {{ academy.establishment_year }}
+            </small>
+          </div>
+
+          <div class="mb-2">
+            <strong>Programs Offered:</strong>
+            {% for prog in academy.programs.all|slice:":3" %}
+            <span class="badge bg-light text-dark border">{{ prog.title }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="mt-3">
+            {% if academy.email %}<p class="mb-0"><i class="bi bi-envelope"></i> {{ academy.email }}</p>{% endif %}
+            {% if academy.contact_number %}<p class="mb-0"><i class="bi bi-telephone"></i> {{ academy.contact_number }}</p>{% endif %}
+            {% if academy.website %}<p class="mb-0"><i class="bi bi-globe"></i> {{ academy.website }}</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="card-footer bg-white d-flex justify-content-between">
+          <a href="{% url 'academies:detail' academy.slug %}" class="btn btn-success btn-sm">Visit Academy Page</a>
+          <a href="mailto:{{ academy.email }}" class="btn btn-outline-secondary btn-sm">Contact Academy</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

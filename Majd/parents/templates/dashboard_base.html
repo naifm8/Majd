@@ -48,7 +48,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{% url 'parents:schedule_view' %}" class="nav-link {% if request.path == '/parents/schedule/' %}active{% endif %}">
                             <i class="bi bi-calendar-event me-2"></i> Schedule
                         </a>
                     </li>

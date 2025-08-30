@@ -10,16 +10,21 @@ from academies.models import Academy, Session, TrainingClass
 
 class PlayerProfile(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE, related_name="player_profile")
-    trainer = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
     attendance_rate = models.FloatField(default=0)         # 0..100
     current_grade   = models.CharField(max_length=5, blank=True)  
     avg_progress    = models.FloatField(default=0.0)       # متوسط درجات التقييمات (0..100)
+    
+    def compute_skill_progress(self):
+        skills = self.skills.all()
+        if not skills.exists():
+            return 0.0
+        total = sum(skill.current_level for skill in skills)
+        return round(total / skills.count(), 1)
 
     def recompute_progress_and_grade(self):
-        """يحسب المتوسط والتقدير من التقييمات"""
         avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0.0
         self.avg_progress = round(avg, 2)
 
@@ -41,6 +46,7 @@ class PlayerProfile(models.Model):
             self.current_grade = "F"
 
         self.save(update_fields=["avg_progress", "current_grade"])
+        
 
     def __str__(self):
         return f"Player<{self.child.first_name} {self.child.last_name}>"
@@ -59,42 +65,9 @@ class PlayerSkill(models.Model):
         return f"{self.player} - {self.name}"
 
     def update_from_evaluations(self):
-        """يحدث مستوى المهارة من التقييمات المرتبطة"""
-        avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0
+        avg = self.skill_evaluations.aggregate(avg=Avg("skill_score"))["avg"] or 0
         self.current_level = round(avg)
         self.save(update_fields=["current_level"])
-
-
-# class TrainingProgram(models.Model):
-#     name = models.CharField(max_length=200, unique=True)
-#     description = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return self.name
-
-
-# class TrainingSession(models.Model):
-#     TRAINING = "training"
-#     ASSESSMENT = "assessment"
-#     TYPE_CHOICES = [(TRAINING, "Training"), (ASSESSMENT, "Assessment")]
-
-#     program = models.ForeignKey(
-#         TrainingProgram,
-#         on_delete=models.CASCADE,
-#         related_name="sessions",
-#         null=True, blank=True  
-#     )
-#     coach = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True)
-#     start_at = models.DateTimeField()
-#     end_at   = models.DateTimeField()
-#     location = models.CharField(max_length=200, blank=True)
-#     focus    = models.CharField(max_length=200, blank=True)
-#     session_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TRAINING)
-
-#     def __str__(self):
-#         if self.program:
-#             return f"{self.program.name} @ {self.start_at:%Y-%m-%d %H:%M}"
-#         return f"Session @ {self.start_at:%Y-%m-%d %H:%M}"
 
 
 class PlayerSession(models.Model):
@@ -147,13 +120,14 @@ class PlayerClassAttendance(models.Model):
     
 
 class Evaluation(models.Model):
-    """تقييم الكوتش بعد كل حصة TrainingClass"""
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="evaluations")
     coach  = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
     training_class = models.ForeignKey(TrainingClass, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
 
+
     # ربط التقييم بمهارة (اختياري)
-    skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
+    skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="skill_evaluations")
+
 
     score = models.PositiveIntegerField(help_text="0-100")  
     skill_score = models.PositiveSmallIntegerField(null=True, blank=True)       
