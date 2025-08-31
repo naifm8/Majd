@@ -139,6 +139,7 @@
 
 </div>
 {% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
 .view-toggle {
@@ -162,22 +163,33 @@
 }
 </style>
 
+{% block extra_js %}
 <script>
-document.getElementById("listViewBtn").addEventListener("click", function() {
-  document.getElementById("listView").style.display = "block";
-  document.getElementById("calendarView").style.display = "none";
-  this.classList.add("btn-success", "active");
-  this.classList.remove("btn-light", "text-success");
-  document.getElementById("calendarViewBtn").classList.remove("btn-success", "active");
-  document.getElementById("calendarViewBtn").classList.add("btn-light", "text-success");
-});
+document.addEventListener("DOMContentLoaded", function () {
+  const listBtn = document.getElementById("listViewBtn");
+  const calBtn = document.getElementById("calendarViewBtn");
+  const listView = document.getElementById("listView");
+  const calendarView = document.getElementById("calendarView");
 
-document.getElementById("calendarViewBtn").addEventListener("click", function() {
-  document.getElementById("listView").style.display = "none";
-  document.getElementById("calendarView").style.display = "block";
-  this.classList.add("btn-success", "active");
-  this.classList.remove("btn-light", "text-success");
-  document.getElementById("listViewBtn").classList.remove("btn-success", "active");
-  document.getElementById("listViewBtn").classList.add("btn-light", "text-success");
+  listBtn.addEventListener("click", function () {
+    listView.style.display = "block";
+    calendarView.style.display = "none";
+    listBtn.classList.add("btn-success", "active");
+    listBtn.classList.remove("btn-light", "text-success");
+    calBtn.classList.remove("btn-success", "active");
+    calBtn.classList.add("btn-light", "text-success");
+  });
+
+  calBtn.addEventListener("click", function () {
+    listView.style.display = "none";
+    calendarView.style.display = "block";
+    calBtn.classList.add("btn-success", "active");
+    calBtn.classList.remove("btn-light", "text-success");
+    listBtn.classList.remove("btn-success", "active");
+    listBtn.classList.add("btn-light", "text-success");
+  });
 });
 </script>
+{% endblock %}
+
+
