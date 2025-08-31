@@ -9,7 +9,7 @@
       <!-- Left -->
       <div class="d-flex flex-column align-items-start">
         <div class="d-flex align-items-center">
-          <a href="{% url 'academies:list' %}" class="text-dark me-3">
+          <a href="{% url 'academies:detail' academy.slug %}" class="text-dark me-3">
             <i class="bi bi-arrow-left fs-5"></i>
           </a>
           <div class="vr me-3"></div>
@@ -27,7 +27,7 @@
         </div>
         <div class="mt-3">
           <h4 class="mb-1" style="font-size: 28px;">Enroll Your Children</h4>
-          <p class="text-muted small">Select a program and choose which children to enroll.</p>
+          <p class="text-muted small">Select children to enroll in <strong>{{ program.title }}</strong>.</p>
         </div>
       </div>
       <!-- Right -->
@@ -43,59 +43,47 @@
   <!-- Main -->
   <div class="container" style="max-width: 1100px;">
 
-<!-- Program Card -->
-<div class="card border rounded-3 p-4 mb-4">
-  <div class="row align-items-center">
-    
-<!-- Left Section -->
-<div class="col-md-8 d-flex flex-column justify-content-center">
-  
-  <!-- Program Info Block -->
-  <div class="text-center text-md-start">
-    <!-- Title -->
-    <h6 class="fw-semibold mb-1">Youth Development Program</h6>
+    <!-- Program Card -->
+    <div class="card border rounded-3 p-4 mb-4">
+      <div class="row align-items-center">
+        
+        <!-- Left Section -->
+        <div class="col-md-8 d-flex flex-column justify-content-center">
+          <div class="text-center text-md-start">
+            <!-- Title -->
+            <h6 class="fw-semibold mb-1">{{ program.title }}</h6>
 
-    <!-- Description -->
-    <p class="text-muted small mb-2">
-      Foundation skills development focusing on ball control, basic techniques, and teamwork.
-    </p>
+            <!-- Description -->
+            <p class="text-muted small mb-2">{{ program.description }}</p>
 
-    <!-- Program Details -->
-    <div class="text-muted small d-flex flex-wrap justify-content-center justify-content-md-start">
-      <div class="me-3"><i class="bi bi-calendar-week me-1"></i> 12 weeks</div>
-      <div class="me-3"><i class="bi bi-people me-1"></i> Ages 6–12 years</div>
-      <div><i class="bi bi-clock me-1"></i> Mon, Wed, Fri – 4:00 PM</div>
+            <!-- Program Details -->
+            <div class="text-muted small d-flex flex-wrap justify-content-center justify-content-md-start">
+              <div class="me-3"><i class="bi bi-calendar-week me-1"></i> {{ program.duration_weeks }} weeks</div>
+              <div class="me-3"><i class="bi bi-people me-1"></i> Ages {{ program.age_min }}–{{ program.age_max }} years</div>
+              <div><i class="bi bi-clock me-1"></i> {{ program.schedule }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          <h5 class="text-success fw-bold mb-1">
+            ${{ program.price }}<span class="small fw-normal">/month</span>
+          </h5>
+          <small class="text-muted">per child</small><br>
+          <a href="{% url 'academies:program_sessions' academy.slug program.id %}" 
+             class="btn btn-outline-success btn-custom mt-2">
+            <i class="bi bi-calendar-event me-1"></i> View Sessions
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
-
-
-
-</div>
-
-
-
-    <!-- Right Section -->
-    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-      <h5 class="text-success fw-bold mb-1">
-        $150<span class="small fw-normal">/month</span>
-      </h5>
-      <small class="text-muted">per child</small><br>
-      <button type="button" class="btn btn-outline-success btn-custom mt-2">
-        <i class="bi bi-calendar-event me-1"></i> View Sessions
-      </button>
-
-    </div>
-
-  </div>
-</div>
-
-
 
     <!-- Children Heading -->
     <div class="d-flex justify-content-between align-items-center mt-4">
       <div>
         <h5 class="fw-bold mb-1">Select Children</h5>
-        <p class="text-muted small mb-0">Choose which children to enroll in the selected program</p>
+        <p class="text-muted small mb-0">Choose which children to enroll in <strong>{{ program.title }}</strong></p>
       </div>
       <div id="totalContainer" class="text-end d-none">
         <small class="text-muted">Total for <span id="childCount">0</span> child</small><br>
@@ -106,68 +94,55 @@
     <!-- Children -->
     <form method="post" id="enrollForm">
       {% csrf_token %}
+      <input type="hidden" name="program" value="{{ program.id }}">
       <div class="row g-4 mt-2">
         {% for child in children %}
-<div class="col-md-4">
-  <div class="card child-card border rounded-3 p-3 h-100 position-relative" 
-       data-child-id="{{ child.id }}">
-    
-    <!-- Checkbox (hidden visually but still functional) -->
-    <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
-           type="checkbox" 
-           name="children" 
-           value="{{ child.id }}" 
-           id="child{{ child.id }}"
-           style="pointer-events:none;"> <!-- prevent direct click -->
+        <div class="col-md-4">
+          <div class="card child-card border rounded-3 p-3 h-100 position-relative" data-child-id="{{ child.id }}">
+            <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
+                   type="checkbox" 
+                   name="children" 
+                   value="{{ child.id }}" 
+                   id="child{{ child.id }}"
+                   style="pointer-events:none;">
 
-    <!-- Header -->
-    <div class="d-flex align-items-center">
-      {% if child.profile_image %}
-        <img src="{{ child.profile_image.url }}" class="rounded-circle me-2" width="40" height="40" style="object-fit:cover;">
-      {% else %}
-        <div class="avatar-circle me-2">
-          {{ child.first_name|slice:":1"|upper }}
+            <div class="d-flex align-items-center">
+              {% if child.profile_image %}
+                <img src="{{ child.profile_image.url }}" class="rounded-circle me-2" width="40" height="40" style="object-fit:cover;">
+              {% else %}
+                <div class="avatar-circle me-2">{{ child.first_name|slice:":1"|upper }}</div>
+              {% endif %}
+              <div>
+                <h6 class="fw-bold mb-0">{{ child.first_name }} {{ child.last_name }}</h6>
+                <p class="text-muted small mb-0">Age {{ child.age }} • {{ child.gender }}</p>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between small text-muted mt-2">
+              <span>Born:</span>
+              <span>{{ child.date_of_birth|date:"M j, Y" }}</span>
+            </div>
+
+            {% if child.medical_notes %}
+              <p class="small text-danger mt-1">Medical: {{ child.medical_notes }}</p>
+            {% endif %}
+
+            <div class="status-bar rounded-2 text-center py-1 small fw-semibold mt-2">Eligible</div>
+          </div>
         </div>
-      {% endif %}
-      <div>
-        <h6 class="fw-bold mb-0">{{ child.first_name }} {{ child.last_name }}</h6>
-        <p class="text-muted small mb-0">Age {{ child.age }} • {{ child.gender }}</p>
-      </div>
-    </div>
-
-    <!-- Born -->
-    <div class="d-flex justify-content-between small text-muted mt-2">
-      <span>Born:</span>
-      <span>{{ child.date_of_birth|date:"M j, Y" }}</span>
-    </div>
-
-    <!-- Medical -->
-    {% if child.medical_notes %}
-      <p class="small text-danger mt-1">Medical: {{ child.medical_notes }}</p>
-    {% endif %}
-
-    <!-- Status Bar -->
-    <div class="status-bar rounded-2 text-center py-1 small fw-semibold mt-2">
-      Eligible
-    </div>
-  </div>
-</div>
-
-
         {% empty %}
           <p class="text-center text-muted">You don’t have any registered children yet.</p>
         {% endfor %}
       </div>
 
-      <!-- Buttons -->
       <div class="text-center mt-4">
         <button type="submit" id="continueBtn" class="btn btn-success px-5">Continue with 0 Children Selected</button>
         <a href="{% url 'academies:detail' academy.slug %}" class="btn btn-outline-secondary px-5">Cancel</a>
       </div>
     </form>
-
   </div>
 </div>
+
 
 <!-- Script -->
 <script>
