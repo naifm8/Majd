@@ -119,7 +119,7 @@ def join_academy_view(request, slug):
     parent_profile = getattr(request.user, "parent_profile", None)
     if not parent_profile:
         messages.error(request, "Only parents can join academies.")
-        return redirect("academies:academy_detail", slug=academy.slug)
+        return redirect("academies:detail", slug=academy.slug)
 
     children = Child.objects.filter(parent=parent_profile)
     programs = academy.programs.all()  # all programs in this academy
