@@ -5,12 +5,13 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from accounts.models import TrainerProfile
 from parents.models import Child
-from academies.models import Academy, Session, TrainingClass
+from academies.models import Academy, Session, TrainingClass, Position, SessionSkill
 
 
 class PlayerProfile(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE, related_name="player_profile")
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
     attendance_rate = models.FloatField(default=0)         # 0..100
@@ -55,6 +56,7 @@ class PlayerProfile(models.Model):
             return "❌ Broken PlayerProfile (Child not found)"
 
 
+
 class PlayerSkill(models.Model):
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="skills")
     name = models.CharField(max_length=100)  
@@ -74,16 +76,9 @@ class PlayerSkill(models.Model):
 
 
 class PlayerSession(models.Model):
-    class Status(models.TextChoices):
-        PRESENT  = "present", "Present"
-        ABSENT   = "absent", "Absent"
-        LATE     = "late", "Late"
-        EXCUSED  = "excused", "Excused"
 
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="player_sessions")
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="attendances")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PRESENT)
-    remind_me = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("player", "session")
@@ -173,3 +168,32 @@ def update_player_attendance_rate(sender, instance, **kwargs):
     rate = (present_count / total) * 100 if total > 0 else 0
     player.attendance_rate = round(rate, 1)
     player.save(update_fields=["attendance_rate"])
+    
+    
+    
+@receiver(post_save, sender=PlayerSession)
+def assign_skills_on_session_join(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    player = instance.player
+    session = instance.session
+
+    if not player.position:
+        # اللاعب ما له مركز، ما نقدر ننسخ المهارات
+        return
+
+    session_skills = SessionSkill.objects.filter(
+        session=session,
+        skill__position=player.position
+    )
+
+    for s_skill in session_skills:
+        PlayerSkill.objects.get_or_create(
+            player=player,
+            name=s_skill.skill.name,
+            defaults={
+                "target_level": s_skill.target_level,
+                "current_level": 0
+            }
+        )

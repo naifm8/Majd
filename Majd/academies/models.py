@@ -99,6 +99,37 @@ class Session(models.Model):
                         }
                     )
             current_date += timedelta(days=1)
+            
+
+
+
+class Position(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    
+class SkillDefinition(models.Model):
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name="skills")
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ("position", "name")
+
+    def __str__(self):
+        return f"{self.name} ({self.position.name})"
+    
+class SessionSkill(models.Model):
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="required_skills")
+    skill = models.ForeignKey(SkillDefinition, on_delete=models.CASCADE)
+    target_level = models.PositiveIntegerField(default=100)
+
+    class Meta:
+        unique_together = ("session", "skill")
+
+    def __str__(self):
+        return f"{self.skill.name} ({self.skill.position}) - {self.session}"
 
 
 class SessionSlot(models.Model):
@@ -159,4 +190,3 @@ class PlanType(models.Model):
 
 #     def __str__(self):
 #         return f"{self.name} - {self.academy.name}"
-
