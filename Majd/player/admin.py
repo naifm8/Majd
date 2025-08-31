@@ -12,9 +12,11 @@ from .models import (
 # ✅ PlayerProfile مع عرض التقدّم والدرجة
 @admin.register(PlayerProfile)
 class PlayerProfileAdmin(admin.ModelAdmin):
-    list_display = ("child", "trainer", "academy", "attendance_rate", "avg_progress", "current_grade")
-    readonly_fields = ("avg_progress", "current_grade")  # ما تنعدل يدوي
-    list_filter = ("academy", "trainer")
+    list_display = ("child", "academy", "attendance_rate", "avg_progress", "current_grade")
+    readonly_fields = ("attendance_rate", "avg_progress", "current_grade")  # ✅ أضف هنا
+    list_filter = ("academy",)
+
+
 
 
 # ✅ Evaluation (مربوط بالـ TrainingClass)
