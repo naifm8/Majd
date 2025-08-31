@@ -1,0 +1,147 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold">Payments</h3>
+      <p class="text-muted">Manage payment history, methods, and upcoming payments</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary">
+        <i class="bi bi-download"></i> Export
+      </button>
+      <a href="#" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Make Payment
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="text-muted">This Month</h6>
+        <h3 class="fw-bold">${{ total_paid }}</h3>
+        <small class="text-success">Total Paid</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="text-muted">Outstanding</h6>
+        <h3 class="fw-bold">${{ outstanding }}</h3>
+        <small class="text-warning">Due Soon</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 p-3 h-100">
+        <h6 class="text-muted">Next Payment</h6>
+        <h3 class="fw-bold">${{ next_payment.amount }}</h3>
+        <small class="text-success">Due {{ next_payment.date|date:"M d, Y" }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-pills mb-4 gap-2">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="pill" href="#history">History</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="pill" href="#upcoming">Upcoming</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="pill" href="#methods">Payment Methods</a>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+
+    <!-- History -->
+    <div class="tab-pane fade show active" id="history">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold">Payment History</h5>
+            <button class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-download"></i> Download All
+            </button>
+          </div>
+
+          {% for payment in payments %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+            <div class="d-flex align-items-center gap-3">
+              <!-- Avatar -->
+              <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center"
+                   style="width: 45px; height: 45px;">
+                {{ payment.child.first_name|slice:":1"|upper }}
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold">{{ payment.child.first_name }} {{ payment.child.last_name }}</h6>
+                <small class="text-muted">{{ payment.description }}</small><br>
+                <small class="text-muted">{{ payment.academy_name }}</small><br>
+                <span class="badge {% if payment.status == 'paid' %}bg-success-subtle text-success
+                                   {% elif payment.status == 'pending' %}bg-warning-subtle text-warning
+                                   {% else %}bg-danger-subtle text-danger{% endif %}">
+                  {{ payment.status|title }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Right Side -->
+            <div class="text-end">
+              <h6 class="fw-bold mb-1">${{ payment.amount }}</h6>
+              <small class="text-muted">{{ payment.date|date:"M d, Y" }}</small><br>
+              <a href="#" class="btn btn-outline-secondary btn-sm mt-1">View Receipt</a>
+            </div>
+          </div>
+          {% empty %}
+            <p class="text-muted">No payments found.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming -->
+    <div class="tab-pane fade" id="upcoming">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-bold">Upcoming Payments</h5>
+          <p class="text-muted">Your upcoming scheduled fees and invoices.</p>
+          {% for item in upcoming %}
+            <div class="border-bottom py-2">
+              <strong>{{ item.description }}</strong> – ${{ item.amount }} due {{ item.due_date|date:"M d, Y" }}
+            </div>
+          {% empty %}
+            <p class="text-muted">No upcoming payments.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="tab-pane fade" id="methods">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-bold">Payment Methods</h5>
+          <p class="text-muted">Manage your saved payment methods.</p>
+          {% for method in methods %}
+            <div class="border-bottom py-2">
+              {{ method.type }} – **** {{ method.last4 }}
+            </div>
+          {% empty %}
+            <p class="text-muted">No payment methods saved.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

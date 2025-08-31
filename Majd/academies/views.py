@@ -1,8 +1,7 @@
-from .models import Academy
 from django.views.generic import DetailView, TemplateView
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Academy, Program, Session
-from parents.models import Child
+from parents.models import Child, Enrollment
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
@@ -110,20 +109,76 @@ def AcademyDashboardView(request):
 def _academy(user):
     return user.academy_admin_profile.academy
 
+
+
+
+@login_required
+def join_academy_view(request, slug):
+    academy = get_object_or_404(Academy, slug=slug)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join academies.")
+        return redirect("academies:academy_detail", slug=academy.slug)
+
+    children = Child.objects.filter(parent=parent_profile)
+    programs = academy.programs.all()  # all programs in this academy
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("children")
+        program_id = request.POST.get("program")
+
+        if not selected_ids or not program_id:
+            messages.warning(request, "Please select children and a program.")
+            return redirect("academies:join_academy_view", slug=academy.slug)
+
+        program = get_object_or_404(Program, id=program_id, academy=academy)
+
+        for child_id in selected_ids:
+            child = get_object_or_404(Child, id=child_id, parent=parent_profile)
+
+            Enrollment.objects.get_or_create(child=child, program=program)
+
+            print(f"Enroll {child.first_name} in {program.title} ({academy.name})")
+
+        messages.success(request, "Your children have been enrolled successfully!")
+        return redirect("academies:academy_detail", slug=academy.slug)
+
+    return render(request, "academies/join_academy.html", {
+        "academy": academy,
+        "children": children,
+        "programs": programs,
+    })
+
 # ✅ Programs Dashboard
 @login_required
 def program_dashboard(request):
-    academy = _academy(request.user)
+    if request.user.is_superuser:
+        programs = Program.objects.all().prefetch_related("sessions")
+        academy = None
+    else:
+        academy = _academy(request.user)
+        programs = Program.objects.filter(academy=academy).prefetch_related("sessions")
 
-    programs = Program.objects.filter(academy=academy).prefetch_related("sessions")
-    sessions = Session.objects.filter(program__academy=academy)
+    sessions = Session.objects.filter(program__in=programs)
 
+    # Global stats
     total_programs = programs.count()
     total_sessions = sessions.count()
-    total_enrollment = Child.objects.filter(programs__academy=academy).distinct().count()
+    total_enrollment = Child.objects.filter(programs__in=programs).distinct().count()
 
     total_capacity = sum(s.capacity for s in sessions)
     utilization = round((total_enrollment / total_capacity) * 100, 1) if total_capacity else 0
+
+    # ✅ Per-session enrollment + utilization
+    session_data = {}
+    for s in sessions:
+        # adjust this if you have a different enrollment relation
+        enrolled = s.enrollment_set.count() if hasattr(s, "enrollment_set") else 0  
+        session_data[s.id] = {
+            "enrolled": enrolled,
+            "utilization": round((enrolled / s.capacity) * 100, 1) if s.capacity else 0,
+        }
 
     context = {
         "academy": academy,
@@ -133,8 +188,11 @@ def program_dashboard(request):
         "total_enrollment": total_enrollment,
         "utilization_pct": utilization,
         "revenue": 60450,  # placeholder
+        "session_data": session_data,
     }
     return render(request, "academies/dashboard_programs.html", context)
+
+
 
 # ✅ Program Create
 @login_required
@@ -184,43 +242,49 @@ def program_delete(request, pk):
 
     return render(request, "academies/confirm_delete.html", {"object": program})
 
-# ✅ Session Create
+
 @login_required
 def session_create(request, program_id):
     academy = _academy(request.user)
-    program = get_object_or_404(Program, pk=program_id, academy=academy)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
 
     if request.method == "POST":
-        form = SessionForm(request.POST)
+        form = SessionForm(request.POST, academy=academy)  # ✅ pass academy
         if form.is_valid():
             session = form.save(commit=False)
             session.program = program
             session.save()
-            messages.success(request, "Session created successfully.")
+            messages.success(request, "Session created successfully ✅")
             return redirect("academies:programs")
     else:
-        form = SessionForm()
+        form = SessionForm(academy=academy)  # ✅ pass academy
 
-    return render(request, "academies/session_form.html", {"form": form, "program": program})
+    return render(request, "academies/session_form.html", {
+        "form": form,
+        "program": program,
+    })
 
-# ✅ Session Edit
 @login_required
 def session_edit(request, pk):
     academy = _academy(request.user)
     session = get_object_or_404(Session, pk=pk, program__academy=academy)
 
     if request.method == "POST":
-        form = SessionForm(request.POST, instance=session)
+        form = SessionForm(request.POST, academy=academy, instance=session)
         if form.is_valid():
             form.save()
-            messages.success(request, "Session updated successfully.")
+            messages.success(request, "Session updated successfully ✅")
             return redirect("academies:programs")
     else:
-        form = SessionForm(instance=session)
+        form = SessionForm(academy=academy, instance=session)
 
-    return render(request, "academies/session_form.html", {"form": form, "session": session})
+    return render(request, "academies/session_form.html", {
+        "form": form,
+        "program": session.program,
+        "is_edit": True,  # 👈 helps toggle template title/button
+    })
 
-# ✅ Session Delete
+
 @login_required
 def session_delete(request, pk):
     academy = _academy(request.user)
@@ -228,7 +292,10 @@ def session_delete(request, pk):
 
     if request.method == "POST":
         session.delete()
-        messages.success(request, "Session deleted successfully.")
+        messages.success(request, "Session deleted successfully 🗑️")
         return redirect("academies:programs")
 
-    return render(request, "academies/confirm_delete.html", {"object": session})
+    return render(request, "academies/session_confirm_delete.html", {
+        "session": session,
+    })
+

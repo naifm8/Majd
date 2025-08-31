@@ -36,7 +36,6 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            
             # 🎯 Redirect based on role
             if user.groups.filter(name="academy_admin").exists():
                 profile = user.academy_admin_profile
@@ -53,22 +52,24 @@ def login_view(request):
                 academy = profile.academy
                 if not academy.description or not academy.city:
                     return redirect("academies:setup")
-                
-                # ✅ Academy admin → their academy dashboard
+
+                # ✅ Academy admin → their academy detail page
                 return redirect("academies:dashboard")
 
             elif user.groups.filter(name="trainer").exists():
-                # ✅ Trainer → programs dashboard
+                # ✅ Trainer → dashboard (replace with your trainer dashboard URL)
                 return redirect("academies:programs")
 
             elif user.groups.filter(name="parent").exists():
                 # ✅ Parent → academies list
                 return redirect("academies:list")
 
-            # Default: redirect to next or home
-            return redirect(request.GET.get("next", "/"))
+            # Default: send to site home
+            return redirect(reverse("main:main_home_view"))
+
         else:
-            messages.error(request, "Invalid username or password.", "alert-danger")
+            messages.error(request, "Invalid username or password.")
+
             return render(request, "accounts/login.html")
 
     return render(request, "accounts/login.html")

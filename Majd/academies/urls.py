@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+from . import views
+
 app_name = "academies"
 
 urlpatterns = [
@@ -8,7 +10,7 @@ urlpatterns = [
     path("setup/", views.academy_setup_view, name="setup"),
     path("dashboard/", views.AcademyDashboardView, name="dashboard"),
     path("<slug:slug>/", views.AcademyDetailView, name="detail"),
-
+    path("<slug:slug>/join/", views.join_academy_view, name="join_academy_view"),
     # Programs
     path("dashboard/programs/", views.program_dashboard, name="programs"),
     path("dashboard/programs/create/", views.program_create, name="program_create"),

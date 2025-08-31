@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
             "0007_remove_session_end_date_remove_session_start_date_and_more",
         ),
         ("accounts", "0002_trainerprofile_position"),
+        ("accounts", "0002_trainerprofile_academy"),
     ]
 
     operations = [

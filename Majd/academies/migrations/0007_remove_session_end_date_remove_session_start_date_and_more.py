@@ -6,26 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+
         ("academies", "0006_merge_20250830_2009"),
+        ('academies', '0006_auto_20250830_1404'),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name="session",
-            name="end_date",
+            model_name='session',
+            name='end_date',
         ),
         migrations.RemoveField(
-            model_name="session",
-            name="start_date",
+            model_name='session',
+            name='start_date',
         ),
         migrations.AddField(
-            model_name="session",
-            name="end_datetime",
+            model_name='session',
+            name='end_datetime',
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name="session",
-            name="start_datetime",
+            model_name='session',
+            name='start_datetime',
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

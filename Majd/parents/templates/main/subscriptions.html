@@ -1,0 +1,144 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}My Subscriptions{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Stats Header -->
+  <div class="row text-center mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-bold text-success">{{ total_subscriptions }}</h5>
+          <p class="text-muted small mb-0">Total Subscriptions</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-bold text-success">{{ active_subscriptions }}</h5>
+          <p class="text-muted small mb-0">Active Subscriptions</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h5 class="fw-bold text-success">SAR {{ monthly_spend }}</h5>
+          <p class="text-muted small mb-0">Monthly Spend</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold">My Academy Subscriptions</h5>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#findAcademyModal">
+      <i class="bi bi-plus-lg"></i> Find New Academy
+    </button>
+  </div>
+
+  <!-- Subscriptions List -->
+  {% for sub in subscriptions %}
+  <div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="d-flex gap-3">
+          <!-- Academy Logo Initial -->
+          <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
+               style="width:45px;height:45px;">
+            {{ sub.academy.name|slice:":3"|upper }}
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1">{{ sub.academy.name }}</h6>
+            <small class="text-muted d-block">{{ sub.plan }}</small>
+            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ sub.location }}</small>
+            <p class="mt-2 small mb-0"><strong>Enrolled Children:</strong> {{ sub.children }}</p>
+
+            <!-- Features -->
+            <div class="mt-2">
+              {% for feature in sub.features %}
+                <span class="badge bg-light text-dark border me-1">{{ feature }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="text-end">
+          <span class="badge {% if sub.status == 'Active' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-dark{% endif %}">
+            {{ sub.status }}
+          </span>
+          <p class="fw-bold mt-2">SAR {{ sub.price }}/month</p>
+          <small class="text-muted">Next Payment: <i class="bi bi-calendar-event"></i> {{ sub.next_payment }}</small>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-3 d-flex gap-2">
+        <a href="#" class="btn btn-outline-secondary btn-sm">View Details</a>
+        {% if sub.status == 'Active' %}
+          <a href="#" class="btn btn-outline-warning btn-sm">Pause</a>
+        {% else %}
+          <a href="#" class="btn btn-outline-success btn-sm">Resume</a>
+        {% endif %}
+        <a href="#" class="btn btn-outline-success btn-sm">Payment</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No subscriptions yet.</p>
+  {% endfor %}
+
+</div>
+
+<!-- Modal: Find New Academies -->
+<div class="modal fade" id="findAcademyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="fw-bold mb-0">Browse Academies</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          {% for academy in academies %}
+          <div class="col-md-6">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="d-flex gap-2">
+                    <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
+                         style="width:40px;height:40px;">
+                      {{ academy.name|slice:":3"|upper }}
+                    </div>
+                    <div>
+                      <h6 class="fw-bold mb-0">{{ academy.name }}</h6>
+                      <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ academy.location }}</small>
+                    </div>
+                  </div>
+                  <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> {{ academy.rating }}</span>
+                </div>
+                <p class="fw-bold text-success">SAR {{ academy.price }}/month</p>
+                <div class="mb-2">
+                  {% for feature in academy.features %}
+                    <span class="badge bg-light text-dark border me-1">{{ feature }}</span>
+                  {% endfor %}
+                </div>
+                <a href="#" class="btn btn-success w-100">View Details</a>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <p class="text-muted">No academies available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
