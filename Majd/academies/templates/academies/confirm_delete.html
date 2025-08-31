@@ -1,0 +1,17 @@
+{% extends "academies/base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-area">
+  <div class="card border-0 shadow-sm p-4 text-center">
+    <h5 class="fw-bold mb-3">Confirm Delete</h5>
+    <p>Are you sure you want to delete <strong>{{ object }}</strong>?</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Delete</button>
+      <a href="{% url 'academies:programs' %}" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

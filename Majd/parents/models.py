@@ -60,4 +60,17 @@ class Child(models.Model):
         full = f"{self.first_name} {self.last_name}".strip()
         return f"Child<{full} of {self.parent.user}>"
     
+
+class Enrollment(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="enrollments")
+    program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("child", "program")
+
+    def __str__(self):
+        return f"{self.child} enrolled in {self.program.title} ({self.program.academy.name})"
+    
     

@@ -1,0 +1,76 @@
+{% extends "academies/base_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header {% if is_edit %}bg-primary{% else %}bg-success{% endif %} text-white">
+      <h4 class="mb-0">
+        {% if is_edit %}
+          ✏️ Edit Session for {{ program.title }}
+        {% else %}
+          ➕ Create Session for {{ program.title }}
+        {% endif %}
+      </h4>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+
+          <div class="col-md-6">
+            <label class="form-label">Title</label>
+            {{ form.title }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Trainer</label>
+            {{ form.trainer }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Min Age</label>
+            {{ form.age_min }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Max Age</label>
+            {{ form.age_max }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Gender</label>
+            {{ form.gender }}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Level</label>
+            {{ form.level }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Capacity</label>
+            {{ form.capacity }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Start Date & Time</label>
+            {{ form.start_datetime }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">End Date & Time</label>
+            {{ form.end_datetime }}
+          </div>
+
+        </div>
+        <div class="mt-4">
+          <button type="submit" class="btn {% if is_edit %}btn-primary{% else %}btn-success{% endif %}">
+            {% if is_edit %}💾 Update{% else %}💾 Save{% endif %}
+          </button>
+          <a href="{% url 'academies:programs' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
