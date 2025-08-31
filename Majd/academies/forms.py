@@ -4,6 +4,7 @@ from .models import Academy, Program, Session, SessionSlot
 from accounts.models import TrainerProfile
 
 
+
 class AcademyForm(forms.ModelForm):
     class Meta:
         model = Academy
@@ -13,6 +14,7 @@ class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program
         fields = ["title", "short_description", "image", "sport_type"]
+
 
 
 class SessionForm(forms.ModelForm):
@@ -44,4 +46,5 @@ class SessionForm(forms.ModelForm):
             self.fields["trainer"].queryset = TrainerProfile.objects.filter(academy=academy)
         else:
             self.fields["trainer"].queryset = TrainerProfile.objects.none()
+
 

@@ -1,0 +1,104 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Subscription Successful - MAJD{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <div class="success-icon mx-auto mb-4">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <h2 class="text-success mb-3">Subscription Successful!</h2>
+                        <p class="lead text-muted">Welcome to the {{ plan_type.name }} plan. Your academy is now set up and ready to go.</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="text-start">
+                                <h6 class="fw-bold">Plan Details:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-check text-success me-2"></i>{{ plan_type.name }} Plan</li>
+                                    <li><i class="bi bi-check text-success me-2"></i>SAR {{ plan_type.monthly_price }}/month</li>
+                                    <li><i class="bi bi-check text-success me-2"></i>Monthly billing</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-start">
+                                <h6 class="fw-bold">What's Next:</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="bi bi-arrow-right text-primary me-2"></i>Set up your academy profile</li>
+                                    <li><i class="bi bi-arrow-right text-primary me-2"></i>Add coaches and staff</li>
+                                    <li><i class="bi bi-arrow-right text-primary me-2"></i>Create training programs</li>
+                                    <li><i class="bi bi-arrow-right text-primary me-2"></i>Start managing students</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'main:main_home_view' %}" class="btn btn-success btn-lg me-md-2">
+                            <i class="bi bi-house me-2"></i>Go to Dashboard
+                        </a>
+                        <a href="{% url 'payment:plan_type_list' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Plans
+                        </a>
+                    </div>
+
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            A confirmation email has been sent to your registered email address. 
+                            If you have any questions, please contact our support team.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    width: 5rem;
+    height: 5rem;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+}
+
+.success-icon i {
+    animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}

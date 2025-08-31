@@ -1,0 +1,63 @@
+MAJD Sports Academy - Subscription Status Update
+
+Dear Academy Administrator,
+
+Your subscription status has been updated. Here are the details:
+
+SUBSCRIPTION INFORMATION:
+========================
+Academy: {{ academy.name }}
+Plan Type: {{ plan_type.name }}
+Status: {{ status_display }}
+Price: SAR {{ subscription.price }}
+Duration: {{ subscription.duration_days }} days
+Payment Method: {{ payment_method_display }}
+{% if subscription.transaction_id %}Transaction ID: {{ subscription.transaction_id }}{% endif %}
+{% if subscription.payment_date %}Payment Date: {{ subscription.payment_date|date:"M d, Y H:i" }}{% endif %}
+
+{% if subscription.status == 'successful' %}
+🎉 SUBSCRIPTION ACTIVATED!
+==========================
+Your subscription has been successfully processed and is now active. 
+You can start using all the features included in your plan.
+
+Start Date: {{ subscription.start_date|date:"M d, Y" }}
+End Date: {{ subscription.end_date|date:"M d, Y" }}
+
+{% elif subscription.status == 'failed' %}
+❌ PAYMENT FAILED
+=================
+Unfortunately, your payment could not be processed. 
+Please check your payment information and try again.
+{% if subscription.error_message %}
+Error Details: {{ subscription.error_message }}
+{% endif %}
+
+{% elif subscription.status == 'pending' %}
+⏳ PAYMENT PENDING
+==================
+Your payment is currently being processed. 
+You will receive another notification once the payment is completed.
+
+{% elif subscription.status == 'cancelled' %}
+🚫 SUBSCRIPTION CANCELLED
+=========================
+Your subscription has been cancelled. 
+If you have any questions, please contact our support team.
+
+{% endif %}
+
+NEED HELP?
+==========
+If you have any questions about your subscription or need assistance, 
+please contact our support team:
+
+Email: support@majd.com
+Phone: +966 50 123 4567
+Support Hours: Sunday - Thursday, 9:00 AM - 6:00 PM (AST)
+
+---
+This is an automated message from MAJD Sports Academy Platform.
+Please do not reply to this email. For support, contact us at support@majd.com
+
+

@@ -298,3 +298,4 @@ def session_delete(request, pk):
     return render(request, "academies/session_confirm_delete.html", {
         "session": session,
     })
+

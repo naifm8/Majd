@@ -1,0 +1,232 @@
+/* Checkout Page Styles */
+.back-link {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.back-link:hover {
+    color: #009966;
+    text-shadow: 0 0 35px rgba(0, 153, 102, 0.7);
+}
+
+.back-link i {
+    margin-right: 0;
+    font-size: 1.1rem;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #e9ecef;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Selected Plan */
+.selected-plan {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.plan-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.plan-icon.starter {
+    background: linear-gradient(135deg, #6c757d, #adb5bd);
+}
+
+.plan-icon.pro {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.plan-icon.ent {
+    background: linear-gradient(135deg, #6f42c1, #e83e8c);
+}
+
+/* Billing Cycle */
+.billing-cycle .form-check {
+    padding-left: 0;
+}
+
+.billing-cycle .form-check-input {
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.billing-cycle .form-check-label {
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.billing-cycle .form-check-input:checked + .form-check-label {
+    border-color: #28a745;
+    background-color: #d4edda;
+    color: #155724;
+    font-weight: 500;
+}
+
+.billing-cycle .form-check-input:not(:checked) + .form-check-label:hover {
+    border-color: #ced4da;
+    background-color: #f8f9fa;
+}
+
+.billing-cycle .form-check-input:checked {
+    border-color: #28a745;
+    background-color: #28a745;
+}
+
+/* Cost Breakdown */
+.cost-breakdown {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.cost-breakdown hr {
+    margin: 0.75rem 0;
+    opacity: 0.3;
+}
+
+/* Section Headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    color: #495057;
+}
+
+.section-header i {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* Form Styles */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-check-input {
+    margin-top: 0.25rem;
+}
+
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.form-check-label {
+    cursor: pointer;
+    padding-left: 0.5rem;
+}
+
+/* Payment Method */
+.payment-method .form-check {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+.payment-method .form-check-input:checked + .form-check-label {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+/* Card Details */
+.card-details {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Submit Button */
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    padding: 1rem 2rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(40, 167, 69, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .col-lg-5 {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Error States */
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-control.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Security Note */
+.text-muted {
+    color: #6c757d !important;
+}
+
+.bi-shield-lock {
+    color: #28a745;
+}
