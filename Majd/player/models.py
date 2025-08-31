@@ -5,21 +5,27 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from accounts.models import TrainerProfile
 from parents.models import Child
-from academies.models import Academy, Session, TrainingClass
+from academies.models import Academy, Session, TrainingClass, Position, SessionSkill
 
 
 class PlayerProfile(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE, related_name="player_profile")
-    trainer = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
     attendance_rate = models.FloatField(default=0)         # 0..100
     current_grade   = models.CharField(max_length=5, blank=True)  
     avg_progress    = models.FloatField(default=0.0)       # متوسط درجات التقييمات (0..100)
+    
+    def compute_skill_progress(self):
+        skills = self.skills.all()
+        if not skills.exists():
+            return 0.0
+        total = sum(skill.current_level for skill in skills)
+        return round(total / skills.count(), 1)
 
     def recompute_progress_and_grade(self):
-        """يحسب المتوسط والتقدير من التقييمات"""
         avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0.0
         self.avg_progress = round(avg, 2)
 
@@ -41,9 +47,14 @@ class PlayerProfile(models.Model):
             self.current_grade = "F"
 
         self.save(update_fields=["avg_progress", "current_grade"])
+        
 
     def __str__(self):
-        return f"Player<{self.child.first_name} {self.child.last_name}>"
+        try:
+            return f"Player<{self.child.first_name} {self.child.last_name}>"
+        except:
+            return "❌ Broken PlayerProfile (Child not found)"
+
 
 
 class PlayerSkill(models.Model):
@@ -59,23 +70,15 @@ class PlayerSkill(models.Model):
         return f"{self.player} - {self.name}"
 
     def update_from_evaluations(self):
-        """يحدث مستوى المهارة من التقييمات المرتبطة"""
-        avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0
+        avg = self.skill_evaluations.aggregate(avg=Avg("skill_score"))["avg"] or 0
         self.current_level = round(avg)
         self.save(update_fields=["current_level"])
 
 
 class PlayerSession(models.Model):
-    class Status(models.TextChoices):
-        PRESENT  = "present", "Present"
-        ABSENT   = "absent", "Absent"
-        LATE     = "late", "Late"
-        EXCUSED  = "excused", "Excused"
 
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="player_sessions")
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="attendances")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PRESENT)
-    remind_me = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("player", "session")
@@ -115,13 +118,14 @@ class PlayerClassAttendance(models.Model):
     
 
 class Evaluation(models.Model):
-    """تقييم الكوتش بعد كل حصة TrainingClass"""
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="evaluations")
     coach  = models.ForeignKey(TrainerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
     training_class = models.ForeignKey(TrainingClass, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
 
+
     # ربط التقييم بمهارة (اختياري)
-    skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
+    skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="skill_evaluations")
+
 
     score = models.PositiveIntegerField(help_text="0-100")  
     skill_score = models.PositiveSmallIntegerField(null=True, blank=True)       
@@ -164,3 +168,32 @@ def update_player_attendance_rate(sender, instance, **kwargs):
     rate = (present_count / total) * 100 if total > 0 else 0
     player.attendance_rate = round(rate, 1)
     player.save(update_fields=["attendance_rate"])
+    
+    
+    
+@receiver(post_save, sender=PlayerSession)
+def assign_skills_on_session_join(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    player = instance.player
+    session = instance.session
+
+    if not player.position:
+        # اللاعب ما له مركز، ما نقدر ننسخ المهارات
+        return
+
+    session_skills = SessionSkill.objects.filter(
+        session=session,
+        skill__position=player.position
+    )
+
+    for s_skill in session_skills:
+        PlayerSkill.objects.get_or_create(
+            player=player,
+            name=s_skill.skill.name,
+            defaults={
+                "target_level": s_skill.target_level,
+                "current_level": 0
+            }
+        )

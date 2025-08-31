@@ -252,3 +252,4 @@ def academy_subscriptions_view(request, academy_id):
     }
     
     return render(request, 'player_payments/academy_subscriptions.html', context)
+

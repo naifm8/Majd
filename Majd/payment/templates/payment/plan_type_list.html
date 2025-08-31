@@ -27,30 +27,7 @@
 
 <section class="pricing-section py-4 py-md-5">
   <div class="container">
-    <!-- Debug Info (remove in production) -->
-    {% if debug %}
-    <div class="alert alert-info mb-4">
-      <strong>Debug Information:</strong>
-      <br>• Found {{ plan_types|length }} plan(s) in database
-      <br>• Total plans: {{ total_plans }}
-      {% if db_info %}
-        <br>• Database Engine: {{ db_info.engine }}
-        <br>• Database Name: {{ db_info.name }}
-        <br>• Database Host: {{ db_info.host }}
-      {% endif %}
-      {% if db_error %}
-        <br>• Database Error: {{ db_error }}
-      {% endif %}
-      
-      <hr class="my-2">
-      <strong>Plan Details:</strong>
-      {% for pt in plan_types %}
-        <br>- {{ pt.name }}: SAR {{ pt.monthly_price }} ({{ pt.features|length }} features) - Featured: {{ pt.is_featured|yesno:"Yes,No" }}
-      {% empty %}
-        <br>- No plans found in database
-      {% endfor %}
-    </div>
-    {% endif %}
+
 
     <!-- Plans from Database -->
     {% if plan_types %}

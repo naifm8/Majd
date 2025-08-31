@@ -16,14 +16,8 @@ def player_dashboard_view(request, child_id):
 
     # ✅ Skills progress
     skills = player.skills.all()
-    if skills.exists():
-        total_progress = 0
-        for skill in skills:
-            if skill.target_level > 0:
-                total_progress += (skill.current_level / skill.target_level) * 100
-        skills_avg_progress = round(total_progress / skills.count(), 1)
-    else:
-        skills_avg_progress = 0
+    skills_avg_progress = player.compute_skill_progress()
+
 
     # ✅ Evaluations history (على مستوى TrainingClass)
     evaluations = player.evaluations.select_related("coach", "training_class").all()

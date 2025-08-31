@@ -93,3 +93,4 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
 admin.site.site_header = "Majd Player Payments Administration"
 admin.site.site_title = "Majd Player Payments Admin"
 admin.site.index_title = "Welcome to Majd Player Payments Administration"
+

@@ -1,16 +1,15 @@
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse, Http404
+from django.http import HttpRequest
 from django.contrib.auth import login
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from .models import TrainerProfile, ParentProfile, AcademyAdminProfile
+from .models import AcademyAdminProfile
 from django.db import transaction, IntegrityError
 from django.urls import reverse
-from accounts.models import AcademyAdminProfile
 from academies.models import Academy
-from django.middleware.csrf import rotate_token
+
 
 
 def ensure_role_groups():
@@ -27,7 +26,8 @@ def selection_view(request:HttpRequest):
 
 
 
-def login_view(request: HttpRequest):
+
+def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
@@ -36,25 +36,42 @@ def login_view(request: HttpRequest):
 
         if user is not None:
             login(request, user)
-            rotate_token(request)
             
+            # 🎯 Redirect based on role
             if user.groups.filter(name="academy_admin").exists():
                 profile = user.academy_admin_profile
-                academy = profile.academy
 
+                # Ensure academy exists
+                if not hasattr(profile, "academy"):
+                    Academy.objects.create(
+                        name=f"{user.first_name or user.username} {user.last_name or ''} Academy".strip(),
+                        city="Unknown",
+                        owner=profile,
+                    )
+                    return redirect("academies:setup")
+
+                academy = profile.academy
                 if not academy.description or not academy.city:
                     return redirect("academies:setup")
-                return redirect("academies:detail", slug=academy.slug)
+                
+                # ✅ Academy admin → their academy dashboard
+                return redirect("academies:dashboard")
 
+            elif user.groups.filter(name="trainer").exists():
+                # ✅ Trainer → programs dashboard
+                return redirect("academies:programs")
+
+            elif user.groups.filter(name="parent").exists():
+                # ✅ Parent → academies list
+                return redirect("academies:list")
+
+            # Default: redirect to next or home
             return redirect(request.GET.get("next", "/"))
         else:
             messages.error(request, "Invalid username or password.", "alert-danger")
+            return render(request, "accounts/login.html")
 
     return render(request, "accounts/login.html")
-
-
-
-
 
 
 User = get_user_model()

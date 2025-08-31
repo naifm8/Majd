@@ -17,3 +17,4 @@ urlpatterns = [
     # Payment completion
     path('payment/<int:enrollment_id>/complete/', views.complete_payment_view, name='complete_payment'),
 ]
+

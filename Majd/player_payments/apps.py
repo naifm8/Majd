@@ -9,3 +9,4 @@ class PlayerPaymentsConfig(AppConfig):
     def ready(self):
         # Import signal handlers if needed
         pass
+
