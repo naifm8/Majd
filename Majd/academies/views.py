@@ -321,3 +321,4 @@ def program_sessions(request, academy_slug, program_id):
         "sessions": sessions,
     }
     return render(request, "academies/sessions_page.html", context)
+

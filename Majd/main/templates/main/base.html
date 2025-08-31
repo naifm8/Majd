@@ -45,7 +45,10 @@
                         <a class="nav-link {% if '/academies/' in request.path %} active {% endif %}" href="{% url 'academies:list' %}">Academies</a>
                     </li>                    
                     <li class="nav-item">
-                        <a class="nav-link text-dark {% if '/subscriptions/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:subscriptions_view' %}">Subscriptions</a>
+                        <a class="nav-link text-dark {% if '/payment/plan-types/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'payment:plan_type_list' %}">Academy Plans</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark {% if '/player-payments/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'player_payments:subscription_list' %}">Player Programs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/ourVision/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:our_vision_view' %}">Our Vision</a>
@@ -102,6 +105,13 @@
                                         </a>
                                       {% endif %} 
                                 </li>
+                                {% if request.user.groups.all.0.name == "parent" %}
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'player_payments:my_enrollments' %}">
+                                        <i class="bi bi-calendar-check me-2"></i> My Enrollments
+                                    </a>
+                                </li>
+                                {% endif %}
 
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center" href="#">

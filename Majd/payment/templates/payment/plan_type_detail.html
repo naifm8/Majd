@@ -1,0 +1,6 @@
+{% extends "main/base.html" %}
+{% block content %}
+<h1>{{ plan_type.name }}</h1>
+<p>{{ plan_type.description }}</p>
+<a href="{% url 'payment:plan_type_list' %}">Back</a>
+{% endblock %}

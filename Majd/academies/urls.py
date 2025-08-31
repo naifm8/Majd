@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import academy_list_view, AcademyDetailView, academy_setup_view, AcademyDashboardView
+from . import views
 
 from . import views
 

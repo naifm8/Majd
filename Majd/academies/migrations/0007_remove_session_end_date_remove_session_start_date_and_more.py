@@ -6,6 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+
+        ("academies", "0006_merge_20250830_2009"),
         ('academies', '0006_auto_20250830_1404'),
     ]
 

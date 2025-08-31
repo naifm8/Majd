@@ -1,0 +1,79 @@
+MAJD Sports Academy - Invoice
+
+INVOICE #{{ subscription.id|stringformat:"06d" }}
+Date: {{ invoice_date|date:"M d, Y" }}
+
+ACADEMY INFORMATION:
+===================
+Academy Name: {{ academy.name }}
+Contact Email: {{ subscription.contact_email }}
+{% if subscription.contact_phone %}Contact Phone: {{ subscription.contact_phone }}{% endif %}
+Billing Address: {{ subscription.billing_address }}
+
+SUBSCRIPTION DETAILS:
+====================
+Plan Type: {{ plan_type.name }}
+Duration: {{ subscription.duration_days }} days
+Start Date: {{ subscription.start_date|date:"M d, Y" }}
+End Date: {{ subscription.end_date|date:"M d, Y" }}
+Payment Method: {{ subscription.get_payment_method_display }}
+Status: {{ subscription.get_status_display }}
+{% if subscription.transaction_id %}Transaction ID: {{ subscription.transaction_id }}{% endif %}
+{% if subscription.payment_date %}Payment Date: {{ subscription.payment_date|date:"M d, Y H:i" }}{% endif %}
+
+PRICE BREAKDOWN:
+================
+Plan Price: SAR {{ subscription.price }}
+VAT (15%): SAR {% widthratio subscription.price 100 15 %}
+Total Amount: SAR {% widthratio subscription.price 100 115 %}
+
+TOTAL AMOUNT DUE: SAR {% widthratio subscription.price 100 115 %}
+Payment Status: {{ subscription.get_status_display }}
+
+{% if subscription.status == 'successful' %}
+🎉 PAYMENT SUCCESSFUL!
+======================
+Thank you for your payment. Your subscription is now active and you can 
+access all the features included in your plan.
+
+{% elif subscription.status == 'failed' %}
+❌ PAYMENT FAILED
+=================
+Unfortunately, your payment could not be processed. Please check your 
+payment information and try again.
+{% if subscription.error_message %}
+Error Details: {{ subscription.error_message }}
+{% endif %}
+
+{% elif subscription.status == 'pending' %}
+⏳ PAYMENT PENDING
+==================
+Your payment is currently being processed. You will receive another 
+notification once the payment is completed.
+
+{% endif %}
+
+PLAN FEATURES:
+==============
+{% if plan_type.features %}
+{% for feature in plan_type.features %}
+• {{ feature }}
+{% endfor %}
+{% else %}
+• Access to all standard platform features
+{% endif %}
+
+NEED HELP?
+==========
+If you have any questions about this invoice or need assistance, 
+please contact our support team:
+
+Email: support@majd.com
+Phone: +966 50 123 4567
+Support Hours: Sunday - Thursday, 9:00 AM - 6:00 PM (AST)
+
+---
+This is an automated invoice from MAJD Sports Academy Platform.
+Please do not reply to this email. For support, contact us at support@majd.com
+
+Invoice #{{ subscription.id|stringformat:"06d" }} | Generated on {{ invoice_date|date:"M d, Y" }}

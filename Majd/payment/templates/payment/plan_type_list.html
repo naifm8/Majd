@@ -1,0 +1,202 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Choose Your Academy Plan - MAJD{% endblock %}
+
+{% block fileStyle %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<link rel="stylesheet" href="{% static 'css/subscriptions_page.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="hero-section text-center">
+  <div class="container">
+    <h2 class="mb-2">Choose Your Academy Plan</h2>
+    <p class="text-muted mb-4">
+      Select the perfect subscription plan for your sports academy. Upgrade or downgrade at any time.
+    </p>
+
+    <!-- Billing Toggle (no discount badge) -->
+    <div class="billing-toggle d-inline-flex align-items-center gap-2">
+      <button class="toggle-btn active" id="btn-monthly">Monthly</button>
+      <button class="toggle-btn" id="btn-yearly">Yearly</button>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section py-4 py-md-5">
+  <div class="container">
+
+
+    <!-- Plans from Database -->
+    {% if plan_types %}
+      <div class="row g-4 justify-content-center">
+        {% for pt in plan_types %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card-pricing h-100 {% if pt.is_featured %}featured{% endif %}">
+            {% if pt.is_featured %}
+            <div class="most-popular">Most Popular</div>
+            {% endif %}
+            
+            <div class="plan-icon {% if forloop.counter0 == 0 %}bg-soft-primary{% elif pt.is_featured %}bg-soft-success{% else %}bg-soft-purple{% endif %}">
+              <i class="bi {{ pt.icon_class }}"></i>
+            </div>
+            
+            <h5 class="plan-title">{{ pt.name }}</h5>
+            <p class="plan-subtitle">{{ pt.description|default:"Perfect plan for your academy" }}</p>
+
+            <div class="plan-price">
+              <span class="currency">SAR</span>
+              <span class="amount" data-monthly="{{ pt.monthly_price }}" data-yearly="{% widthratio pt.monthly_price 100 1100 %}">{{ pt.monthly_price }}</span>
+              <span class="per" data-month="/month" data-year="/year">/month</span>
+            </div>
+
+            <ul class="plan-features">
+              {% for feature in pt.features %}
+                <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
+              {% empty %}
+                <li class="muted"><i class="bi bi-dash-circle"></i> No features listed</li>
+              {% endfor %}
+            </ul>
+
+            <a href="{% url 'payment:checkout' pt.id %}" class="btn {% if pt.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100">Get Started</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- No Plans Found Message -->
+      <div class="text-center py-5">
+        <div class="alert alert-warning">
+          <h5 class="mb-3">No Plans Available</h5>
+          <p class="mb-3">No subscription plans have been configured yet.</p>
+          <p class="text-muted small">Please check back later or contact support.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Benefits -->
+  <section class="benefits-section py-4 py-md-5">
+    <div class="container">
+      <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
+        <div class="row g-4 text-center">
+
+          <div class="col-md-4">
+            <div class="benefit-item">
+              <div class="benefit-icon bg-soft-blue"><i class="bi bi-shield-check"></i></div>
+              <h6 class="benefit-title">Secure & Reliable</h6>
+              <p class="text-muted mb-0 small">
+                Bank‑level security with 99.9% uptime guarantee. Your data is safe with us.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="benefit-item">
+              <div class="benefit-icon bg-soft-green"><i class="bi bi-chat-dots"></i></div>
+              <h6 class="benefit-title">24/7 Support</h6>
+              <p class="text-muted mb-0 small">
+                Get help when you need it with our dedicated support team available around the clock.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="benefit-item">
+              <div class="benefit-icon bg-soft-purple"><i class="bi bi-lightning-charge"></i></div>
+              <h6 class="benefit-title">Easy Setup</h6>
+              <p class="text-muted mb-0 small">
+                Get started in minutes with our intuitive setup process and migration tools.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section py-4 py-md-5">
+    <div class="container">
+
+      <h5 class="text-center mb-4">Frequently Asked Questions</h5>
+
+      <div class="row g-3 g-md-4">
+        <div class="col-md-6">
+          <div class="faq-card p-3 p-md-4 w-100 h-100">
+            <h6 class="mb-2 text-success">Can I change my plan later?</h6>
+            <p class="mb-0 text-muted small">
+              Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="faq-card p-3 p-md-4 w-100 h-100">
+            <h6 class="mb-2 text-success">Is there a free trial?</h6>
+            <p class="mb-0 text-muted small">
+              All plans come with a 14‑day free trial. No credit card required to get started.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="faq-card p-3 p-md-4 w-100 h-100">
+            <h6 class="mb-2 text-success">What payment methods do you accept?</h6>
+            <p class="mb-0 text-muted small">
+              We accept all major credit cards, bank transfers, and local payment methods in Saudi Arabia.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="faq-card p-3 p-md-4 w-100 h-100">
+            <h6 class="mb-2 text-success">Can I cancel anytime?</h6>
+            <p class="mb-0 text-muted small">
+              Yes, you can cancel your subscription at any time. Your account will remain active until the end of your billing period.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const btnMonthly = document.getElementById("btn-monthly");
+  const btnYearly  = document.getElementById("btn-yearly");
+  const amounts    = document.querySelectorAll(".plan-price .amount");
+  const perLabels  = document.querySelectorAll(".plan-price .per");
+
+  function setMode(mode) {
+    // mode = 'month' or 'year'
+    const isYear = mode === "year";
+
+    // toggle button active state
+    btnMonthly.classList.toggle("active", !isYear);
+    btnYearly.classList.toggle("active",  isYear);
+
+    // update amounts & units
+    amounts.forEach(a => {
+      a.textContent = isYear ? a.dataset.yearly : a.dataset.monthly;
+    });
+    perLabels.forEach(p => {
+      p.textContent = isYear ? p.dataset.year : p.dataset.month;
+    });
+  }
+
+  btnMonthly.addEventListener("click", () => setMode("month"));
+  btnYearly .addEventListener("click", () => setMode("year"));
+
+  // OPTIONAL: start on yearly (uncomment if you want default yearly)
+  // setMode("year");
+});
+</script>
+
+{% endblock %}
