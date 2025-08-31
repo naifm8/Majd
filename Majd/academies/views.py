@@ -59,7 +59,7 @@ def AcademyDetailView(request, slug):
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
-        "coaches": academy.trainers.all(),  # ✅ هنا التعديل
+        "coaches": academy.trainers.all(), 
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
@@ -298,3 +298,26 @@ def session_delete(request, pk):
     return render(request, "academies/session_confirm_delete.html", {
         "session": session,
     })
+
+
+@login_required
+def program_sessions(request, academy_slug, program_id):
+    """
+    Show all sessions for a given program (read-only, no enroll button).
+    """
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    # fetch all sessions for this program
+    sessions = (
+        Session.objects.filter(program=program)
+        .select_related("trainer")     # optimization
+        .prefetch_related("slots")     # include schedule slots
+    )
+
+    context = {
+        "academy": academy,
+        "program": program,
+        "sessions": sessions,
+    }
+    return render(request, "academies/sessions_page.html", context)
