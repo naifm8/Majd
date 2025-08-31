@@ -162,4 +162,3 @@ class PlanTypeAdmin(admin.ModelAdmin):
 # class SubscriptionPlanAdmin(admin.ModelAdmin):
 #     list_display = ("academy", "name", "price", "duration_days", "is_active")
 #     list_filter = ("is_active", "academy")
-
