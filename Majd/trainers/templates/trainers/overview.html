@@ -2,411 +2,249 @@
 {% load static %}
 
 {% block title %}Overview{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-
 <div class="container mt-4">
 
-    <h4 class="fw-semibold">Welcome back, Coach Carlos!</h4>
-    <p class="text-muted">Manage your training sessions, track student progress, and continue developing young athletes.
-    </p>
+  <!-- Greeting -->
+  <h4 class="fw-semibold">Welcome back, Coach {{ trainer.name }}!</h4>
+  <p class="text-muted">Manage your training sessions, track student progress, and continue developing young athletes.</p>
 
+  <!-- Coach banner -->
+  <div class="card border-0 shadow-sm mt-3"
+       style="background: linear-gradient(90deg, #008C62, #00936B); border-radius: 12px;">
+    <div class="card-body d-flex align-items-center justify-content-between">
 
-    <div class="card border-0 shadow-sm mt-3"
-        style="background: linear-gradient(90deg, #008C62, #00936B); border-radius: 12px;">
-        <div class="card-body d-flex align-items-center justify-content-between">
-
-
-            <div class="d-flex align-items-center gap-3">
-
-                <div class="rounded-circle d-flex justify-content-center align-items-center"
-                    style="width:50px; height:50px; background:#e0e0e0; color:#666; font-weight:bold;">C
-                </div>
-
-                <div>
-                    <h6 class="mb-1 text-white fw-bold">Carlos Demo (Coach)</h6>
-                    <p class="mb-1 text-white-50 small">
-                        Soccer Coach • Elite Performance Soccer Academy
-                    </p>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <span class="badge bg-light text-dark small">Youth Development Specialist</span>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="text-end text-white">
-                <h4 class="fw-bold mb-0">18</h4>
-                <small class="text-white-50">Students Assigned</small>
-            </div>
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex justify-content-center align-items-center"
+             style="width:50px;height:50px;background:#e0e0e0;color:#666;font-weight:bold;">
+          {% if trainer.profile_image %}
+            <img src="{{ trainer.profile_image.url }}" alt="Profile"
+                 class="rounded-circle" style="width:50px;height:50px;object-fit:cover;">
+          {% else %}
+            {{ trainer.name|first|upper }}
+          {% endif %}
         </div>
+
+        <div class="text-white">
+          <h6 class="mb-1 fw-bold">{{ trainer.name }} (Coach)</h6>
+          <p class="mb-1 text-white-50 small">
+            {{ trainer.specialty|default:"Coach" }}{% if trainer.academy_name %} • {{ trainer.academy_name }}{% endif %}
+          </p>
+          {% if trainer.specialty %}
+            <span class="badge bg-light text-dark small">{{ trainer.specialty }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="text-end text-white">
+        <h4 class="fw-bold mb-0">{{ summary.students_count }}</h4>
+        <small class="text-white-50">Students Assigned</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="row mt-4">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Today's Sessions</small>
+            <i class="bi bi-calendar-event fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.today_classes_count }}</h4>
+        </div>
+      </div>
     </div>
 
-    <div class="row mt-4">
-
-        <div class="col-md-4 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-between">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">Today's Sessions</small>
-                        <i class="bi bi-calendar-event fs-4 text-success"></i>
-                    </div>
-                    <h4 class="fw-bold text-success mt-3 mb-0">3</h4>
-                </div>
-            </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Weekly Hours</small>
+            <i class="bi bi-clock fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.weekly_hours }}</h4>
         </div>
-
-
-        <div class="col-md-4 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-between">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">Weekly Hours</small>
-                        <i class="bi bi-clock fs-4 text-success"></i>
-                    </div>
-                    <h4 class="fw-bold text-success mt-3 mb-0">24</h4>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-4 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-between">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">My Students</small>
-                        <i class="bi bi-people fs-4 text-success"></i>
-                    </div>
-                    <h4 class="fw-bold text-success mt-3 mb-0">18</h4>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-
-
-    <div class="row mt-4">
-
-        <div class="col-lg-8 mb-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h6 class="fw-bold mb-1">Today's Sessions</h6>
-                            <small class="text-muted">Your training sessions scheduled for today</small>
-                        </div>
-                        <a href="#" class="btn btn-success btn-sm">+ Manage Sessions</a>
-                    </div>
-
-
-                    <div class="card border mb-3 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="fw-bold mb-1">Elite Youth Training</h6>
-                                    <small class="text-muted">9:00 AM - 10:30 AM • Field A • 8 students</small>
-                                    <p class="mt-2 mb-1"><strong>Session focus:</strong><br>
-                                        <span class="text-muted">Ball control and passing accuracy</span>
-                                    </p>
-                                </div>
-                                <span class="badge bg-light text-secondary">Upcoming</span>
-                            </div>
-                            <div class="d-flex gap-2 mt-3">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-play-circle me-1"></i> Start Session
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-pencil-square me-1"></i> Edit Plan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <div class="card border mb-3 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="fw-bold mb-1">Advanced Skills</h6>
-                                    <small class="text-muted">2:00 PM - 3:30 PM • Field B • 6 students</small>
-                                    <p class="mt-2 mb-1"><strong>Session focus:</strong><br>
-                                        <span class="text-muted">Tactical awareness and positioning</span>
-                                    </p>
-                                </div>
-                                <span class="badge bg-success-subtle text-success">In Progress</span>
-                            </div>
-                            <div class="d-flex gap-2 mt-3">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-play-circle me-1"></i> Start Session
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-pencil-square me-1"></i> Edit Plan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card border mb-2 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="fw-bold mb-1">Competition Prep</h6>
-                                    <small class="text-muted">4:00 PM - 5:30 PM • Main Field • 12 students</small>
-                                    <p class="mt-2 mb-1"><strong>Session focus:</strong><br>
-                                        <span class="text-muted">Match simulation and strategy</span>
-                                    </p>
-                                </div>
-                                <span class="badge bg-light text-secondary">Upcoming</span>
-                            </div>
-                            <div class="d-flex gap-2 mt-3">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-play-circle me-1"></i> Start Session
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-pencil-square me-1"></i> Edit Plan
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">My Students</small>
+            <i class="bi bi-people fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.students_count }}</h4>
         </div>
-
-
-        <div class="col-lg-4">
-
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">Quick Actions</h6>
-                    <button class="btn w-100 btn-outline-secondary mb-2 text-start">
-                        <i class="bi bi-check2-square me-2"></i> Mark Attendance
-                    </button>
-                    <button class="btn w-100 btn-outline-secondary mb-2 text-start">
-                        <i class="bi bi-clipboard-check me-2"></i> Create Evaluation
-                    </button>
-                    <button class="btn w-100 btn-outline-secondary mb-2 text-start">
-                        <i class="bi bi-journal-text me-2"></i> Add Training Notes
-                    </button>
-                    <button class="btn w-100 btn-outline-secondary text-start">
-                        <i class="bi bi-calendar-plus me-2"></i> Schedule Session
-                    </button>
-                </div>
-            </div>
-
-
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">Recent Achievements</h6>
-                    <div class="mb-3">
-                        <strong>Marcus Chen</strong><br>
-                        <small class="text-muted">Achieved A+ in Tactical Awareness • 2 days ago</small>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Alex Johnson</strong><br>
-                        <small class="text-muted">Perfect attendance this month • 1 week ago</small>
-                    </div>
-                    <div>
-                        <strong>Emma Wilson</strong><br>
-                        <small class="text-muted">Improved passing accuracy by 20% • 3 days ago</small>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="card border-0 shadow-sm border-start border-3 border-warning">
-                <div class="card-body">
-                    <h6 class="fw-bold text-warning mb-2"><i class="bi bi-exclamation-circle me-1"></i> Reminder</h6>
-                    <p class="mb-2 small text-muted">Monthly evaluations for Elite Training students are due this
-                        Friday.</p>
-                    <a href="#" class="btn btn-outline-secondary btn-sm">View Details</a>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
 
+  <!-- Today’s Sessions + Right column -->
+  <div class="row mt-4">
 
-
-    <!-- Student Progress -->
-    <div class="card border-0 shadow-sm mt-4">
+    <!-- Today’s Sessions -->
+    <div class="col-lg-8 mb-3">
+      <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h6 class="fw-bold mb-1">Student Progress</h6>
-                    <small class="text-muted">Recent performance highlights from your students</small>
-                </div>
-                <a href="#" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-eye me-1"></i> View All Students
-                </a>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h6 class="fw-bold mb-1">Today's Sessions</h6>
+              <small class="text-muted">Your training sessions scheduled for today</small>
             </div>
+            <a href="#" class="btn btn-success btn-sm">+ Manage Sessions</a>
+          </div>
 
-            <div class="row g-3">
-                <!-- Student card -->
-                <div class="col-md-6">
-                    <div class="card border rounded-4 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle bg-success-subtle text-success">M</div>
-                                    <div>
-                                        <div class="fw-semibold">Marcus Chen</div>
-                                        <small class="text-muted">Age 14 • Elite Training</small>
-                                    </div>
-                                </div>
-                                <span class="badge bg-light text-secondary">A+</span>
-                            </div>
-
-                            <div class="mb-2 small">Attendance</div>
-                            <div class="progress progress-thin mb-2">
-                                <div class="progress-bar bg-success" style="width:95%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mb-3">
-                                <span>Improvement</span><span class="text-success fw-semibold">+15%</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center small mb-3">
-                                <span class="text-muted">Next Session</span>
-                                <span class="fw-semibold">Today 4:00 PM</span>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-clipboard-check me-1"></i> Evaluate
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-journal-text me-1"></i> Notes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+          {% for sess in today_classes %}
+            <div class="card border mb-3 shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="fw-bold mb-1">{{ sess.title }}</h6>
+                    <small class="text-muted">
+                      {{ sess.time_range }} • {{ sess.students_count }} students
+                    </small>
+                    {% if sess.focus %}
+                      <p class="mt-2 mb-1">
+                        <strong>Session focus:</strong><br>
+                        <span class="text-muted">{{ sess.focus }}</span>
+                      </p>
+                    {% endif %}
+                  </div>
+                  <span class="badge {{ sess.status_css }}">{{ sess.status_label }}</span>
                 </div>
-
-                <!-- Student card -->
-                <div class="col-md-6">
-                    <div class="card border rounded-4 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle bg-success-subtle text-success">A</div>
-                                    <div>
-                                        <div class="fw-semibold">Alex Johnson</div>
-                                        <small class="text-muted">Age 12 • Youth Development</small>
-                                    </div>
-                                </div>
-                                <span class="badge bg-light text-secondary">A</span>
-                            </div>
-
-                            <div class="mb-2 small">Attendance</div>
-                            <div class="progress progress-thin mb-2">
-                                <div class="progress-bar bg-success" style="width:88%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mb-3">
-                                <span>Improvement</span><span class="text-success fw-semibold">+8%</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center small mb-3">
-                                <span class="text-muted">Next Session</span>
-                                <span class="fw-semibold">Tomorrow 2:00 PM</span>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-clipboard-check me-1"></i> Evaluate
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-journal-text me-1"></i> Notes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="d-flex gap-2 mt-3">
+                  <a href="{{ sess.start_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                    <i class="bi bi-play-circle me-1"></i> Start Session
+                  </a>
+                  <a href="{{ sess.edit_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Plan
+                  </a>
                 </div>
-
-                <!-- Student card -->
-                <div class="col-md-6">
-                    <div class="card border rounded-4 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle bg-success-subtle text-success">E</div>
-                                    <div>
-                                        <div class="fw-semibold">Emma Wilson</div>
-                                        <small class="text-muted">Age 13 • Advanced Skills</small>
-                                    </div>
-                                </div>
-                                <span class="badge bg-light text-secondary">A+</span>
-                            </div>
-
-                            <div class="mb-2 small">Attendance</div>
-                            <div class="progress progress-thin mb-2">
-                                <div class="progress-bar bg-success" style="width:92%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mb-3">
-                                <span>Improvement</span><span class="text-success fw-semibold">+12%</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center small mb-3">
-                                <span class="text-muted">Next Session</span>
-                                <span class="fw-semibold">Today 2:00 PM</span>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-clipboard-check me-1"></i> Evaluate
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-journal-text me-1"></i> Notes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Student card -->
-                <div class="col-md-6">
-                    <div class="card border rounded-4 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle bg-success-subtle text-success">D</div>
-                                    <div>
-                                        <div class="fw-semibold">David Rodriguez</div>
-                                        <small class="text-muted">Age 15 • Competition Prep</small>
-                                    </div>
-                                </div>
-                                <span class="badge bg-light text-secondary">B+</span>
-                            </div>
-
-                            <div class="mb-2 small">Attendance</div>
-                            <div class="progress progress-thin mb-2">
-                                <div class="progress-bar bg-success" style="width:89%"></div>
-                            </div>
-                            <div class="d-flex justify-content-between small text-muted mb-3">
-                                <span>Improvement</span><span class="text-success fw-semibold">+6%</span>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center small mb-3">
-                                <span class="text-muted">Next Session</span>
-                                <span class="fw-semibold">Wednesday 4:00 PM</span>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-clipboard-check me-1"></i> Evaluate
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm flex-fill">
-                                    <i class="bi bi-journal-text me-1"></i> Notes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div><!-- /row -->
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-muted">No sessions scheduled for today.</div>
+          {% endfor %}
         </div>
+      </div>
     </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Quick Actions</h6>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-check2-square me-2"></i> Mark Attendance</a>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-clipboard-check me-2"></i> Create Evaluation</a>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-journal-text me-2"></i> Add Training Notes</a>
+          <a class="btn w-100 btn-outline-secondary text-start" href="#"><i class="bi bi-calendar-plus me-2"></i> Schedule Session</a>
+        </div>
+      </div>
+
+      <!-- Recent Achievements -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Recent Achievements</h6>
+          {% for ach in achievements %}
+            <div class="{% if not forloop.last %}mb-3{% endif %}">
+              <strong>{{ ach.student_name }}</strong><br>
+              <small class="text-muted">{{ ach.text }} • {{ ach.date|timesince }} ago</small>
+            </div>
+          {% empty %}
+            <div class="text-muted">No achievements yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Reminder -->
+      {% if reminder %}
+      <div class="card border-0 shadow-sm border-start border-3 border-warning">
+        <div class="card-body">
+          <h6 class="fw-bold text-warning mb-2"><i class="bi bi-exclamation-circle me-1"></i> {{ reminder.title }}</h6>
+          <p class="mb-2 small text-muted">{{ reminder.text }}</p>
+          <a href="{{ reminder.url }}" class="btn btn-outline-secondary btn-sm">View Details</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Student Progress -->
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="fw-bold mb-1">Student Progress</h6>
+          <small class="text-muted">Recent performance highlights from your students</small>
+        </div>
+        <a href="#" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-eye me-1"></i> View All Students
+        </a>
+      </div>
+
+      <div class="row g-3">
+        {% for st in student_progress %}
+        <div class="col-md-6">
+          <div class="card border rounded-4 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-circle bg-success-subtle text-success">{{ st.initial }}</div>
+                  <div>
+                    <div class="fw-semibold">{{ st.name }}</div>
+                    <small class="text-muted">
+                      {% if st.age %}Age {{ st.age }}{% endif %}
+                      {% if st.age and st.track %} • {% endif %}
+                      {{ st.track }}
+                    </small>
+                  </div>
+                </div>
+                {% if st.grade %}
+                  <span class="badge bg-light text-secondary">{{ st.grade }}</span>
+                {% endif %}
+              </div>
+
+              <div class="mb-2 small">Attendance</div>
+              <div class="progress progress-thin mb-2">
+                <div class="progress-bar bg-success" style="width: {{ st.attendance_pct }}%"></div>
+              </div>
+
+              <div class="d-flex justify-content-between small text-muted mb-3">
+                <span>Improvement</span>
+                <span class="{% if st.improvement_pct < 0 %}text-danger{% else %}text-success{% endif %} fw-semibold">
+                  {% if st.improvement_pct > 0 %}+{% endif %}{{ st.improvement_pct }}%
+                </span>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center small mb-3">
+                <span class="text-muted">Next Session</span>
+                <span class="fw-semibold">{{ st.next_session }}</span>
+              </div>
+
+              <div class="d-flex gap-2">
+                <a href="#" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-clipboard-check me-1"></i> Evaluate
+                </a>
+                <a href="#" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-journal-text me-1"></i> Notes
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+          <div class="col-12"><div class="text-muted">No students to show.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 
 </div>
-
-
-
 {% endblock %}
