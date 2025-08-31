@@ -1,0 +1,13 @@
+{% extends "academies/dashboard/base_dashboard.html" %}
+
+{% block content %}
+<div class="content-area">
+    <h3>Delete Session</h3>
+    <p>Are you sure you want to delete <strong>{{ object.title }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'academies:programs' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

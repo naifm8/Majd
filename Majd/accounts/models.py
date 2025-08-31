@@ -2,16 +2,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 
-
-
-
-
 class AcademyAdminProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='academy_admin_profile')
-    # academy = 
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='academy_admin_profile'
+    )
 
     def __str__(self):
         return f"AcademyAdmin<{self.user}>"
+
 
 
 class TrainerProfile(models.Model):

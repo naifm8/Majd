@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "academies",
     "payment",
     "parents",
+    "player_payments",
 ]
 
 MIDDLEWARE = [

@@ -42,10 +42,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto gap-4">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" style="font-weight: 550;" href="#">Academies</a>
+                        <a class="nav-link" href="{% url 'academies:list' %}">Academies</a>
+                    </li>                    
+                    <li class="nav-item">
+                        <a class="nav-link text-dark {% if '/payment/plan-types/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'payment:plan_type_list' %}">Academy Plans</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark {% if '/payment/plan-types/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'payment:plan_type_list' %}">Subscriptions</a>
+                        <a class="nav-link text-dark {% if '/player-payments/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'player_payments:subscription_list' %}">Player Programs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/ourVision/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:our_vision_view' %}">Our Vision</a>
@@ -97,11 +100,18 @@
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
                                     {% elif request.user.groups.all.0.name == "academy_admin" %}
-                                        <a class="dropdown-item d-flex align-items-center" href="#">
+                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'academies:dashboard' %}">
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
-                                    {% endif %}
+                                      {% endif %} 
                                 </li>
+                                {% if request.user.groups.all.0.name == "parent" %}
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'player_payments:my_enrollments' %}">
+                                        <i class="bi bi-calendar-check me-2"></i> My Enrollments
+                                    </a>
+                                </li>
+                                {% endif %}
 
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center" href="#">

@@ -1,20 +1,40 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import Academy, Program, Session, SessionSlot, TrainingClass
+from django.contrib import admin
+from .models import PlanType
 
+class ProgramInline(admin.TabularInline):
+    model = Program
+    extra = 1
+    fields = ("title", "sport_type", "short_description")
 
 @admin.register(Academy)
 class AcademyAdmin(admin.ModelAdmin):
     list_display = ("name", "city", "email", "establishment_year", "owner")
     search_fields = ("name", "city")
     list_filter = ("city", "establishment_year")
+    inlines = [ProgramInline]  
 
+    def logo_preview(self, obj):
+        if obj.logo:
+            return format_html(f'<img src="{obj.logo.url}" width="60" height="60" style="object-fit:cover;border-radius:5px;" />')
+        return "No Logo"
+
+    logo_preview.short_description = "Logo"
+    
+
+class SessionInline(admin.TabularInline):
+    model = Session
+    extra = 1
+    fields = ("title", "trainer", "level", "start_date", "end_date")
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ("title", "academy", "sport_type")
     list_filter = ("sport_type", "academy")
     search_fields = ("title",)
+    inlines = [SessionInline]
 
 
 @admin.register(Session)
@@ -55,3 +75,16 @@ class TrainingClassAdmin(admin.ModelAdmin):
     list_filter = ("session", "date")
     search_fields = ("session__title", "topic")
     date_hierarchy = "date"
+
+
+@admin.register(PlanType)
+class PlanTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    search_fields = ("name",)
+
+
+# @admin.register(SubscriptionPlan)
+# class SubscriptionPlanAdmin(admin.ModelAdmin):
+#     list_display = ("academy", "name", "price", "duration_days", "is_active")
+#     list_filter = ("is_active", "academy")
+

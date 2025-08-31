@@ -1,0 +1,133 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- 🌟 Hero Section with Stats -->
+<section class="position-relative text-white" style="height: 75vh; background: url('{{ academy.cover.url }}') center/cover no-repeat;">
+  <!-- Dark overlay -->
+  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.55);"></div>
+
+  <!-- Back Button -->
+  <div class="position-absolute top-0 start-0 m-4" style="z-index: 2;">
+    <a href="{% url 'academies:list' %}" class="text-white text-decoration-none d-flex align-items-center">
+      <i class="bi bi-arrow-left me-2"></i> Back to Academies
+    </a>
+  </div>
+
+
+  <!-- Hero Content -->
+  <div class="position-relative d-flex flex-column justify-content-center align-items-start h-100 w-100 px-5">
+
+    <!-- Logo + Academy Name -->
+    <div class="d-flex align-items-center mb-3">
+      {% if academy.logo %}
+      <img src="{{ academy.logo.url }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+      {% endif %}
+      <div>
+        <span class="badge bg-success mb-2">{{ academy.programs.first.sport_type|title }}</span>
+        <h1 class="fw-bold mb-1">{{ academy.name }}</h1>
+        {% if academy.tagline %}
+        <p class="lead">{{ academy.tagline }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick Info Row -->
+    <div class="mb-3 d-flex flex-wrap align-items-center gap-4">
+      <span><i class="bi bi-geo-alt"></i> {{ academy.city }}</span>
+      <span><i class="bi bi-star-fill text-warning"></i> {{ fake_rating }}/5 Rating</span>
+      <span><i class="bi bi-people"></i> {{ active_students }}+ Students</span>
+      <span><i class="bi bi-calendar-check"></i> {{ years_experience }}+ Years</span>
+      <span><i class="bi bi-book"></i> {{ academy.programs.count }} Programs</span>
+    </div>
+
+    <!-- Description -->
+    <p class="mb-4" style="max-width: 700px;">{{ academy.description }}</p>
+
+    <!-- CTA Buttons -->
+    <div>
+      <a href="#subscriptions" class="btn btn-success btn-lg me-3">Join Academy Now</a>
+      <a href="#" class="btn btn-outline-light btn-lg">Schedule Visit</a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- 🌍 Mission Section -->
+<section class="py-5 bg-success text-white text-center">
+  <div class="container">
+    <h3 class="fw-bold">Our Mission</h3>
+    <p class="lead">
+      To provide world-class sports education that develops not just skilled players,
+      but confident, disciplined, and passionate athletes who excel both on and off the field.
+    </p>
+  </div>
+</section>
+
+<!-- 🎓 Training Programs Section -->
+<section class="container py-5">
+  <h2 class="mb-4">Training Programs</h2>
+  <div class="row g-4">
+    {% for program in programs %}
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        {% if program.image %}
+        <img src="{{ program.image.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ program.title }}</h5>
+          <p class="card-text text-muted">{{ program.short_description|default:"No description provided." }}</p>
+          <span class="badge bg-primary">{{ program.get_sport_type_display }}</span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No programs available for this academy yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 🏆 Top Coaches Section -->
+<section class="container py-5">
+  <h2 class="mb-4">Top Coaches</h2>
+  <div class="row g-4">
+    {% for coach in coaches %}
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm text-center p-3">
+        {% if coach.profile_image %}
+        <img src="{{ coach.profile_image.url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover;">
+        {% endif %}
+        <h5>{{ coach.user.get_full_name }}</h5>
+        <p class="text-muted">{{ coach.position }}</p>
+        <p><strong>Sport:</strong> {{ coach.specialty }}</p>
+        <p><strong>Licenses:</strong> {{ coach.certifications|default:"N/A" }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <p>No coaches added yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 💳 Subscription Plans Section -->
+<section class="container py-5" id="subscriptions">
+  <h2 class="mb-4 text-center">Subscription Plans</h2>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for plan in academy.plans.all %}
+    <div class="col">
+      <div class="card h-100 shadow-lg text-center p-4">
+        <h4 class="fw-bold">{{ plan.plan_type.name }}</h4>
+        <h3 class="text-success">${{ plan.price }}</h3>
+        <p class="text-muted">{{ plan.plan_type.description|default:"Subscription plan" }}</p>
+        <p><strong>Duration:</strong> {{ plan.duration_days }} days</p>
+        <a href="#" class="btn btn-success w-100">Enroll Now</a>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-center">No subscription plans available yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}
