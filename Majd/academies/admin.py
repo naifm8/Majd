@@ -51,9 +51,11 @@ class ProgramAdmin(admin.ModelAdmin):
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
     list_display = ("title", "program", "trainer", "level", "gender", "capacity", "start_datetime", "end_datetime", "generate_classes_link")
-    list_filter = ("level", "gender")
+    list_filter = ("level", "gender", "program__academy")
     search_fields = ("title",)
-    date_hierarchy = "start_datetime"
+    date_hierarchy = "start_date"
+
+    # ✅ Action لتوليد الحصص
     actions = ["generate_training_classes"]
     inlines = [SessionSkillInline]
 

@@ -19,5 +19,7 @@ urlpatterns = [
     path("dashboard/programs/<int:program_id>/sessions/create/", views.session_create, name="session_create"),
     path("dashboard/sessions/<int:pk>/edit/", views.session_edit, name="session_edit"),
     path("dashboard/sessions/<int:pk>/delete/", views.session_delete, name="session_delete"),
+
+
 ]
 

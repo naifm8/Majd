@@ -75,6 +75,7 @@ class Session(models.Model):
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime   = models.DateTimeField(null=True, blank=True)
 
+
     def __str__(self):
         return f"{self.title} - {self.program.title}"
 
