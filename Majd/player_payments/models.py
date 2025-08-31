@@ -84,7 +84,7 @@ class PlayerEnrollment(models.Model):
 
     # Subscription and student info
     subscription = models.ForeignKey(PlayerSubscription, on_delete=models.CASCADE, related_name="enrollments")
-    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="enrollments")
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="payment_enrollments")
     parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="child_enrollments")
 
     # Payment and status

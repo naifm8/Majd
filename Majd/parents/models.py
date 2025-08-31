@@ -62,7 +62,7 @@ class Child(models.Model):
     
 
 class Enrollment(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="enrollments")
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="parent_enrollments")
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
