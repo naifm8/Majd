@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'parents',
     'academies',
     "player",
-    "trainers"
+    "trainers",
 ]
 
 MIDDLEWARE = [
