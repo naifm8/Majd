@@ -14,89 +14,97 @@
     </a>
   </div>
 
-  <!-- Stats row -->
-  <div class="row g-3 mb-4">
-    <!-- Total Programs -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm h-100 rounded-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <p class="text-muted small mb-1">Total Programs</p>
-            <h4 class="fw-bold" style="color:#138d68;">{{ total_programs }}</h4>
-          </div>
-          <i class="bi bi-bullseye fs-3" style="color:#138d68;"></i>
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  <!-- Total Programs -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100 rounded-3">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-muted small mb-1">Total Programs</p>
+          <h4 class="fw-bold" style="color:#138d68;">{{ total_programs }}</h4>
         </div>
-      </div>
-    </div>
-
-    <!-- Total Enrollment -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm h-100 rounded-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <p class="text-muted small mb-1">Total Enrollment</p>
-            <h4 class="fw-bold" style="color:#138d68;">{{ total_enrollment }}</h4>
-          </div>
-          <i class="bi bi-people fs-3" style="color:#138d68;"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- Avg. Utilization -->
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm h-100 rounded-3">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <p class="text-muted small mb-1">Avg. Utilization</p>
-            <h4 class="fw-bold" style="color:#138d68;">{{ utilization_pct }}%</h4>
-          </div>
-          <i class="bi bi-graph-up-arrow fs-3" style="color:#138d68;"></i>
-        </div>
+        <i class="bi bi-bullseye fs-3" style="color:#138d68;"></i>
       </div>
     </div>
   </div>
 
+  <!-- Total Sessions -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100 rounded-3">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-muted small mb-1">Total Sessions</p>
+          <h4 class="fw-bold" style="color:#138d68;">{{ total_sessions }}</h4>
+        </div>
+        <i class="bi bi-calendar-event fs-3" style="color:#138d68;"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Enrollment -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100 rounded-3">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-muted small mb-1">Total Enrollment</p>
+          <h4 class="fw-bold" style="color:#138d68;">{{ total_enrollment }}</h4>
+        </div>
+        <i class="bi bi-people fs-3" style="color:#138d68;"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <!-- Programs list -->
   {% for program in programs %}
   <div class="card border-0 shadow-sm mb-4 rounded-3">
-    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
-      <h5 class="fw-bold mb-0" style="color:#138d68;">
-        {{ program.title }}
-      </h5>
-      <a href="{% url 'academies:session_create' program.id %}" class="btn btn-sm" style="background:#138d68; color:white;">
-        <i class="bi bi-plus-circle"></i> Add Session
-      </a>
+    <!-- Program Header -->
+    <div class="card-header" style="background:#f1fdf8; border-left:6px solid #138d68;">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0" style="color:#138d68;">
+          {{ program.title }}
+        </h5>
+        <a href="{% url 'academies:session_create' program.id %}" 
+           class="btn btn-sm" style="background:#138d68; color:white;">
+          <i class="bi bi-plus-circle"></i> Add Session
+        </a>
+      </div>
     </div>
+  
+    <!-- Program Body -->
     <div class="card-body bg-white">
       {% if program.sessions.all %}
-        <div class="row row-cols-1 g-3">
+        <!-- Sessions Title -->
+        <h6 class="fw-bold text-muted mb-3">Sessions</h6>
+        <div class="row row-cols-1 g-3 ps-2">
           {% for s in program.sessions.all %}
-          <div class="card border-0 shadow-sm mb-3 rounded-3">
+          <div class="card border-0 shadow-sm mb-3 rounded-3" style="border-left:4px solid #e9ecef;">
             <div class="card-body">
           
-              <!-- Header row -->
+              <!-- Session Header -->
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="d-flex align-items-center">
-                  <!-- Logo (use program logo if uploaded, otherwise sport-specific color + icon) -->
                   {% if program.logo %}
                     <img src="{{ program.logo.url }}" class="rounded-circle border" alt="Logo"
-                        style="width:45px; height:45px; object-fit:cover; margin-right:12px;">
+                         style="width:40px; height:40px; object-fit:cover; margin-right:12px;">
                   {% else %}
                     <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm"
-                        style="width:45px; height:45px; margin-right:12px;
-                        background-color:
-                          {% if program.sport_type == 'football' %} #05751d
-                          {% elif program.sport_type == 'basketball' %} #e8590c
-                          {% elif program.sport_type == 'volleyball' %} #0a7d91
-                          {% elif program.sport_type == 'tennis' %} #d39e00
-                          {% elif program.sport_type == 'table_tennis' %} #4b2c82
-                          {% elif program.sport_type == 'swimming' %} #38b5ad
-                          {% else %} #495057
-                          {% endif %};">
+                        style="width:40px; height:40px; margin-right:12px;
+                          background-color:
+                            {% if program.sport_type == 'football' %} #05751d
+                            {% elif program.sport_type == 'basketball' %} #e8590c
+                            {% elif program.sport_type == 'volleyball' %} #0a7d91
+                            {% elif program.sport_type == 'tennis' %} #d39e00
+                            {% elif program.sport_type == 'table_tennis' %} #4b2c82
+                            {% elif program.sport_type == 'swimming' %} #38b5ad
+                            {% else %} #495057
+                            {% endif %};">
                       <i class="bi bi-bullseye"></i>
                     </div>
                   {% endif %}
-
+  
                   <div>
                     <h6 class="fw-bold mb-1" style="color:#138d68;">{{ s.title }}</h6>
                     <small class="text-muted">
@@ -107,24 +115,22 @@
                     </small>
                   </div>
                 </div>
-          
-                <!-- Static Active Badge -->
                 <span class="badge" style="background:#01c05a;">Active</span>
               </div>
-          
-              <!-- Footer row with consistent dark buttons -->
+  
+              <!-- Session Buttons -->
               <div class="d-flex gap-2 mt-3">
-                <a href="#" class="btn btn-sm btn-outline-dark" style="min-width:110px;">
+                <a href="#" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
                   <i class="bi bi-people"></i> Players
                 </a>
-                <a href="{% url 'academies:session_edit' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:110px;">
+                <a href="{% url 'academies:session_edit' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
                   <i class="bi bi-pencil"></i> Edit
                 </a>
-                <a href="{% url 'academies:session_delete' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:110px;">
+                <a href="{% url 'academies:session_delete' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
                   <i class="bi bi-trash"></i> Delete
                 </a>
               </div>
-
+  
             </div>
           </div>
           {% endfor %}
@@ -137,5 +143,6 @@
   {% empty %}
     <p class="text-muted">No programs available.</p>
   {% endfor %}
+  
 </div>
 {% endblock %}
