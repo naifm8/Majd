@@ -33,6 +33,12 @@ urlpatterns = [
     path("<slug:academy_slug>/<int:program_id>/sessions/", 
          views.program_sessions, 
          name="program_sessions"),
+    path("<slug:academy_slug>/program/<int:program_id>/enrollment-details/", 
+        views.enrollment_details_view, 
+        name="enrollment_details"),
+    path("<slug:academy_slug>/program/<int:program_id>/enrollment-details/", views.enrollment_details_view, name="enrollment_details"),
+
+
 
 
 ]

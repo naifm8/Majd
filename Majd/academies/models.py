@@ -47,6 +47,15 @@ class Program(models.Model):
     image = models.ImageField(upload_to="programs/", blank=True, null=True)
     sport_type = models.CharField(max_length=20, choices=SportType.choices, default=SportType.FOOTBALL)
 
+    def age_group_display(self):
+        sessions = self.sessions.all()
+        if not sessions.exists():
+            return None
+
+        min_age = min(s.age_min for s in sessions)
+        max_age = max(s.age_max for s in sessions)
+        return f"{min_age}-{max_age} years"
+    
     def __str__(self):
         academy_name = self.academy.name if self.academy else "❌ أكاديمية محذوفة"
         return f"{self.title} ({academy_name})"

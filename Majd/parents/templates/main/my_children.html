@@ -112,11 +112,6 @@
                     </div>
 
 
-                    <!-- Emergency Contact -->
-                    <p class="small text-muted mt-3 mb-0">
-                        Emergency: {{ child.parent.user.get_full_name|default:child.parent.user.username }}<br>
-                        {{ child.emergency_contact_phone|default:"No phone available" }}
-                    </p>
                 </div>
             </div>
         </div>
@@ -197,14 +192,6 @@
                     <div class="col-12">
                       <label class="form-label">Medical Notes</label>
                       <textarea name="medical_notes" class="form-control">{{ child.medical_notes }}</textarea>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Emergency Contact Name</label>
-                      <input type="text" name="emergency_contact_name" value="{{ child.emergency_contact_name }}" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Emergency Contact Phone</label>
-                      <input type="text" name="emergency_contact_phone" value="{{ child.emergency_contact_phone }}" class="form-control">
                     </div>
                     <div class="col-md-12">
                       <label class="form-label">Profile Image</label>
@@ -426,18 +413,6 @@
             <div class="col-12">
               <label class="form-label">Medical Notes</label>
               <textarea name="medical_notes" class="form-control" rows="2" placeholder="Any important medical notes"></textarea>
-            </div>
-
-            <!-- Emergency Contact Name -->
-            <div class="col-md-6">
-              <label class="form-label">Emergency Contact Name</label>
-              <input type="text" name="emergency_contact_name" class="form-control" value="{{ request.user.get_full_name|default:request.user.username }}" required>
-            </div>
-
-            <!-- Emergency Contact Phone -->
-            <div class="col-md-6">
-              <label class="form-label">Emergency Contact Phone</label>
-              <input type="text" name="emergency_contact_phone" class="form-control" value="{{ request.user.parent_profile.phone }}" required>
             </div>
 
             <!-- Profile Image -->

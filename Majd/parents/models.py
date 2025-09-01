@@ -51,8 +51,6 @@ class Child(models.Model):
     primary_sport = models.CharField(max_length=100, blank=True)
     skill_level = models.CharField(max_length=20, choices=SkillLevel.choices, default=SkillLevel.BEGINNER, blank=True)
     medical_notes = models.TextField(blank=True, null=True)
-    emergency_contact_name  = models.CharField(max_length=100, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, blank=True)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
     objects = ChildQuerySet.as_manager()
 
@@ -66,11 +64,13 @@ class Enrollment(models.Model):
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    emergency_contact_name  = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
 
     class Meta:
         unique_together = ("child", "program")
 
     def __str__(self):
-        return f"{self.child} enrolled in {self.program.title} ({self.program.academy.name})"
+        return f"{self.child.first_name} enrolled in {self.program.title} ({self.program.academy.name})"
     
     
