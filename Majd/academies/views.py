@@ -12,7 +12,7 @@ from player.models import PlayerProfile
 from .forms import TrainerProfileForm
 from django.db.models import Q
 import csv
-import openpyxl
+# import openpyxl  # Temporarily commented out
 from django.http import HttpResponse
 
 def _academy(user):
