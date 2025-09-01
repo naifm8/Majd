@@ -111,10 +111,12 @@
 
           <!-- Buttons -->
           <div class="mt-auto d-grid gap-2">
-            <a href="#" class="btn btn-success fw-semibold">Enroll Now</a>
-            <button type="button" class="btn btn-outline-success btn-custom">
+            <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-success fw-semibold">Enroll Now</a>
+            <a href="{% url 'academies:program_sessions' academy.slug program.id %}" 
+              class="btn btn-outline-success btn-custom">
               <i class="bi bi-calendar-event me-1"></i> View Sessions
-            </button>
+            </a>
+
           </div>
 
         </div>
@@ -169,8 +171,6 @@
   </div>
 </section>
 
-{% endblock %}
-
 <style>
   .btn-custom {
   border: 1.5px solid #198754;
@@ -185,5 +185,7 @@
   background-color: #198754;
   color: #fff;
 }
-
 </style>
+
+{% endblock %}
+

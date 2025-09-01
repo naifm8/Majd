@@ -17,6 +17,8 @@ urlpatterns = [
     # Academy
     path("<slug:slug>/", views.AcademyDetailView, name="detail"),
     path("<slug:slug>/join/", views.join_academy_view, name="join_academy_view"),
+    path("<slug:academy_slug>/program/<int:program_id>/join/", views.join_program_view, name="join_program_view"),
+
 
     # Programs
     path("dashboard/programs/", views.program_dashboard, name="programs"),

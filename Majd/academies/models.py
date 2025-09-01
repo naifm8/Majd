@@ -72,6 +72,7 @@ class Session(models.Model):
     gender = models.CharField(max_length=6, choices=Gender.choices, default=Gender.MIX)
     level = models.CharField(max_length=12, choices=Level.choices, default=Level.BEGINNER)
     capacity = models.PositiveIntegerField(default=20)
+    enrolled = models.PositiveIntegerField(default=0)
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime   = models.DateTimeField(null=True, blank=True)
 
@@ -115,6 +116,12 @@ class Session(models.Model):
                         }
                     )
             current_date += timedelta(days=1)
+
+    def duration_weeks(self):
+        if self.start_datetime and self.end_datetime:
+            days = (self.end_datetime.date() - self.start_datetime.date()).days
+            return max(1, days // 7)
+        return None
             
 
 
