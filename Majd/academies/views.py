@@ -5,10 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import ProgramForm, SessionForm, AcademyForm, TrainerProfileForm
+from .forms import ProgramForm, SessionForm, AcademyForm
 from accounts.models import TrainerProfile
 from parents.models import Child, Enrollment
 from player.models import PlayerProfile
+from .forms import TrainerProfileForm
 
 def _academy(user):
     return user.academy_admin_profile.academy
