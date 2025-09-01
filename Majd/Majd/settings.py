@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "payment",
     "parents",
     "player_payments",
+    'communication',
 ]
 
 MIDDLEWARE = [
