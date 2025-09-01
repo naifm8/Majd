@@ -99,29 +99,29 @@
             <a href="#" class="btn btn-success btn-sm">+ Manage Sessions</a>
           </div>
 
-          {% for sess in today_classes %}
+          {% for session_item in today_classes %}
             <div class="card border mb-3 shadow-sm">
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 class="fw-bold mb-1">{{ sess.title }}</h6>
+                    <h6 class="fw-bold mb-1">{{ session_item.title }}</h6>
                     <small class="text-muted">
-                      {{ sess.time_range }} • {{ sess.students_count }} students
+                      {{ session_item.time_range }} • {{ session_item.students_count }} students
                     </small>
-                    {% if sess.focus %}
+                    {% if session_item.focus %}
                       <p class="mt-2 mb-1">
                         <strong>Session focus:</strong><br>
-                        <span class="text-muted">{{ sess.focus }}</span>
+                        <span class="text-muted">{{ session_item.focus }}</span>
                       </p>
                     {% endif %}
                   </div>
-                  <span class="badge {{ sess.status_css }}">{{ sess.status_label }}</span>
+                  <span class="badge {{ session_item.status_css }}">{{ session_item.status_label }}</span>
                 </div>
                 <div class="d-flex gap-2 mt-3">
-                  <a href="{{ sess.start_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <a href="{{ session_item.start_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
                     <i class="bi bi-play-circle me-1"></i> Start Session
                   </a>
-                  <a href="{{ sess.edit_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <a href="{{ session_item.edit_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
                     <i class="bi bi-pencil-square me-1"></i> Edit Plan
                   </a>
                 </div>
@@ -152,10 +152,10 @@
       <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
           <h6 class="fw-bold mb-3">Recent Achievements</h6>
-          {% for ach in achievements %}
+          {% for achievement_item in achievements %}
             <div class="{% if not forloop.last %}mb-3{% endif %}">
-              <strong>{{ ach.student_name }}</strong><br>
-              <small class="text-muted">{{ ach.text }} • {{ ach.date|timesince }} ago</small>
+              <strong>{{ achievement_item.student_name }}</strong><br>
+              <small class="text-muted">{{ achievement_item.text }} • {{ achievement_item.date|timesince }} ago</small>
             </div>
           {% empty %}
             <div class="text-muted">No achievements yet.</div>
@@ -190,42 +190,50 @@
       </div>
 
       <div class="row g-3">
-        {% for st in student_progress %}
+        {% for student_item in student_progress %}
         <div class="col-md-6">
           <div class="card border rounded-4 shadow-sm h-100">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-start mb-2">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-circle bg-success-subtle text-success">{{ st.initial }}</div>
+                  <div class="avatar-circle bg-success-subtle text-success">{{ student_item.initial }}</div>
                   <div>
-                    <div class="fw-semibold">{{ st.name }}</div>
+                    <div class="fw-semibold">{{ student_item.name }}</div>
                     <small class="text-muted">
-                      {% if st.age %}Age {{ st.age }}{% endif %}
-                      {% if st.age and st.track %} • {% endif %}
-                      {{ st.track }}
+                      {% if student_item.age %}Age {{ student_item.age }}{% endif %}
+                      {% if student_item.age and student_item.track %} • {% endif %}
+                      {{ student_item.track }}
                     </small>
                   </div>
                 </div>
-                {% if st.grade %}
-                  <span class="badge bg-light text-secondary">{{ st.grade }}</span>
+                {% if student_item.grade %}
+                  <span class="badge bg-light text-secondary">{{ student_item.grade }}</span>
                 {% endif %}
               </div>
 
               <div class="mb-2 small">Attendance</div>
               <div class="progress progress-thin mb-2">
-                <div class="progress-bar bg-success" style="width: {{ st.attendance_pct }}%"></div>
+                <div class="progress-bar bg-success"
+                     style="width: {{ student_item.attendance_pct|default_if_none:0|floatformat:1|add:'%' }};"
+                     role="progressbar"
+                     aria-valuenow="{{ student_item.attendance_pct|default_if_none:0 }}"
+                     aria-valuemin="0" aria-valuemax="100"></div>
               </div>
 
               <div class="d-flex justify-content-between small text-muted mb-3">
                 <span>Improvement</span>
-                <span class="{% if st.improvement_pct < 0 %}text-danger{% else %}text-success{% endif %} fw-semibold">
-                  {% if st.improvement_pct > 0 %}+{% endif %}{{ st.improvement_pct }}%
-                </span>
+                {% with imp=student_item.improvement_pct|default_if_none:0 %}
+                  {% if imp < 0 %}
+                    <span class="text-danger fw-semibold">{{ imp }}%</span>
+                  {% else %}
+                    <span class="text-success fw-semibold">{% if imp > 0 %}+{% endif %}{{ imp }}%</span>
+                  {% endif %}
+                {% endwith %}
               </div>
 
               <div class="d-flex justify-content-between align-items-center small mb-3">
                 <span class="text-muted">Next Session</span>
-                <span class="fw-semibold">{{ st.next_session }}</span>
+                <span class="fw-semibold">{{ student_item.next_session }}</span>
               </div>
 
               <div class="d-flex gap-2">
