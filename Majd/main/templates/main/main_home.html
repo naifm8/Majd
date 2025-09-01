@@ -28,10 +28,10 @@
         </p>
 
         <div class="d-flex flex-wrap gap-3 mb-4">
-            <a href="#" class="btn btn-success btn-lg px-4">
-                <i class="bi bi-person-plus-fill me-2"></i> Register Player
+            <a href="{% url 'accounts:register_view'%}" class="btn btn-success btn-lg px-4">
+                <i class="bi bi-person-plus-fill me-2"></i> Register Now
             </a>
-            <a href="#" class="btn btn-light btn-lg px-4">
+            <a href="{% url 'academies:list' %}" class="btn btn-light btn-lg px-4">
                 <i class="bi bi-geo-alt-fill text-success me-2"></i> Explore Academies
             </a>
         </div>
