@@ -58,7 +58,7 @@ def login_view(request):
 
             elif user.groups.filter(name="trainer").exists():
                 # ✅ Trainer → dashboard (replace with your trainer dashboard URL)
-                return redirect("academies:programs")
+                return redirect("main:main_home_view")
 
             elif user.groups.filter(name="parent").exists():
                 # ✅ Parent → academies list
