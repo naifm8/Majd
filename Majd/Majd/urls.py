@@ -30,6 +30,7 @@ urlpatterns = [
     path("player-payments/", include("player_payments.urls")),
     path('academies/', include('academies.urls', namespace='academies')),
     path("trainers/", include('trainers.urls')),
+    path("communication/", include("communication.urls", namespace="communication")),
 ]
 
 

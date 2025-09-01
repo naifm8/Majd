@@ -42,6 +42,8 @@ body {
     background: #f8f9fa;
     border-right: 1px solid #e0e0e0;
     z-index: 1030;
+    position: sticky;
+    top: 0;
 }
 
 .sidebar h5 {
@@ -90,19 +92,18 @@ body {
     background: #fdfdfd;
 }
 
-@media (min-width: 992px) {
+/* @media (min-width: 992px) {
     #sidebar {
-        position: fixed;
+        position: sticky;
         top: 0;
         left: 0;
-        height: 100vh;
     }
 
     .right-father,
     .content-area {
         margin-left: var(--sidebar-w);
-    }
-}
+    } */
+/* } */
 
 @media (max-width: 991.98px) {
     #sidebar {
