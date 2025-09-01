@@ -40,6 +40,8 @@ urlpatterns = [
 
 
 
+    # Players
+    path("dashboard/players/", views.players_dashboard, name="players_dashboard"),
 
 ]
 
