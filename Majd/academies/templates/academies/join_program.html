@@ -95,19 +95,20 @@
 
 
     <!-- Children -->
-    <form method="post" id="enrollForm" action="{% url 'academies:enrollment_details' academy.slug program.id %}">
+      <form method="post" id="enrollForm" action="{% url 'academies:join_program_view' academy.slug program.id %}">
       {% csrf_token %}
       <input type="hidden" name="program" value="{{ program.id }}">
       <div class="row g-4 mt-2">
         {% for child in children %}
         <div class="col-md-4">
           <div class="card child-card border rounded-3 p-3 h-100 position-relative" data-child-id="{{ child.id }}">
-            <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
-                   type="checkbox" 
-                   name="children" 
-                   value="{{ child.id }}" 
-                   id="child{{ child.id }}"
-                   style="pointer-events:none;">
+          <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
+                type="checkbox" 
+                name="children" 
+                value="{{ child.id }}" 
+                id="child{{ child.id }}"
+                hidden>
+
 
             <div class="d-flex align-items-center">
               {% if child.profile_image %}
