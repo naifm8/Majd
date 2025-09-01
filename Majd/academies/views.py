@@ -10,6 +10,7 @@ from accounts.models import TrainerProfile
 from parents.models import Child, Enrollment
 from player.models import PlayerProfile
 from .forms import TrainerProfileForm
+from datetime import date
 
 def _academy(user):
     return user.academy_admin_profile.academy
@@ -374,6 +375,9 @@ def add_trainer(request):
 
     return render(request, "academies/add_trainer.html", {"form": form, "academy": academy})
 
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 @login_required
 def join_program_view(request, academy_slug, program_id):
@@ -386,6 +390,24 @@ def join_program_view(request, academy_slug, program_id):
         return redirect("academies:detail", slug=academy.slug)
 
     children = Child.objects.filter(parent=parent_profile)
+
+    # derive min/max from sessions
+    sessions = program.sessions.all()
+    if sessions.exists():
+        min_age = min(s.age_min for s in sessions)
+        max_age = max(s.age_max for s in sessions)
+    else:
+        min_age = None
+        max_age = None
+        
+# annotate children with eligibility
+    for child in children:
+        child.age = calculate_age(child.date_of_birth) if child.date_of_birth else None
+        if min_age is not None and max_age is not None and child.age is not None:
+            child.is_eligible = min_age <= child.age <= max_age
+        else:
+            child.is_eligible = True  # if no age restriction
+        child.already_enrolled = Enrollment.objects.filter(child=child, program=program).exists()
 
     if request.method == "POST":
         selected_ids = request.POST.getlist("children")
@@ -401,6 +423,8 @@ def join_program_view(request, academy_slug, program_id):
         "academy": academy,
         "program": program,
         "children": children,
+        "min_age": min_age,
+        "max_age": max_age,
     })
 
 @login_required
