@@ -1,0 +1,169 @@
+{% extends "academies/base_dashboard.html" %}
+{% block content %}
+<div class="content-area" style="background:#f9fafb; min-height:100vh;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold" style="color:#138d68;">Players Dashboard</h3>
+      <p class="text-muted mb-0">Manage and track players</p>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Total Players</p>
+            <h4 class="fw-bold" style="color:#138d68;">{{ total_players }}</h4>
+          </div>
+          <i class="bi bi-people fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Active Players</p>
+            <h4 class="fw-bold" style="color:#138d68;">{{ active_players }}</h4>
+          </div>
+          <i class="bi bi-graph-up-arrow fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Injured Players</p>
+            <h4 class="fw-bold" style="color:#138d68;">{{ injured_players }}</h4>
+          </div>
+          <i class="bi bi-heart-pulse fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Filters + Search -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+
+        <!-- Left side: Tabs -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+        <!-- Label -->
+        <span class="fw-semibold text-muted">
+            <i class="bi bi-layers me-1"></i> Level
+        </span>
+    
+        <!-- Segmented Filter -->
+        <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+            <button class="btn btn-sm" style="background:#138d68; color:white;">All</button>
+            <button class="btn btn-sm btn-light">Beginner</button>
+            <button class="btn btn-sm btn-light">Intermediate</button>
+            <button class="btn btn-sm btn-light">Advanced</button>
+        </div>
+        </div>
+    
+        <!-- Right side: Search + Actions -->
+        <div class="d-flex align-items-center gap-2 mb-2 flex-grow-1 justify-content-end">
+    
+            <!-- Search -->
+            <div class="position-relative flex-grow-1 me-3" style="max-width: 400px;">
+                <i class="bi bi-search text-muted position-absolute" 
+                style="top: 50%; left: 12px; transform: translateY(-50%);"></i>
+                <input 
+                type="text" 
+                class="form-control rounded-pill ps-5 shadow-sm" 
+                placeholder="Search player..."
+                style="font-size: 0.9rem;"
+                >
+            </div>
+
+            <!-- Add New -->
+            <button type="button" class="btn btn-sm" 
+            style="background:#138d68; color:white;">
+            <i class="bi bi-plus-lg"></i> Add Player
+            </button>
+
+            <!-- Export -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm dropdown-toggle" 
+                        style="background:#138d68; color:white;" data-bs-toggle="dropdown">
+                <i class="bi bi-download"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="?{% if query %}q={{ query }}&{% endif %}{% if injury_filter %}injury={{ injury_filter }}&{% endif %}export=csv">Export CSV</a></li>
+                <li><a class="dropdown-item" href="?{% if query %}q={{ query }}&{% endif %}{% if injury_filter %}injury={{ injury_filter }}&{% endif %}export=excel">Export Excel</a></li>
+                </ul>
+            </div>
+          
+        
+        </div>
+    </div>
+  
+  
+  
+
+  <!-- Players Table -->
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Signed Session</th>
+            <th>Session Level</th>
+            <th>Status</th>
+            <th>Injury Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for player, session, status, risk in player_data %}
+              <tr 
+                {% if risk == "High" %}
+                  class="table-danger"
+                {% elif risk == "Medium" %}
+                  class="table-warning"
+                {% else %}
+                  class="table-success"
+                {% endif %}
+              >
+                <td>{{ player.child.first_name }} {{ player.child.last_name }}</td>
+          
+                <td>
+                  {% if session %}
+                    {{ session.title }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+          
+                <td>
+                  {% if session %}
+                    {{ session.get_level_display }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
+          
+                <td>{{ status }}</td>
+          
+                <td>
+                  {% if risk == "High" %}
+                    <span class="badge bg-danger">High</span>
+                  {% elif risk == "Medium" %}
+                    <span class="badge bg-warning text-dark">Medium</span>
+                  {% else %}
+                    <span class="badge bg-success">Low</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+                   
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

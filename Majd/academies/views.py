@@ -11,6 +11,10 @@ from parents.models import Child, Enrollment
 from player.models import PlayerProfile
 from .forms import TrainerProfileForm
 from datetime import date
+from django.db.models import Q
+import csv
+import openpyxl
+from django.http import HttpResponse
 
 def _academy(user):
     return user.academy_admin_profile.academy
@@ -477,3 +481,124 @@ def enrollment_details_view(request, academy_slug, program_id):
         "program": program,
         "children": children,
     })
+
+@login_required
+def players_dashboard(request):
+    academy_admin = getattr(request.user, "academy_admin_profile", None)
+    academy = academy_admin.academy if academy_admin else None
+
+    players = PlayerProfile.objects.filter(academy=academy) if academy else PlayerProfile.objects.all()
+
+    # 🔍 Search
+    query = request.GET.get("q")
+    if query:
+        players = players.filter(
+            Q(child__first_name__icontains=query) |
+            Q(child__last_name__icontains=query) |
+            Q(position__name__icontains=query)
+        )
+
+    # 🔽 Filter by injury risk
+    injury_filter = request.GET.get("injury")
+    if injury_filter:
+        if injury_filter == "low":
+            players = players.filter(avg_progress__gte=70)
+        elif injury_filter == "medium":
+            players = players.filter(avg_progress__lt=70, avg_progress__gte=40)
+        elif injury_filter == "high":
+            players = players.filter(avg_progress__lt=40)
+
+    players = players.prefetch_related("player_sessions__session")
+
+    # --- Export CSV / Excel ---
+    export_type = request.GET.get("export")
+    if export_type in ["csv", "excel"]:
+        return export_players(players, export_type)
+
+    # Stats
+    total_players = players.count()
+    active_players = players.filter(avg_progress__gte=50).count()
+    injured_players = players.filter(class_attendances__status="excused").distinct().count()
+
+    player_data = []
+    for player in players:
+        session = player.player_sessions.first().session if player.player_sessions.exists() else None
+        status = "On Schedule" if session else "Not Enrolled"
+
+        # Injury risk rule
+        if player.avg_progress < 40:
+            risk = "High"
+        elif player.avg_progress < 70:
+            risk = "Medium"
+        else:
+            risk = "Low"
+
+        player_data.append((player, session, status, risk))
+
+    context = {
+        "academy": academy,
+        "total_players": total_players,
+        "active_players": active_players,
+        "injured_players": injured_players,
+        "player_data": player_data,
+        "query": query or "",
+        "injury_filter": injury_filter or "",
+    }
+    return render(request, "academies/players_dashboard.html", context)
+
+
+def export_players(players, export_type):
+    if export_type == "csv":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="players.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(["Name", "Session", "Level", "Status", "Injury Risk"])
+
+        for player in players:
+            session = player.player_sessions.first().session if player.player_sessions.exists() else None
+            session_title = session.title if session else "N/A"
+            level = session.get_level_display() if session else "N/A"
+            status = "On Schedule" if session else "Not Enrolled"
+
+            # Injury risk
+            if player.avg_progress < 40:
+                risk = "High"
+            elif player.avg_progress < 70:
+                risk = "Medium"
+            else:
+                risk = "Low"
+
+            writer.writerow([f"{player.child.first_name} {player.child.last_name}", session_title, level, status, risk])
+
+        return response
+
+    elif export_type == "excel":
+        workbook = openpyxl.Workbook()
+        sheet = workbook.active
+        sheet.title = "Players"
+
+        headers = ["Name", "Session", "Level", "Status", "Injury Risk"]
+        sheet.append(headers)
+
+        for player in players:
+            session = player.player_sessions.first().session if player.player_sessions.exists() else None
+            session_title = session.title if session else "N/A"
+            level = session.get_level_display() if session else "N/A"
+            status = "On Schedule" if session else "Not Enrolled"
+
+            if player.avg_progress < 40:
+                risk = "High"
+            elif player.avg_progress < 70:
+                risk = "Medium"
+            else:
+                risk = "Low"
+
+            sheet.append([f"{player.child.first_name} {player.child.last_name}", session_title, level, status, risk])
+
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = 'attachment; filename="players.xlsx"'
+        workbook.save(response)
+        return response
+
+
