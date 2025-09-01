@@ -1,0 +1,189 @@
+{% extends "academies/base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-area" style="background:#f9fafb; min-height:100vh;">
+  
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold" style="color:#138d68;">Trainer Dashboard</h3>
+      <p class="text-muted mb-0">Overview of trainers and their sessions</p>
+    </div>
+    <a href="{% url 'academies:add_trainer' %}"
+        class="btn btn-sm d-flex align-items-center"
+        style="background:#138d68; color:white; min-width:110px;">
+        <i class="bi bi-plus-circle me-2"></i> Add Trainer
+    </a>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4">
+    <!-- Total Trainers -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 rounded-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Total Trainers</p>
+            <h4 class="fw-bold" style="color:#138d68;">{{ total_trainers }}</h4>
+          </div>
+          <i class="bi bi-person-badge fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Players -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 rounded-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Total Players</p>
+            <h4 class="fw-bold" style="color:#138d68;">{{ total_players }}</h4>
+          </div>
+          <i class="bi bi-people fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Placeholder for more metrics -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100 rounded-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Other Metric</p>
+            <h4 class="fw-bold" style="color:#138d68;">--</h4>
+          </div>
+          <i class="bi bi-graph-up-arrow fs-3" style="color:#138d68;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trainers List -->
+  {% for trainer, player_count, session_data in trainer_data %}
+  <div class="card border-0 shadow-sm mb-3 rounded-3">
+    <div class="card-body">
+      <!-- Trainer Row -->
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <img src="{{ trainer.profile_image.url }}" 
+               class="rounded-circle border me-3" 
+               alt="Trainer"
+               style="width:50px; height:50px; object-fit:cover;">
+          <div>
+            <h6 class="fw-bold mb-1" style="color:#138d68;">
+              {% if trainer.user %}{{ trainer.user}}{% else %}Unnamed Trainer{% endif %}
+            </h6>
+            <small class="text-muted">
+              {{ trainer.specialty }} • {{ trainer.years_of_experience }} yrs exp
+            </small><br>
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <span class="text-muted" style="font-size:0.9rem;">Certifications:</span>
+              {% if trainer.certifications %}
+                <span class="badge rounded-pill bg-light text-success border">
+                  <i class="bi bi-award me-1"></i> {{ trainer.certifications }}
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  <i class="bi bi-x-circle me-1"></i> None
+                </span>
+              {% endif %}
+            </div>
+            
+          </div>
+        </div>
+        <span class="badge bg-success">Players: {{ player_count }}</span>
+      </div>
+
+      <!-- Expand Button -->
+      <button class="btn btn-sm mt-3" 
+              style="background:#138d68; color:white;" 
+              type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#sessions-{{ trainer.id }}" 
+              aria-expanded="false" 
+              aria-controls="sessions-{{ trainer.id }}">
+        <i class="bi bi-chevron-down"></i> View Sessions
+      </button>
+
+        <!-- Collapsible Sessions -->
+        <div class="collapse mt-3" id="sessions-{{ trainer.id }}">
+            {% if session_data %}
+            <div class="row row-cols-1 g-3">
+                {% for session, enrolled in session_data %}
+                <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body">
+                    <!-- Header row -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center">
+                        {% if session.program.logo %}
+                        <img src="{{ session.program.logo.url }}" 
+                            class="rounded-circle border" alt="Logo"
+                            style="width:40px; height:40px; object-fit:cover; margin-right:12px;">
+                        {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm"
+                            style="width:40px; height:40px; margin-right:12px;
+                                background-color:
+                                {% if session.program.sport_type == 'football' %} #05751d
+                                {% elif session.program.sport_type == 'basketball' %} #e8590c
+                                {% elif session.program.sport_type == 'volleyball' %} #0a7d91
+                                {% elif session.program.sport_type == 'tennis' %} #d39e00
+                                {% elif session.program.sport_type == 'table_tennis' %} #4b2c82
+                                {% elif session.program.sport_type == 'swimming' %} #38b5ad
+                                {% else %} #495057
+                                {% endif %};">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+                        {% endif %}
+        
+                        <div>
+                        <h6 class="fw-bold mb-1" style="color:#138d68;">{{ session.title }}</h6>
+                        <small class="d-flex flex-wrap gap-2 mt-1">
+                          <span class="badge bg-light text-muted fw-normal px-3 py-2" style="font-size:0.85rem;">
+                            Sport: {{ session.program.get_sport_type_display }}
+                          </span>
+                          <span class="badge bg-light text-muted fw-normal px-3 py-2" style="font-size:0.85rem;">
+                            Age: {{ session.age_min }}–{{ session.age_max }} yrs
+                          </span>
+                          <span class="badge bg-light text-muted fw-normal px-3 py-2" style="font-size:0.85rem;">
+                            Level: {{ session.get_level_display }}
+                          </span>
+                          <span class="badge bg-light text-muted fw-normal px-3 py-2" style="font-size:0.85rem;">
+                            Duration: {{ session.duration_display }}
+                          </span>
+                        </small>
+                        
+                        </div>
+                    </div>
+                    <span class="badge" style="background:#01c05a;">Active</span>
+                    </div>
+        
+                    <!-- Capacity Progress -->
+                    <div class="mb-2">
+                    <div class="progress" style="height: 6px;">
+                        {% with pct=enrolled|divisibleby:session.capacity %}
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: {{ enrolled|floatformat:0 }}/{{ session.capacity|floatformat:0 }}%;" 
+                            aria-valuenow="{{ enrolled }}" aria-valuemin="0" aria-valuemax="{{ session.capacity }}">
+                        </div>
+                        {% endwith %}
+                    </div>
+                    <small>{{ enrolled }}/{{ session.capacity }} Enrolled</small>
+                    </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted small">No sessions for this trainer.</p>
+            {% endif %}
+        </div>
+        
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No trainers found.</p>
+  {% endfor %}
+
+</div>
+{% endblock %}

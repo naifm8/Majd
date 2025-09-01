@@ -72,11 +72,28 @@ class Session(models.Model):
     gender = models.CharField(max_length=6, choices=Gender.choices, default=Gender.MIX)
     level = models.CharField(max_length=12, choices=Level.choices, default=Level.BEGINNER)
     capacity = models.PositiveIntegerField(default=20)
+    enrolled = models.PositiveIntegerField(default=0)
     start_datetime = models.DateTimeField(null=True, blank=True)
     end_datetime   = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.program.title}"
+    
+    def duration_in_weeks(self):
+        if self.start_datetime and self.end_datetime:
+            delta = self.end_datetime.date() - self.start_datetime.date()
+            weeks = delta.days // 7
+            return max(1, weeks)  # at least 1 week
+        return None
+
+    def duration_display(self):
+        weeks = self.duration_in_weeks()
+        if not weeks:
+            return "N/A"
+        if weeks < 4:
+            return f"{weeks} week{'s' if weeks > 1 else ''}"
+        months = weeks // 4
+        return f"{months} month{'s' if months > 1 else ''}"
 
     def generate_classes(self):
         from datetime import timedelta
@@ -99,6 +116,12 @@ class Session(models.Model):
                         }
                     )
             current_date += timedelta(days=1)
+
+    def duration_weeks(self):
+        if self.start_datetime and self.end_datetime:
+            days = (self.end_datetime.date() - self.start_datetime.date()).days
+            return max(1, days // 7)
+        return None
             
 
 

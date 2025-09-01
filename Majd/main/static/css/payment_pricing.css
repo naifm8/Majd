@@ -1,0 +1,254 @@
+/* Pricing Page Styles */
+.pricing-hero {
+  margin-bottom: 2rem;
+}
+
+.back-link {
+  color: #6c757d;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #495057;
+}
+
+.back-link i {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* Main Title */
+.fw-semibold {
+  font-weight: 600 !important;
+  color: #343a40;
+}
+
+/* Pricing Toggle */
+.pricing-toggle {
+  margin-bottom: 2rem;
+}
+
+.pricing-toggle .badge {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 0.5rem;
+}
+
+.pricing-toggle .text-bg-success {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.pricing-toggle .text-bg-light {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  border: 1px solid #dee2e6 !important;
+}
+
+/* Pricing Cards */
+.pricing-card {
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.3s ease;
+  background: white;
+  overflow: hidden;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.pricing-card.featured {
+  border: 2px solid #28a745;
+  position: relative;
+}
+
+.pricing-card.featured::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+/* Most Popular Badge */
+.badge.text-bg-success {
+  background-color: #28a745 !important;
+  color: white !important;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+}
+
+/* Pricing Icons */
+.pricing-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.pricing-icon.starter {
+  background: linear-gradient(135deg, #6c757d, #adb5bd);
+}
+
+.pricing-icon.pro {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.pricing-icon.ent {
+  background: linear-gradient(135deg, #6f42c1, #e83e8c);
+}
+
+/* Plan Names */
+.pricing-card h6 {
+  color: #343a40;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Plan Descriptions */
+.pricing-card .text-muted {
+  color: #6c757d !important;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Pricing */
+.pricing-price {
+  color: #343a40;
+  font-weight: 700;
+  margin: 1.5rem 0;
+}
+
+.pricing-price small {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+/* Features List */
+.pricing-features {
+  margin: 1.5rem 0;
+  flex-grow: 1;
+}
+
+.pricing-features li {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.pricing-features li i {
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.pricing-features li .bi-check-circle {
+  color: #28a745;
+}
+
+.pricing-features li .bi-dash-circle {
+  color: #6c757d;
+}
+
+/* Call to Action Buttons */
+.cta-btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.cta-btn.success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+.cta-btn.success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(40, 167, 69, 0.3);
+}
+
+.cta-btn.dark {
+  background: linear-gradient(135deg, #495057, #6c757d);
+  color: white;
+}
+
+.cta-btn.dark:hover {
+  background: linear-gradient(135deg, #343a40, #495057);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(73, 80, 87, 0.3);
+}
+
+/* Advantage Section */
+.advantage {
+  background: #f8f9fa;
+  border-radius: 1rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.advantage:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.advantage .icon {
+  color: #28a745;
+  margin-bottom: 1rem;
+}
+
+.advantage h6 {
+  color: #343a40;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.advantage p {
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+  .pricing-card {
+    margin-bottom: 1rem;
+  }
+  
+  .advantage {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pricing-toggle {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pricing-toggle .badge {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -9,11 +9,13 @@
       <h3 class="fw-bold" style="color:#138d68;">Program Management</h3>
       <p class="text-muted mb-0">Browse programs and manage their sessions</p>
     </div>
-    <a href="{% url 'academies:program_create' %}" class="btn" style="background:#138d68; color:white;">
-      <i class="bi bi-plus-lg"></i> Create New Program
+    <a href="{% url 'academies:program_create' %}" 
+        class="btn btn-sm py-1 px-3" 
+        style="background:#138d68; color:white; font-size:0.85rem;">
+      <i class="bi bi-plus-lg"></i> Create Program
     </a>
   </div>
-
+  
 <!-- Stats row -->
 <div class="row g-3 mb-4">
   <!-- Total Programs -->
@@ -66,12 +68,25 @@
         <h5 class="fw-bold mb-0" style="color:#138d68;">
           {{ program.title }}
         </h5>
-        <a href="{% url 'academies:session_create' program.id %}" 
-           class="btn btn-sm" style="background:#138d68; color:white;">
-          <i class="bi bi-plus-circle"></i> Add Session
-        </a>
+        <div class="d-flex gap-1 mt-2">
+          <a href="{% url 'academies:program_edit' program.id %}" 
+             class="btn btn-sm py-1 px-2" style="background:#138d68; color:white; font-size:0.8rem;">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+          <a href="{% url 'academies:program_delete' program.id %}" 
+             class="btn btn-sm py-1 px-2" style="background:#138d68; color:white; font-size:0.8rem;">
+            <i class="bi bi-trash"></i> Delete
+          </a>
+          <a href="{% url 'academies:session_create' program.id %}" 
+             class="btn btn-sm py-1 px-2" style="background:#138d68; color:white; font-size:0.8rem;">
+            <i class="bi bi-plus-circle"></i> Add
+          </a>
+        </div>
+        
       </div>
     </div>
+
+
   
     <!-- Program Body -->
     <div class="card-body bg-white">
@@ -107,29 +122,44 @@
   
                   <div>
                     <h6 class="fw-bold mb-1" style="color:#138d68;">{{ s.title }}</h6>
-                    <small class="text-muted">
-                      {{ program.get_sport_type_display }} • 
-                      {{ s.age_min }}–{{ s.age_max }} yrs • 
-                      {{ s.get_level_display }} • 
-                      {{ s.start_datetime|date:"M d" }} – {{ s.end_datetime|date:"M d, Y" }}
-                    </small>
+                    <small class="text-muted d-flex flex-wrap gap-2">
+                      <span>                    {% if s.trainer %}
+                        <p class="mb-1 text-muted" style="font-size: 0.9rem;">
+                          <b>Trainer:</b> {{ s.trainer.user }}
+                        </p>
+                        {% endif %}    </span>
+                      <span class="text-secondary">|</span>
+                      <span><b>Age: </b>{{ s.age_min }}–{{ s.age_max }} yrs</span>
+                      <span class="text-secondary">|</span>
+                      <span><b>Level: </b>{{ s.get_level_display }}</span>
+                      <span class="text-secondary">|</span>
+                      <span><b>Duration: </b>{{ s.duration_display }}</span>
+                    </small>                 
                   </div>
                 </div>
                 <span class="badge" style="background:#01c05a;">Active</span>
               </div>
   
               <!-- Session Buttons -->
-              <div class="d-flex gap-2 mt-3">
-                <a href="#" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
-                  <i class="bi bi-people"></i> Players
+              <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="#" 
+                   class="badge bg-light text-muted fw-normal px-3 py-2 text-decoration-none" 
+                   style="font-size: 0.9rem;">
+                  <i class="bi bi-people me-1"></i> Players
                 </a>
-                <a href="{% url 'academies:session_edit' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
-                  <i class="bi bi-pencil"></i> Edit
+                <a href="{% url 'academies:session_edit' s.id %}" 
+                   class="badge bg-light text-muted fw-normal px-3 py-2 text-decoration-none" 
+                   style="font-size: 0.9rem;">
+                  <i class="bi bi-pencil me-1"></i> Edit
                 </a>
-                <a href="{% url 'academies:session_delete' s.id %}" class="btn btn-sm btn-outline-dark" style="min-width:100px;">
-                  <i class="bi bi-trash"></i> Delete
+                <a href="{% url 'academies:session_delete' s.id %}" 
+                   class="badge bg-light text-muted fw-normal px-3 py-2 text-decoration-none" 
+                   style="font-size: 0.9rem;">
+                  <i class="bi bi-trash me-1"></i> Delete
                 </a>
               </div>
+              
+              
   
             </div>
           </div>
@@ -144,5 +174,6 @@
     <p class="text-muted">No programs available.</p>
   {% endfor %}
   
+
 </div>
 {% endblock %}
