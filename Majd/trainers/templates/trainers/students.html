@@ -1,0 +1,273 @@
+{% extends "trainers/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}My Students{% endblock %}
+{% block page_title %}My Students{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row gap-3">
+    <div>
+      <h4 class="fw-semibold mb-1">My Students</h4>
+      <p class="text-muted mb-0">Manage and track progress for all your assigned students</p>
+    </div>
+    <!-- <div class="d-flex gap-2">
+      <a href="#" class="btn btn-outline-secondary"><i class="bi bi-funnel me-1"></i> Filters</a>
+      <a href="#" class="btn btn-success text-white"><i class="bi bi-plus-lg me-1"></i> Add Student</a>
+    </div> -->
+  </div>
+
+
+  <form method="get" class="mt-3" id="search_form">
+    <div class="row g-2">
+      <div class="col-12 col-md-6 col-lg-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input type="text"
+                 class="form-control"
+                 name="query"
+                 id="search_query_input"
+                 placeholder="Search students..."
+                 value="{{ search_query }}">
+          {% if current_filter %}
+            <input type="hidden" name="selected_session_id" value="{{ current_filter }}">
+          {% endif %}
+          <input type="hidden" name="view_mode" value="{{ view_mode|default:'grid' }}">
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Filter chips (GET forms) -->
+  <div class="mt-3 d-flex flex-wrap gap-2 filter-chips">
+    {% for filter_item in filters %}
+      <form method="get" class="d-inline" id="filter_chip_form_{{ forloop.counter }}">
+        {% if search_query %}
+          <input type="hidden" name="query" value="{{ search_query }}">
+        {% endif %}
+        <input type="hidden" name="view_mode" value="{{ view_mode|default:'grid' }}">
+        {% if filter_item.value %}
+          <input type="hidden" name="selected_session_id" value="{{ filter_item.value }}">
+        {% endif %}
+        <button type="submit"
+                class="btn btn-sm {% if filter_item.active %}btn-success text-white{% else %}btn-outline-secondary{% endif %}">
+          {{ filter_item.label }} ({{ filter_item.count }})
+        </button>
+      </form>
+    {% endfor %}
+  </div>
+
+
+  <div class="mt-4">
+    <div class="bg-light rounded-3 p-1 small d-inline-flex">
+      <!-- Grid -->
+      <form method="get" class="me-1" id="view_toggle_form_grid">
+        {% if search_query %}<input type="hidden" name="query" value="{{ search_query }}">{% endif %}
+        {% if current_filter %}<input type="hidden" name="selected_session_id" value="{{ current_filter }}">{% endif %}
+        <input type="hidden" name="view_mode" value="grid">
+        <button type="submit"
+                class="btn {% if view_mode != 'detail' %}active btn-success text-white{% else %}btn-outline-secondary{% endif %}">
+          Grid View
+        </button>
+      </form>
+      <!-- Detailed -->
+      <form method="get" id="view_toggle_form_detail">
+        {% if search_query %}<input type="hidden" name="query" value="{{ search_query }}">{% endif %}
+        {% if current_filter %}<input type="hidden" name="selected_session_id" value="{{ current_filter }}">{% endif %}
+        <input type="hidden" name="view_mode" value="detail">
+        <button type="submit"
+                class="btn {% if view_mode == 'detail' %}active btn-success text-white{% else %}btn-outline-secondary{% endif %}">
+          Detailed View
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if view_mode == 'detail' %}
+
+    <div class="mt-3">
+      {% for student_item in students %}
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <div class="row g-3 align-items-start">
+              <!-- Left: summary -->
+              <div class="col-12 col-lg-4">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle bg-success-subtle text-success">{{ student_item.initial }}</div>
+                    <div>
+                      <div class="fw-semibold">{{ student_item.name }}</div>
+                      <small class="text-muted">{{ student_item.meta }}</small>
+                    </div>
+                  </div>
+                  {% if student_item.grade %}
+                    <span class="badge bg-light text-secondary">{{ student_item.grade }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="mt-3">
+                  <div class="mb-2 small">Overall Progress</div>
+                  <div class="progress progress-thin mb-3">
+                    <div class="progress-bar bg-success"
+                        style="width:{% widthratio student_item.overall_progress 100 100 %}%"></div>
+                  </div>
+
+                  <div class="mb-2 small">Attendance</div>
+                  <div class="progress progress-thin mb-2">
+                    <div class="progress-bar bg-success"
+                        style="width:{% widthratio student_item.attendance_pct 100 100 %}%"></div>
+                  </div>
+
+                  <div class="d-flex justify-content-between small text-muted mb-3">
+                    <span>Improvement</span>
+                    {% with imp=student_item.improvement_pct|default_if_none:0 %}
+                      {% if imp < 0 %}
+                        <span class="text-danger fw-semibold">{{ imp }}%</span>
+                      {% else %}
+                        <span class="text-success fw-semibold">{% if imp > 0 %}+{% endif %}{{ imp }}%</span>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center small">
+                    <span class="text-muted">Next Session</span>
+                    <span class="fw-semibold">{{ student_item.next_session }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Middle: Skills Assessment -->
+              <div class="col-12 col-lg-5">
+                <h6 class="fw-semibold mb-3">Skills Assessment</h6>
+
+                {% if student_item.skills %}
+                  {% for skill in student_item.skills|slice:":6" %}
+                    <div class="mb-3">
+                      <div class="d-flex justify-content-between small">
+                        <span class="text-muted">{{ skill.name }}</span>
+                        <span class="fw-semibold">{{ skill.current_level }}%</span>
+                      </div>
+                      <div class="progress progress-thin">
+                        <div class="progress-bar"
+                             style="width:{% widthratio skill.current_level 100 100 %}%"></div>
+                      </div>
+                      {% if skill.target_level %}
+                        <div class="small text-muted mt-1">Goal: {{ skill.target_level }}%</div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="text-muted small">No skills assigned yet.</div>
+                {% endif %}
+              </div>
+
+              <!-- Right: Notes & actions -->
+              <div class="col-12 col-lg-3">
+                <h6 class="fw-semibold mb-3">Recent Notes</h6>
+                {% if student_item.recent_notes %}
+                  <div class="border rounded-3 p-2 mb-3 small text-muted">
+                    {{ student_item.recent_notes.0 }}
+                  </div>
+                {% else %}
+                  <div class="border rounded-3 p-2 mb-3 small text-muted">
+                    No recent notes.
+                  </div>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                  <a href="{{ student_item.profile_url }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-eye me-1"></i> View Full Profile
+                  </a>
+                  <a href="{{ student_item.evaluate_url }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-clipboard-check me-1"></i>Evaluation
+                  </a>
+                  <a href="#" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-journal-text me-1"></i> Add Notes
+                  </a>
+                  <a href="#" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-telephone me-1"></i> Contact Parent
+                  </a>
+                </div>
+              </div>
+            </div><!-- /row -->
+          </div>
+        </div>
+      {% empty %}
+        <div class="text-muted">No students found.</div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+
+    <div class="row g-3 mt-2">
+      {% for student_item in students %}
+        <div class="col-12 col-md-6 col-xl-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex gap-3">
+                  <div class="avatar-circle bg-success-subtle text-success">{{ student_item.initial }}</div>
+                  <div>
+                    <div class="fw-semibold">{{ student_item.name }}</div>
+                    <small class="text-muted">{{ student_item.meta }}</small>
+                  </div>
+                </div>
+                {% if student_item.grade %}
+                  <span class="badge bg-light text-secondary">{{ student_item.grade }}</span>
+                {% endif %}
+              </div>
+
+
+              <div class="mt-3">
+                <div class="small mb-1">Overall Progress</div>
+                <div class="progress progress-thin mb-2">
+                  <div class="progress-bar bg-success"
+                       style="width:{% widthratio student_item.overall_progress 100 100 %}%"></div>
+                </div>
+
+                <div class="small mb-1">Attendance</div>
+                <div class="progress progress-thin mb-2">
+                  <div class="progress-bar bg-success"
+                       style="width:{% widthratio student_item.attendance_pct 100 100 %}%"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted mb-3">
+                  <span>Improvement</span>
+                  {% with imp=student_item.improvement_pct|default_if_none:0 %}
+                    {% if imp < 0 %}
+                      <span class="text-danger fw-semibold">{{ imp }}%</span>
+                    {% else %}
+                      <span class="text-success fw-semibold">{% if imp > 0 %}+{% endif %}{{ imp }}%</span>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small mb-3">
+                  <span class="text-muted">Next Session</span>
+                  <span class="fw-semibold">{{ student_item.next_session }}</span>
+                </div>
+              </div>
+
+              <!-- Actions stick to bottom -->
+              <div class="mt-auto d-flex gap-2">
+                <a href="{{ student_item.profile_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-eye me-1"></i> View Profile
+                </a>
+                <a href="{{ student_item.evaluate_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-clipboard-check me-1"></i> Evaluate
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12"><div class="text-muted">No students found.</div></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

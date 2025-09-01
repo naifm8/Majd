@@ -1,0 +1,258 @@
+{% extends "trainers/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Overview{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Greeting -->
+  <h4 class="fw-semibold">Welcome back, Coach {{ trainer.name }}!</h4>
+  <p class="text-muted">Manage your training sessions, track student progress, and continue developing young athletes.</p>
+
+  <!-- Coach banner -->
+  <div class="card border-0 shadow-sm mt-3"
+       style="background: linear-gradient(90deg, #008C62, #00936B); border-radius: 12px;">
+    <div class="card-body d-flex align-items-center justify-content-between">
+
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle d-flex justify-content-center align-items-center"
+             style="width:50px;height:50px;background:#e0e0e0;color:#666;font-weight:bold;">
+          {% if trainer.profile_image %}
+            <img src="{{ trainer.profile_image.url }}" alt="Profile"
+                 class="rounded-circle" style="width:50px;height:50px;object-fit:cover;">
+          {% else %}
+            {{ trainer.name|first|upper }}
+          {% endif %}
+        </div>
+
+        <div class="text-white">
+          <h6 class="mb-1 fw-bold">{{ trainer.name }} (Coach)</h6>
+          <p class="mb-1 text-white-50 small">
+            {{ trainer.specialty|default:"Coach" }}{% if trainer.academy_name %} • {{ trainer.academy_name }}{% endif %}
+          </p>
+          {% if trainer.specialty %}
+            <span class="badge bg-light text-dark small">{{ trainer.specialty }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="text-end text-white">
+        <h4 class="fw-bold mb-0">{{ summary.students_count }}</h4>
+        <small class="text-white-50">Students Assigned</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="row mt-4">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Today's Sessions</small>
+            <i class="bi bi-calendar-event fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.today_classes_count }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">Weekly Hours</small>
+            <i class="bi bi-clock fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.weekly_hours }}</h4>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">My Students</small>
+            <i class="bi bi-people fs-4 text-success"></i>
+          </div>
+          <h4 class="fw-bold text-success mt-3 mb-0">{{ summary.students_count }}</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today’s Sessions + Right column -->
+  <div class="row mt-4">
+
+    <!-- Today’s Sessions -->
+    <div class="col-lg-8 mb-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h6 class="fw-bold mb-1">Today's Sessions</h6>
+              <small class="text-muted">Your training sessions scheduled for today</small>
+            </div>
+            <a href="#" class="btn btn-success btn-sm">+ Manage Sessions</a>
+          </div>
+
+          {% for session_item in today_classes %}
+            <div class="card border mb-3 shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h6 class="fw-bold mb-1">{{ session_item.title }}</h6>
+                    <small class="text-muted">
+                      {{ session_item.time_range }} • {{ session_item.students_count }} students
+                    </small>
+                    {% if session_item.focus %}
+                      <p class="mt-2 mb-1">
+                        <strong>Session focus:</strong><br>
+                        <span class="text-muted">{{ session_item.focus }}</span>
+                      </p>
+                    {% endif %}
+                  </div>
+                  <span class="badge {{ session_item.status_css }}">{{ session_item.status_label }}</span>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                  <a href="{{ session_item.start_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                    <i class="bi bi-play-circle me-1"></i> Start Session
+                  </a>
+                  <a href="{{ session_item.edit_url }}" class="btn btn-outline-secondary btn-sm flex-fill">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Plan
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-muted">No sessions scheduled for today.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+
+      <!-- Quick Actions -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Quick Actions</h6>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-check2-square me-2"></i> Mark Attendance</a>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-clipboard-check me-2"></i> Create Evaluation</a>
+          <a class="btn w-100 btn-outline-secondary mb-2 text-start" href="#"><i class="bi bi-journal-text me-2"></i> Add Training Notes</a>
+          <a class="btn w-100 btn-outline-secondary text-start" href="#"><i class="bi bi-calendar-plus me-2"></i> Schedule Session</a>
+        </div>
+      </div>
+
+      <!-- Recent Achievements -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="fw-bold mb-3">Recent Achievements</h6>
+          {% for achievement_item in achievements %}
+            <div class="{% if not forloop.last %}mb-3{% endif %}">
+              <strong>{{ achievement_item.student_name }}</strong><br>
+              <small class="text-muted">{{ achievement_item.text }} • {{ achievement_item.date|timesince }} ago</small>
+            </div>
+          {% empty %}
+            <div class="text-muted">No achievements yet.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Reminder -->
+      {% if reminder %}
+      <div class="card border-0 shadow-sm border-start border-3 border-warning">
+        <div class="card-body">
+          <h6 class="fw-bold text-warning mb-2"><i class="bi bi-exclamation-circle me-1"></i> {{ reminder.title }}</h6>
+          <p class="mb-2 small text-muted">{{ reminder.text }}</p>
+          <a href="{{ reminder.url }}" class="btn btn-outline-secondary btn-sm">View Details</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Student Progress -->
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h6 class="fw-bold mb-1">Student Progress</h6>
+          <small class="text-muted">Recent performance highlights from your students</small>
+        </div>
+        <a href="#" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-eye me-1"></i> View All Students
+        </a>
+      </div>
+
+      <div class="row g-3">
+        {% for student_item in student_progress %}
+        <div class="col-md-6">
+          <div class="card border rounded-4 shadow-sm h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="avatar-circle bg-success-subtle text-success">{{ student_item.initial }}</div>
+                  <div>
+                    <div class="fw-semibold">{{ student_item.name }}</div>
+                    <small class="text-muted">
+                      {% if student_item.age %}Age {{ student_item.age }}{% endif %}
+                      {% if student_item.age and student_item.track %} • {% endif %}
+                      {{ student_item.track }}
+                    </small>
+                  </div>
+                </div>
+                {% if student_item.grade %}
+                  <span class="badge bg-light text-secondary">{{ student_item.grade }}</span>
+                {% endif %}
+              </div>
+
+              <div class="mb-2 small">Attendance</div>
+              <div class="progress progress-thin mb-2">
+                <div class="progress-bar bg-success"
+                     style="width: {{ student_item.attendance_pct|default_if_none:0|floatformat:1|add:'%' }};"
+                     role="progressbar"
+                     aria-valuenow="{{ student_item.attendance_pct|default_if_none:0 }}"
+                     aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+
+              <div class="d-flex justify-content-between small text-muted mb-3">
+                <span>Improvement</span>
+                {% with imp=student_item.improvement_pct|default_if_none:0 %}
+                  {% if imp < 0 %}
+                    <span class="text-danger fw-semibold">{{ imp }}%</span>
+                  {% else %}
+                    <span class="text-success fw-semibold">{% if imp > 0 %}+{% endif %}{{ imp }}%</span>
+                  {% endif %}
+                {% endwith %}
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center small mb-3">
+                <span class="text-muted">Next Session</span>
+                <span class="fw-semibold">{{ student_item.next_session }}</span>
+              </div>
+
+              <div class="d-flex gap-2">
+                <a href="#" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-clipboard-check me-1"></i> Evaluate
+                </a>
+                <a href="#" class="btn btn-outline-secondary btn-sm flex-fill">
+                  <i class="bi bi-journal-text me-1"></i> Notes
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+          <div class="col-12"><div class="text-muted">No students to show.</div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

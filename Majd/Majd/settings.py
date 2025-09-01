@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "accounts",
     "player",
     "academies",
+    "trainers",
     "payment",
     "parents",
     "player_payments",
