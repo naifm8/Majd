@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("academies", "0008_alter_program_academy"),
         ("accounts", "0004_alter_trainerprofile_user"),
-        ("parents", "0002_child_emergency_contact_name_and_more"),
+        
     ]
 
     operations = [

@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('academies', '0005_delete_subscriptionplan'),
-        ('parents', '0002_child_emergency_contact_name_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

@@ -53,6 +53,7 @@ class Child(models.Model):
     medical_notes = models.TextField(blank=True, null=True)
     profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
     objects = ChildQuerySet.as_manager()
+    
 
     def __str__(self):
         full = f"{self.first_name} {self.last_name}".strip()
