@@ -1,0 +1,56 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Messages{% endblock %}
+{% block page_title %}Conversation{% endblock %}
+
+
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm">
+        <!-- Header -->
+        <div class="card-header bg-success text-white d-flex align-items-center">
+            <i class="bi bi-person-video3 me-2 fs-5"></i>
+            <h5 class="mb-0">Conversation with {{ conversation.trainer.user.get_full_name|default:conversation.trainer.user.username }}</h5>
+        </div>
+
+        <!-- Messages Body -->
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="mb-3 {% if msg.sender == user %}text-end{% endif %}">
+                        <div class="{% if msg.sender == user %}bg-success text-white{% else %}bg-light{% endif %} d-inline-block px-3 py-2 rounded shadow-sm">
+                            {{ msg.body }}
+                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
+                                {{ msg.sent_at|date:"M d, Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted">
+                    <i class="bi bi-chat fs-1"></i>
+                    <p>No messages yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Message Form -->
+        <div class="card-footer">
+            <form method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="body" class="form-control" placeholder="Type your message..." required>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-send"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-3">
+        <a href="{% url 'communication:parent_conversations_view' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Messages
+        </a>
+    </div>
+</div>
+{% endblock %}
