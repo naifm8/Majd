@@ -7,7 +7,6 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parents', '0004_alter_enrollment_child'),
         ('player_payments', '0001_initial'),
     ]
 
