@@ -3,19 +3,20 @@ from . import views
 
 app_name = "parents"
 
-
 urlpatterns = [
-    path('dashboard/overview/', views.dashboard_view, name='dashboard_view'),
-    path('dashboard/children/', views.my_children_view, name='my_children_view'),
-    path('dashboard/add/child/', views.add_child_view, name='add_child_view'),
-    path('dashboard/edit/child/<int:child_id>/', views.edit_child_view, name='edit_child_view'),
-    path('children/delete/<int:child_id>/', views.delete_child_view, name='delete_child_view'),
-    path('schedule/', views.schedule_view, name='schedule_view'),
-    path('payments/', views.payments_view, name='payments_view'),
-    path('reports/', views.reports_view, name='reports_view'),
-    path("subscriptions/", views.subscriptions_view, name="subscriptions_view"),
-    path("settings/", views.settings_view, name="settings_view"),
-
-
-
+    path("", views.dashboard_view, name="dashboard"),
+    path("children/", views.my_children_view, name="children"),
+    path("add-child/", views.add_child_view, name="add_child"),
+    path("edit-child/<int:child_id>/", views.edit_child_view, name="edit_child"),
+    path("delete-child/<int:child_id>/", views.delete_child_view, name="delete_child"),
+    path("schedule/", views.schedule_view, name="schedule"),
+    path("payments/", views.payments_view, name="payments"),
+    path("reports/", views.reports_view, name="reports"),
+    path("subscriptions/", views.subscriptions_view, name="subscriptions"),
+    path("settings/", views.settings_view, name="settings"),
+    
+    # New enrollment URLs
+    path("enroll/", views.enroll_child, name="enroll_child"),
+    path("enrollment/<int:enrollment_id>/pause/", views.pause_enrollment, name="pause_enrollment"),
+    path("enrollment/<int:enrollment_id>/resume/", views.resume_enrollment, name="resume_enrollment"),
 ]

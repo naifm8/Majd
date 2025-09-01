@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse,HttpRequest
-from .models import Child, Enrollment
-from accounts.models import ParentProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from academies.models import Academy, TrainingClass
-from datetime import date
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from datetime import date, datetime
+from .models import Child, Enrollment
+from .forms import EnrollmentForm
+from academies.models import Academy, TrainingClass, Program
+from accounts.models import ParentProfile
 
 # Create your views here.
 
@@ -197,77 +199,141 @@ def reports_view(request):
 
 @login_required
 def subscriptions_view(request):
-    # Dummy subscriptions data (replace with QuerySet from your models)
-    subscriptions = [
-        {
-            "academy": {"name": "Elite Soccer Academy"},
-            "plan": "Premium Training",
-            "location": "Downtown Sports Complex",
-            "children": "Alex Johnson",
-            "features": ["Unlimited training sessions", "1-on-1 coaching sessions", "Performance analytics"],
-            "status": "Active",
-            "price": 450,
-            "next_payment": date(2024, 4, 15),
-        },
-        {
-            "academy": {"name": "AquaLife Swimming Academy"},
-            "plan": "Basic Swimming",
-            "location": "Aquatic Center North",
-            "children": "Emma Johnson",
-            "features": ["2 sessions per week", "Group coaching", "Swimming competitions"],
-            "status": "Active",
-            "price": 280,
-            "next_payment": date(2024, 4, 20),
-        },
-        {
-            "academy": {"name": "Tennis Pro Academy"},
-            "plan": "Intermediate",
-            "location": "City Tennis Center",
-            "children": "Alex Johnson",
-            "features": ["3 sessions per week", "Court access", "Equipment rental"],
-            "status": "Paused",
-            "price": 320,
-            "next_payment": date(2024, 5, 1),
-        },
-    ]
-
-    academies = [
-        {
-            "name": "Basketball Elite Training",
-            "location": "Sports Arena West",
-            "price": 380,
-            "rating": 4.8,
-            "features": ["Youth Development", "Competitive Training", "Skills Clinic"],
-        },
-        {
-            "name": "Martial Arts Academy",
-            "location": "Downtown Dojo",
-            "price": 250,
-            "rating": 4.9,
-            "features": ["Karate", "Taekwondo", "Self Defense"],
-        },
-        {
-            "name": "Athletic Performance Center",
-            "location": "North Fitness Complex",
-            "price": 420,
-            "rating": 4.7,
-            "features": ["Speed Training", "Strength Conditioning", "Sports Nutrition"],
-        },
-    ]
-
+    # Get real academies and programs from database
+    academies = Academy.objects.all()
+    programs = Program.objects.filter(academy__isnull=False)
+    
+    # Get user's parent profile
+    try:
+        parent_profile = request.user.parent_profile
+    except:
+        parent_profile = None
+    
+    # Create enrollment form
+    enrollment_form = EnrollmentForm(parent=parent_profile) if parent_profile else None
+    
+    # Get real enrollments if parent profile exists
+    if parent_profile:
+        enrollments = []
+        for child in parent_profile.children.all():
+            for enrollment in child.parent_enrollments.all():
+                if enrollment.is_active:
+                    enrollments.append({
+                        "id": enrollment.id,
+                        "academy": enrollment.program.academy,
+                        "program": enrollment.program.title,
+                        "location": enrollment.program.academy.city,
+                        "children": f"{child.first_name} {child.last_name}".strip(),
+                        "features": [enrollment.program.sport_type.title()],
+                        "status": "Active" if enrollment.is_active else "Inactive",
+                        "price": 0,  # You can add pricing later
+                        "next_payment": date.today(),
+                        "enrollment": enrollment,
+                        "child": child,
+                    })
+    else:
+        enrollments = []
+    
     # Calculate totals
-    total_subscriptions = len(subscriptions)
-    active_subscriptions = sum(1 for s in subscriptions if s["status"] == "Active")
-    monthly_spend = sum(s["price"] for s in subscriptions if s["status"] == "Active")
+    total_subscriptions = len(enrollments)
+    active_subscriptions = sum(1 for e in enrollments if e["status"] == "Active")
+    monthly_spend = sum(e.get("price", 0) for e in enrollments if e["status"] == "Active")
 
     context = {
-        "subscriptions": subscriptions,
+        "enrollments": enrollments,
         "academies": academies,
+        "programs": programs,
         "total_subscriptions": total_subscriptions,
         "active_subscriptions": active_subscriptions,
         "monthly_spend": monthly_spend,
+        "parent_profile": parent_profile,
+        "form": enrollment_form,  # Add the form to context
     }
     return render(request, "main/subscriptions.html", context)
+
+
+@login_required
+@require_POST
+def enroll_child(request):
+    """Handle child enrollment in a program"""
+    if request.method == "POST":
+        try:
+            parent_profile = request.user.parent_profile
+            if not parent_profile:
+                return JsonResponse({"success": False, "error": "Parent profile not found"})
+            
+            form = EnrollmentForm(request.POST, parent=parent_profile)
+            if form.is_valid():
+                # Check if enrollment already exists
+                existing_enrollment = Enrollment.objects.filter(
+                    child=form.cleaned_data['child'],
+                    program=form.cleaned_data['program']
+                ).first()
+                
+                if existing_enrollment:
+                    if existing_enrollment.is_active:
+                        return JsonResponse({"success": False, "error": "Child is already enrolled in this program"})
+                    else:
+                        # Reactivate existing enrollment
+                        existing_enrollment.is_active = True
+                        existing_enrollment.save()
+                        messages.success(request, f"Successfully re-enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
+                else:
+                    # Create new enrollment
+                    enrollment = form.save(commit=False)
+                    enrollment.save()
+                    messages.success(request, f"Successfully enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
+                
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "Invalid form data"})
+                
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+@login_required
+@require_POST
+def pause_enrollment(request, enrollment_id):
+    """Pause an active enrollment"""
+    try:
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        
+        # Check if the enrollment belongs to the user's child
+        if enrollment.child.parent != request.user.parent_profile:
+            return JsonResponse({"success": False, "error": "Unauthorized"})
+        
+        enrollment.is_active = False
+        enrollment.save()
+        
+        messages.success(request, f"Enrollment paused for {enrollment.child.first_name}")
+        return JsonResponse({"success": True})
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+@login_required
+@require_POST
+def resume_enrollment(request, enrollment_id):
+    """Resume a paused enrollment"""
+    try:
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        
+        # Check if the enrollment belongs to the user's child
+        if enrollment.child.parent != request.user.parent_profile:
+            return JsonResponse({"success": False, "error": "Unauthorized"})
+        
+        enrollment.is_active = True
+        enrollment.save()
+        
+        messages.success(request, f"Enrollment resumed for {enrollment.child.first_name}")
+        return JsonResponse({"success": True})
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
 
 
 
