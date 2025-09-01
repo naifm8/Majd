@@ -107,43 +107,7 @@ def AcademyDashboardView(request):
     return render(request, "academies/dashboard_overview.html", context)
 
 
-@login_required
-def join_academy_view(request, slug):
-    academy = get_object_or_404(Academy, slug=slug)
 
-    parent_profile = getattr(request.user, "parent_profile", None)
-    if not parent_profile:
-        messages.error(request, "Only parents can join academies.")
-        return redirect("academies:detail", slug=academy.slug)
-
-    children = Child.objects.filter(parent=parent_profile)
-    programs = academy.programs.all()  # all programs in this academy
-
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("children")
-        program_id = request.POST.get("program")
-
-        if not selected_ids or not program_id:
-            messages.warning(request, "Please select children and a program.")
-            return redirect("academies:join_academy_view", slug=academy.slug)
-
-        program = get_object_or_404(Program, id=program_id, academy=academy)
-
-        for child_id in selected_ids:
-            child = get_object_or_404(Child, id=child_id, parent=parent_profile)
-
-            Enrollment.objects.get_or_create(child=child, program=program)
-
-            print(f"Enroll {child.first_name} in {program.title} ({academy.name})")
-
-        messages.success(request, "Your children have been enrolled successfully!")
-        return redirect("academies:academy_detail", slug=academy.slug)
-
-    return render(request, "academies/join_academy.html", {
-        "academy": academy,
-        "children": children,
-        "programs": programs,
-    })
 
 # ✅ Programs Dashboard
 @login_required
