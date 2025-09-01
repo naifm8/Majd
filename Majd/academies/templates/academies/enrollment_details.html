@@ -37,7 +37,14 @@
             </div>
 
             <!-- Emergency Contact Form -->
-            <h6 class="fw-bold mb-3">Emergency Contact Information</h6>
+             <div class="d-flex flex-row align-items-center gap-3 mb-3 justify-content-between">
+            <h6 class="fw-bold mb-0">Emergency Contact Information</h6>
+            <small class="form-text text-muted d-block mb-1">
+              Default is the parent’s information
+            </small>
+            </div>
+
+
             <form method="post" action="{% url 'academies:enrollment_details' academy.slug program.id %}">
             {% csrf_token %}
             <input type="hidden" name="program" value="{{ program.id }}">
@@ -49,6 +56,7 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                 <label class="form-label">Emergency Contact Name *</label>
+                
                 <input type="text" 
                         class="form-control" 
                         name="emergency_name" 

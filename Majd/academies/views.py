@@ -54,12 +54,11 @@ def AcademyDetailView(request, slug):
     current_year = timezone.now().year
     years_experience = max(0, current_year - academy.establishment_year)
 
-    # Active Students
-    active_students = Child.objects.filter(
-        programs__academy=academy
-    ).distinct().count()
-
-    
+    # Active Students (via Enrollment instead of Child.programs)
+    active_students = Enrollment.objects.filter(
+        program__academy=academy,
+        is_active=True
+    ).values("child").distinct().count()
 
     context = {
         "academy": academy,
@@ -311,33 +310,7 @@ def program_sessions(request, academy_slug, program_id):
     return render(request, "academies/sessions_page.html", context)
 
 
-@login_required
-def join_program_view(request, academy_slug, program_id):
-    academy = get_object_or_404(Academy, slug=academy_slug)
-    program = get_object_or_404(Program, id=program_id, academy=academy)
 
-    parent_profile = getattr(request.user, "parent_profile", None)
-    if not parent_profile:
-        messages.error(request, "Only parents can join programs.")
-        return redirect("academies:detail", slug=academy.slug)
-
-    children = Child.objects.filter(parent=parent_profile)
-
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("children")
-        if not selected_ids:
-            messages.warning(request, "Please select at least one child.")
-            return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
-
-        # Store selected children temporarily (session)
-        request.session["selected_children"] = selected_ids
-        return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
-
-    return render(request, "academies/join_program.html", {
-        "academy": academy,
-        "program": program,
-        "children": children,
-    })
 
 
 @login_required
@@ -401,8 +374,9 @@ def add_trainer(request):
 
     return render(request, "academies/add_trainer.html", {"form": form, "academy": academy})
 
+
 @login_required
-def enrollment_details_view(request, academy_slug, program_id):
+def join_program_view(request, academy_slug, program_id):
     academy = get_object_or_404(Academy, slug=academy_slug)
     program = get_object_or_404(Program, id=program_id, academy=academy)
 
@@ -411,25 +385,67 @@ def enrollment_details_view(request, academy_slug, program_id):
         messages.error(request, "Only parents can join programs.")
         return redirect("academies:detail", slug=academy.slug)
 
+    children = Child.objects.filter(parent=parent_profile)
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("children")
+        if not selected_ids:
+            messages.warning(request, "Please select at least one child.")
+            return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
+
+        # Store selected children temporarily (session)
+        request.session["selected_children"] = selected_ids
+        return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
+
+    return render(request, "academies/join_program.html", {
+        "academy": academy,
+        "program": program,
+        "children": children,
+    })
+
+@login_required
+def enrollment_details_view(request, academy_slug, program_id):
+    """
+    Step 2: Parent enters emergency info and finalizes enrollment.
+    """
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
+        return redirect("academies:detail", slug=academy.slug)
+
+    # Get children from session
     selected_ids = request.session.get("selected_children", [])
     children = Child.objects.filter(id__in=selected_ids, parent=parent_profile)
 
+    if not children.exists():
+        messages.warning(request, "No children selected for enrollment.")
+        return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
+
     if request.method == "POST":
-        emergency_name = request.POST.get("emergency_name")
-        emergency_phone = request.POST.get("emergency_phone")
+        emergency_name = request.POST.get("emergency_name", "").strip()
+        emergency_phone = request.POST.get("emergency_phone", "").strip()
 
+        # Validate
+        if not emergency_name or not emergency_phone:
+            messages.error(request, "Emergency contact name and phone are required.")
+            return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
 
+        # Create enrollment per child (skip if already exists)
         for child in children:
-            enrollment, created = Enrollment.objects.get_or_create(
+            Enrollment.objects.get_or_create(
                 child=child,
                 program=program,
                 defaults={
                     "emergency_contact_name": emergency_name,
-                    "emergency_phone": emergency_phone,
+                    "emergency_contact_phone": emergency_phone,
                 },
             )
 
         messages.success(request, f"Enrollment completed for {len(children)} child(ren).")
+        request.session.pop("selected_children", None)  # clear session after enrollment
         return redirect("academies:detail", slug=academy.slug)
 
     return render(request, "academies/enrollment_details.html", {
