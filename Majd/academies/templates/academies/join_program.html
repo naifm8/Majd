@@ -32,9 +32,9 @@
       </div>
       <!-- Right -->
       <div class="text-end">
-        <span class="text-muted small">Step 1 of 3</span>
+        <span class="text-muted small">Step 1 of 2</span>
         <div class="progress mt-1" style="height:4px; width:120px; margin-left:auto;">
-          <div class="progress-bar bg-success" role="progressbar" style="width: 30%;"></div>
+          <div class="progress-bar bg-success" role="progressbar" style="width: 50%;"></div>
         </div>
       </div>
     </div>
@@ -52,25 +52,21 @@
           <div class="text-center text-md-start">
             <!-- Title -->
             <h6 class="fw-semibold mb-1">{{ program.title }}</h6>
+            
 
             <!-- Description -->
-            <p class="text-muted small mb-2">{{ program.description }}</p>
+            <p class="text-muted small mb-2">{{ program.short_description }}</p>
 
             <!-- Program Details -->
             <div class="text-muted small d-flex flex-wrap justify-content-center justify-content-md-start">
-              <div class="me-3"><i class="bi bi-calendar-week me-1"></i> {{ program.duration_weeks }} weeks</div>
-              <div class="me-3"><i class="bi bi-people me-1"></i> Ages {{ program.age_min }}–{{ program.age_max }} years</div>
-              <div><i class="bi bi-clock me-1"></i> {{ program.schedule }}</div>
+              <div class="me-3"><i class="bi bi-people me-1"></i> Ages {{ program.age_group_display|default:"N/A" }}</div>
             </div>
           </div>
         </div>
 
         <!-- Right Section -->
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-          <h5 class="text-success fw-bold mb-1">
-            ${{ program.price }}<span class="small fw-normal">/month</span>
-          </h5>
-          <small class="text-muted">per child</small><br>
+          <span class="badge membership-badge mb-3">Included with Membership</span>  
           <a href="{% url 'academies:program_sessions' academy.slug program.id %}" 
              class="btn btn-outline-success btn-custom mt-2">
             <i class="bi bi-calendar-event me-1"></i> View Sessions
@@ -83,16 +79,23 @@
     <div class="d-flex justify-content-between align-items-center mt-4">
       <div>
         <h5 class="fw-bold mb-1">Select Children</h5>
-        <p class="text-muted small mb-0">Choose which children to enroll in <strong>{{ program.title }}</strong></p>
+        <p class="text-muted small mb-0">
+          Choose which children to enroll in <strong>{{ program.title }}</strong>
+        </p>
       </div>
-      <div id="totalContainer" class="text-end d-none">
-        <small class="text-muted">Total for <span id="childCount">0</span> child</small><br>
-        <span id="totalPrice" class="fw-bold text-success">$0</span>
+
+      <!-- Selection Status -->
+      <div id="selectionStatus" class="text-end">
+        <small>
+          <span id="childCount">0</span> child selected
+        </small><br>
+        <span class="badge membership-badge">Included with Membership</span>
       </div>
     </div>
 
+
     <!-- Children -->
-    <form method="post" id="enrollForm">
+    <form method="post" id="enrollForm" action="{% url 'academies:enrollment_details' academy.slug program.id %}">
       {% csrf_token %}
       <input type="hidden" name="program" value="{{ program.id }}">
       <div class="row g-4 mt-2">
@@ -149,11 +152,8 @@
 document.addEventListener("DOMContentLoaded", function() {
   const cards = document.querySelectorAll('.child-card');
   const button = document.getElementById("continueBtn");
-  const totalContainer = document.getElementById("totalContainer");
+  const selectionStatus = document.getElementById("selectionStatus");
   const childCountSpan = document.getElementById("childCount");
-  const totalPriceSpan = document.getElementById("totalPrice");
-
-  const pricePerChild = 150; // adjust if dynamic later
 
   function updateUI() {
     const checked = document.querySelectorAll('.child-checkbox:checked').length;
@@ -161,13 +161,14 @@ document.addEventListener("DOMContentLoaded", function() {
     // Update button text
     button.textContent = `Continue with ${checked} Child${checked !== 1 ? "ren" : ""} Selected`;
 
-    // Update total cost section
+    // Update "X child selected" in header
+    childCountSpan.textContent = checked;
+
+    // If none selected → hide the selection status
     if (checked > 0) {
-      totalContainer.classList.remove("d-none");
-      childCountSpan.textContent = checked;
-      totalPriceSpan.textContent = `$${checked * pricePerChild}`;
+      selectionStatus.classList.remove("d-none");
     } else {
-      totalContainer.classList.add("d-none");
+      selectionStatus.classList.add("d-none");
     }
   }
 
@@ -201,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   updateUI(); // initialize
 });
+
 </script>
 
 <style>
@@ -268,6 +270,16 @@ document.addEventListener("DOMContentLoaded", function() {
 .btn-custom:hover i {
   color: #fff;                   /* make icon white too */
 }
+
+.membership-badge {
+  background-color: #e6f9f0;  
+  color: #198754;            
+  border: 1px solid #c6f1dd; 
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50rem; /* pill */
+}
+
 
 </style>
 {% endblock %}

@@ -51,8 +51,7 @@ def add_child_view(request):
         primary_sport = request.POST.get("primary_sport", "")
         skill_level = request.POST.get("skill_level", "beginner")
         medical_notes = request.POST.get("medical_notes", "")
-        emergency_contact_name = request.POST.get("emergency_contact_name", "")
-        emergency_contact_phone = request.POST.get("emergency_contact_phone", "")
+
 
         profile_image = request.FILES.get("profile_image")
 
@@ -66,8 +65,6 @@ def add_child_view(request):
             primary_sport=primary_sport,
             skill_level=skill_level,
             medical_notes=medical_notes,
-            emergency_contact_name=emergency_contact_name,
-            emergency_contact_phone=emergency_contact_phone,
             profile_image=profile_image if profile_image else "images/profileImage/profileImage.webp"
         )
 
@@ -89,8 +86,7 @@ def edit_child_view(request, child_id):
         child.primary_sport = request.POST.get("primary_sport", "")
         child.skill_level = request.POST.get("skill_level", "beginner")
         child.medical_notes = request.POST.get("medical_notes", "")
-        child.emergency_contact_name = request.POST.get("emergency_contact_name", "")
-        child.emergency_contact_phone = request.POST.get("emergency_contact_phone", "")
+
 
         if "profile_image" in request.FILES:
             child.profile_image = request.FILES["profile_image"]

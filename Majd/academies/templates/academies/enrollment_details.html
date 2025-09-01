@@ -1,0 +1,127 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="container py-5" style="max-width: 1100px;">
+
+  <!-- Progress Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Enrollment Details</h4>
+    <div class="text-end">
+      <span class="text-muted small">Step 2 of 2</span>
+      <div class="progress mt-1" style="height:4px; width:120px; margin-left:auto;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-8">
+        <div class="card p-4">
+
+            <!-- Selected Children -->
+            <h6 class="fw-bold mb-3">Selected Children</h6>
+            <div class="d-flex flex-wrap gap-3 mb-4">
+            {% for child in children %}
+                <div class="card border rounded-3 p-3 child-summary-card flex-grow-1">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar-circle-green me-2">
+                    {{ child.first_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                    <h6 class="fw-bold mb-0">{{ child.first_name }} {{ child.last_name }}</h6>
+                    <p class="text-muted small mb-0">Age {{ child.age }} • {{ child.gender }}</p>
+                    </div>
+                </div>
+                <p class="small text-muted mb-0">Born: {{ child.date_of_birth|date:"M j, Y" }}</p>
+                </div>
+            {% endfor %}
+            </div>
+
+            <!-- Emergency Contact Form -->
+            <h6 class="fw-bold mb-3">Emergency Contact Information</h6>
+            <form method="post" action="{% url 'academies:enrollment_details' academy.slug program.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="program" value="{{ program.id }}">
+            {% for child in children %}
+                <input type="hidden" name="children" value="{{ child.id }}">
+            {% endfor %}
+
+            <!-- Name + Phone in one row -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                <label class="form-label">Emergency Contact Name *</label>
+                <input type="text" 
+                        class="form-control" 
+                        name="emergency_name" 
+                        value="{{ request.user.first_name }} {{ request.user.last_name }}"
+                        placeholder="Full name" required>
+                </div>
+                <div class="col-md-6">
+                <label class="form-label">Emergency Phone *</label>
+                <input type="tel" 
+                        class="form-control" 
+                        name="emergency_phone" 
+                        value="{{ request.user.parent_profile.phone|default:'' }}"
+                        placeholder="+1 (555) 123-4567" required>
+                </div>
+            </div>
+
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between mt-3">
+                <a href="{% url 'academies:join_program_view' academy.slug program.id %}" 
+                class="btn btn-outline-secondary">Back to Selection</a>
+                <button type="submit" class="btn btn-success">Complete Enrollment</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Right: Summary -->
+    <div class="col-md-4">
+      <div class="card p-4">
+        <h6 class="fw-bold mb-3">Enrollment Summary</h6>
+        <p class="mb-1"><strong>Program</strong><br>{{ program.title }}</p>
+        <hr>
+        <p class="mb-1"><strong>Selected Children ({{ children|length }})</strong></p>
+        <ul class="list-unstyled">
+          {% for child in children %}
+            <li class="d-flex align-items-center mb-2">
+              <div class="avatar-circle-green me-2">
+                {{ child.first_name|slice:":1"|upper }}
+              </div>
+              {{ child.first_name }} {{ child.last_name }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Green avatar circle (child initials) */
+.avatar-circle-green {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #198754;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Child summary card style */
+.child-summary-card {
+  flex: 1 1 calc(50% - 1rem);
+  min-width: 220px;
+  background: #eafaf1; /* light green bg */
+  border: 2px solid #19875420; /* subtle green border */
+}
+
+
+</style>
+{% endblock %}

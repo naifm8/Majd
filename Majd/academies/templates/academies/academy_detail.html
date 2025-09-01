@@ -79,49 +79,60 @@
 
   <div class="row g-4">
     {% for program in programs %}
-    <div class="col-md-4">
-      <div class="card border rounded-3 h-100">
+      <div class="col-md-4">
+        <div class="card border rounded-3 h-100">
 
-        <!-- Program Image -->
-        {% if program.image %}
-        <img src="{{ program.image.url }}" class="card-img-top" style="height:180px; object-fit:contain; border-top-left-radius:.5rem; border-top-right-radius:.5rem;">
-        {% endif %}
+          <!-- Card Header Badges -->
+          <div class="d-flex justify-content-between align-items-start p-3">
+            <!-- Age badge -->
+            <span class="badge rounded-pill bg-light text-dark small px-2 py-1 shadow-sm">
+              {{ program.age_group_display|default:"N/A" }}
+            </span>
 
-        <!-- Card Body -->
-        <div class="card-body p-4 d-flex flex-column">
-
-          <!-- Title & Description -->
-          <h5 class="fw-bold text-success">{{ program.title }}</h5>
-          <p class="text-muted small">{{ program.short_description|default:"No description provided." }}</p>
-
-          <!-- Duration -->
-          <div class="text-muted small mb-3">
-            <div><strong>Duration:</strong> {{ program.duration }}</div>
+            <!-- Membership badge -->
+            <span class="badge rounded-pill small px-2 py-1 membership-badge">
+              Included with Membership
+            </span>
           </div>
 
-          <!-- Features -->
-          {% if program.features.all %}
-          <h6 class="fw-bold text-success">Program Features:</h6>
-          <ul class="list-unstyled small mb-4">
-            {% for feature in program.features.all %}
-            <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> {{ feature.name }}</li>
-            {% endfor %}
-          </ul>
-          {% endif %}
+          <!-- Card Body -->
+          <div class="card-body pt-0 d-flex flex-column">
 
-          <!-- Buttons -->
-          <div class="mt-auto d-grid gap-2">
-            <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-success fw-semibold">Enroll Now</a>
-            <a href="{% url 'academies:program_sessions' academy.slug program.id %}" 
-              class="btn btn-outline-success btn-custom">
-              <i class="bi bi-calendar-event me-1"></i> View Sessions
-            </a>
+            <!-- Title & Description -->
+            <h5 class="fw-bold text-success">{{ program.title }}</h5>
+                    <!-- Program Image -->
+              {% if program.image %}
+              <img src="{{ program.image.url }}" class="card-img-top" style="height:180px; object-fit:cover; border-top-left-radius:.5rem; border-top-right-radius:.5rem;">
+              {% endif %}
 
+            <p class="text-muted small">{{ program.short_description|default:"No description provided." }}</p>
+
+            <!-- Duration -->
+            <div class="text-muted small mb-3">
+              <strong>Duration:</strong> {{ program.duration }}
+            </div>
+
+            <!-- Features -->
+            {% if program.features.all %}
+              <h6 class="fw-bold text-success">Program Features:</h6>
+              <ul class="list-unstyled small mb-4">
+                {% for feature in program.features.all %}
+                <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> {{ feature.name }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            <!-- Buttons -->
+            <div class="mt-auto d-grid gap-2">
+              <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-success fw-semibold">Enroll Children</a>
+              <a href="{% url 'academies:program_sessions' academy.slug program.id %}" class="btn btn-outline-success btn-custom">
+                <i class="bi bi-calendar-event me-1"></i> View Sessions
+              </a>
+            </div>
           </div>
-
         </div>
       </div>
-    </div>
+
     {% empty %}
     <p class="text-center text-muted">No programs available for this academy yet.</p>
     {% endfor %}
@@ -185,6 +196,21 @@
   background-color: #198754;
   color: #fff;
 }
+
+/* Membership badge */
+.membership-badge {
+  background-color: #e6f9f0;  /* light green background */
+  color: #198754;             /* Bootstrap success green */
+  border: 1px solid #c6f1dd;  /* subtle green border */
+}
+
+/* Smaller badge text */
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+
 </style>
 
 {% endblock %}

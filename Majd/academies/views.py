@@ -59,6 +59,8 @@ def AcademyDetailView(request, slug):
         programs__academy=academy
     ).distinct().count()
 
+    
+
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
@@ -327,12 +329,9 @@ def join_program_view(request, academy_slug, program_id):
             messages.warning(request, "Please select at least one child.")
             return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
 
-        for child_id in selected_ids:
-            child = get_object_or_404(Child, id=child_id, parent=parent_profile)
-            Enrollment.objects.get_or_create(child=child, program=program)
-
-        messages.success(request, f"Selected children have been enrolled in {program.title}.")
-        return redirect("academies:academy_detail", slug=academy.slug)
+        # Store selected children temporarily (session)
+        request.session["selected_children"] = selected_ids
+        return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
 
     return render(request, "academies/join_program.html", {
         "academy": academy,
@@ -402,3 +401,39 @@ def add_trainer(request):
 
     return render(request, "academies/add_trainer.html", {"form": form, "academy": academy})
 
+@login_required
+def enrollment_details_view(request, academy_slug, program_id):
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
+        return redirect("academies:detail", slug=academy.slug)
+
+    selected_ids = request.session.get("selected_children", [])
+    children = Child.objects.filter(id__in=selected_ids, parent=parent_profile)
+
+    if request.method == "POST":
+        emergency_name = request.POST.get("emergency_name")
+        emergency_phone = request.POST.get("emergency_phone")
+
+
+        for child in children:
+            enrollment, created = Enrollment.objects.get_or_create(
+                child=child,
+                program=program,
+                defaults={
+                    "emergency_contact_name": emergency_name,
+                    "emergency_phone": emergency_phone,
+                },
+            )
+
+        messages.success(request, f"Enrollment completed for {len(children)} child(ren).")
+        return redirect("academies:detail", slug=academy.slug)
+
+    return render(request, "academies/enrollment_details.html", {
+        "academy": academy,
+        "program": program,
+        "children": children,
+    })
