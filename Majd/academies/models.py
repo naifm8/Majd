@@ -77,6 +77,22 @@ class Session(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.program.title}"
+    
+    def duration_in_weeks(self):
+        if self.start_datetime and self.end_datetime:
+            delta = self.end_datetime.date() - self.start_datetime.date()
+            weeks = delta.days // 7
+            return max(1, weeks)  # at least 1 week
+        return None
+
+    def duration_display(self):
+        weeks = self.duration_in_weeks()
+        if not weeks:
+            return "N/A"
+        if weeks < 4:
+            return f"{weeks} week{'s' if weeks > 1 else ''}"
+        months = weeks // 4
+        return f"{months} month{'s' if months > 1 else ''}"
 
     def generate_classes(self):
         from datetime import timedelta
