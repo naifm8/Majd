@@ -1,0 +1,18 @@
+{% extends "academies/base_dashboard.html" %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0 fw-bold">Delete Program</h5>
+    </div>
+    <div class="card-body">
+      <p>Are you sure you want to delete the program <strong>{{ program.title }}</strong>?</p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'academies:programs' %}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

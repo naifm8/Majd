@@ -8,7 +8,6 @@ from django.contrib import messages
 from .models import AcademyAdminProfile
 from django.db import transaction, IntegrityError
 from django.urls import reverse
-from accounts.models import AcademyAdminProfile
 from academies.models import Academy
 
 
@@ -37,7 +36,6 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-
             # 🎯 Redirect based on role
             if user.groups.filter(name="academy_admin").exists():
                 profile = user.academy_admin_profile
@@ -71,6 +69,7 @@ def login_view(request):
 
         else:
             messages.error(request, "Invalid username or password.")
+
             return render(request, "accounts/login.html")
 
     return render(request, "accounts/login.html")
@@ -118,6 +117,7 @@ def register_view(request):
             if email and User.objects.filter(email=email).exists():
                 messages.error(request, "This email is already in use.", "alert-danger")
                 return render(request, "accounts/register.html", {"pre_selected_role": pre_selected_role, "values": request.POST})
+
 
         try:
             with transaction.atomic():

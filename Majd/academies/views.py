@@ -1,15 +1,18 @@
-from django.views.generic import DetailView, TemplateView
 from django.shortcuts import render, get_object_or_404
 from .models import Academy, Program, Session
-from parents.models import Child, Enrollment
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.utils.decorators import method_decorator
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ProgramForm, SessionForm, AcademyForm
+from accounts.models import TrainerProfile
+from parents.models import Child, Enrollment
+from player.models import PlayerProfile
+from .forms import TrainerProfileForm
 
+def _academy(user):
+    return user.academy_admin_profile.academy
 
 def academy_list_view(request):
     academies = Academy.objects.prefetch_related("programs").all()
@@ -59,7 +62,7 @@ def AcademyDetailView(request, slug):
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
-        "coaches": academy.trainers.all(),  # ✅ هنا التعديل
+        "coaches": academy.trainers.all(), 
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
@@ -105,50 +108,6 @@ def AcademyDashboardView(request):
 
 
 
-
-def _academy(user):
-    return user.academy_admin_profile.academy
-
-
-
-
-@login_required
-def join_academy_view(request, slug):
-    academy = get_object_or_404(Academy, slug=slug)
-
-    parent_profile = getattr(request.user, "parent_profile", None)
-    if not parent_profile:
-        messages.error(request, "Only parents can join academies.")
-        return redirect("academies:academy_detail", slug=academy.slug)
-
-    children = Child.objects.filter(parent=parent_profile)
-    programs = academy.programs.all()  # all programs in this academy
-
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("children")
-        program_id = request.POST.get("program")
-
-        if not selected_ids or not program_id:
-            messages.warning(request, "Please select children and a program.")
-            return redirect("academies:join_academy_view", slug=academy.slug)
-
-        program = get_object_or_404(Program, id=program_id, academy=academy)
-
-        for child_id in selected_ids:
-            child = get_object_or_404(Child, id=child_id, parent=parent_profile)
-
-            Enrollment.objects.get_or_create(child=child, program=program)
-
-            print(f"Enroll {child.first_name} in {program.title} ({academy.name})")
-
-        messages.success(request, "Your children have been enrolled successfully!")
-        return redirect("academies:academy_detail", slug=academy.slug)
-
-    return render(request, "academies/join_academy.html", {
-        "academy": academy,
-        "children": children,
-        "programs": programs,
-    })
 
 # ✅ Programs Dashboard
 @login_required
@@ -212,35 +171,34 @@ def program_create(request):
 
     return render(request, "academies/program_form.html", {"form": form})
 
-# ✅ Program Edit
+
 @login_required
 def program_edit(request, pk):
-    academy = _academy(request.user)
-    program = get_object_or_404(Program, pk=pk, academy=academy)
+    program = get_object_or_404(Program, pk=pk)
 
     if request.method == "POST":
         form = ProgramForm(request.POST, request.FILES, instance=program)
         if form.is_valid():
             form.save()
-            messages.success(request, "Program updated successfully.")
+            messages.success(request, "Program updated successfully!")
             return redirect("academies:programs")
     else:
         form = ProgramForm(instance=program)
 
     return render(request, "academies/program_form.html", {"form": form, "program": program})
 
-# ✅ Program Delete
+
 @login_required
 def program_delete(request, pk):
-    academy = _academy(request.user)
-    program = get_object_or_404(Program, pk=pk, academy=academy)
+    program = get_object_or_404(Program, pk=pk)
 
     if request.method == "POST":
         program.delete()
-        messages.success(request, "Program deleted successfully.")
+        messages.success(request, "Program deleted successfully!")
         return redirect("academies:programs")
 
-    return render(request, "academies/confirm_delete.html", {"object": program})
+    return render(request, "academies/program_confirm_delete.html", {"program": program})
+
 
 
 @login_required
@@ -298,3 +256,149 @@ def session_delete(request, pk):
     return render(request, "academies/session_confirm_delete.html", {
         "session": session,
     })
+
+
+@login_required
+def program_sessions(request, academy_slug, program_id):
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    # Base query
+    sessions = (
+        Session.objects.filter(program=program)
+        .select_related("trainer")
+        .prefetch_related("slots")
+    )
+
+    # Collect distinct dynamic age ranges
+    age_ranges = (
+        sessions.values_list("age_min", "age_max")
+        .distinct()
+        .order_by("age_min")
+    )
+
+    # --- Filters ---
+    level = request.GET.get("level")
+    gender = request.GET.get("gender")
+    age = request.GET.get("age")  # e.g. "6-10"
+
+    if level and level != "all":
+        sessions = sessions.filter(level=level)
+
+    if gender and gender != "all":
+        sessions = sessions.filter(gender=gender)
+
+    if age and age != "all":
+        try:
+            age_min, age_max = map(int, age.replace(" ", "").split("-"))
+            sessions = sessions.filter(age_min__lte=age_min, age_max__gte=age_max)
+        except ValueError:
+            pass
+
+    context = {
+        "academy": academy,
+        "program": program,
+        "sessions": sessions,
+        "filters": {
+            "level": level or "all",
+            "gender": gender or "all",
+            "age": age or "all",
+        },
+        "age_ranges": age_ranges,  # 👈 send to template
+    }
+    return render(request, "academies/sessions_page.html", context)
+
+
+@login_required
+def join_program_view(request, academy_slug, program_id):
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
+        return redirect("academies:detail", slug=academy.slug)
+
+    children = Child.objects.filter(parent=parent_profile)
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("children")
+        if not selected_ids:
+            messages.warning(request, "Please select at least one child.")
+            return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
+
+        for child_id in selected_ids:
+            child = get_object_or_404(Child, id=child_id, parent=parent_profile)
+            Enrollment.objects.get_or_create(child=child, program=program)
+
+        messages.success(request, f"Selected children have been enrolled in {program.title}.")
+        return redirect("academies:academy_detail", slug=academy.slug)
+
+    return render(request, "academies/join_program.html", {
+        "academy": academy,
+        "program": program,
+        "children": children,
+    })
+
+
+@login_required
+def trainer_dashboard(request):
+    academy_admin = getattr(request.user, "academy_admin_profile", None)
+
+    # ✅ Protect against missing academy
+    academy = academy_admin.academy if academy_admin and academy_admin.academy else None
+
+    if not academy:
+        messages.error(request, "No Academy assigned to your account.")
+        return redirect("academies:dashboard")  # fallback or main dashboard
+
+    trainers = TrainerProfile.objects.filter(academy=academy).prefetch_related("sessions", "sessions__program")
+
+    total_trainers = trainers.count()
+    total_players = PlayerProfile.objects.filter(academy=academy).count()
+    total_sessions = Session.objects.filter(program__academy=academy).count()
+
+    trainer_data = []
+    for trainer in trainers:
+        player_count = PlayerProfile.objects.filter(academy=trainer.academy).distinct().count()
+
+        session_data = []
+        for session in trainer.sessions.all():
+            enrolled = PlayerProfile.objects.filter(academy=session.program.academy).count()
+            session_data.append((session, enrolled))
+
+        trainer_data.append((trainer, player_count, session_data))
+
+    context = {
+        "academy": academy,
+        "trainer_data": trainer_data,
+        "total_trainers": total_trainers,
+        "total_players": total_players,
+        "total_sessions": total_sessions,
+    }
+    return render(request, "academies/trainer_dashboard.html", context)
+
+
+@login_required
+def add_trainer(request):
+    # Ensure only academy admins can add trainers
+    academy_admin = getattr(request.user, "academy_admin_profile", None)
+    if not academy_admin:
+        messages.error(request, "You must be an Academy Admin to add trainers.")
+        return redirect("main:main_home_view")
+
+    academy = academy_admin.academy
+
+    if request.method == "POST":
+        form = TrainerProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            trainer = form.save(commit=False)
+            trainer.academy = academy
+            trainer.save()
+            messages.success(request, f"Trainer {trainer.user.get_full_name()} added successfully!")
+            return redirect("academies:trainer_dashboard")
+    else:
+        form = TrainerProfileForm()
+
+    return render(request, "academies/add_trainer.html", {"form": form, "academy": academy})
+

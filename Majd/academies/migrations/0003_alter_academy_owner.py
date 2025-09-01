@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('academies', '0002_plantype_academy_slug_subscriptionplan'),
-        ('accounts', '0002_trainerprofile_academy'),
+        ('accounts', '0002_trainerprofile_position'),
     ]
 
     operations = [

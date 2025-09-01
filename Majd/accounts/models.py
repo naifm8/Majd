@@ -24,17 +24,18 @@ class TrainerProfile(models.Model):
     academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
      
     def __str__(self):
-        try:
-            username = self.user.username if self.user else "❌ محذوف"
-        except:
-            username = "❌ محذوف"
 
-        try:
-            academy_name = self.academy.name
-        except:
-            academy_name = "❌ أكاديمية محذوفة"
+        if self.user:
+            full_name = f"{self.user.first_name} {self.user.last_name}".strip()
+            if not full_name: 
+                full_name = self.user.username
+        else:
+            full_name = " محذوف"
 
-        return f"{username} ({academy_name})"
+        # اسم الأكاديمية
+        academy_name = self.academy.name if self.academy else " أكاديمية محذوفة"
+
+        return f"{full_name} ({academy_name})"
 
 
 

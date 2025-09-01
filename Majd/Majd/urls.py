@@ -26,6 +26,8 @@ urlpatterns = [
     path("accounts/", include('accounts.urls')),
     path("parents/", include('parents.urls')),
     path("player/", include("player.urls")),
+    path("payment/", include("payment.urls")),
+    path("player-payments/", include("player_payments.urls")),
     path('academies/', include('academies.urls', namespace='academies')),
     path("trainers/", include('trainers.urls')),
 ]
