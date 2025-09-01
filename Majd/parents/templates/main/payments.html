@@ -16,9 +16,12 @@
       <button class="btn btn-outline-secondary">
         <i class="bi bi-download"></i> Export
       </button>
-      <a href="#" class="btn btn-success">
-        <i class="bi bi-plus-lg"></i> Make Payment
+      <a href="{% url 'parents:subscriptions' %}" class="btn btn-outline-success me-2">
+        <i class="bi bi-building"></i> Browse Academies
       </a>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#paymentModal">
+        <i class="bi bi-plus-lg"></i> Make Payment
+      </button>
     </div>
   </div>
 
@@ -27,21 +30,21 @@
     <div class="col-md-4">
       <div class="card shadow-sm border-0 p-3 h-100">
         <h6 class="text-muted">This Month</h6>
-        <h3 class="fw-bold">${{ total_paid }}</h3>
+        <h3 class="fw-bold">SAR {{ total_paid }}</h3>
         <small class="text-success">Total Paid</small>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card shadow-sm border-0 p-3 h-100">
         <h6 class="text-muted">Outstanding</h6>
-        <h3 class="fw-bold">${{ outstanding }}</h3>
+        <h3 class="fw-bold">SAR {{ outstanding }}</h3>
         <small class="text-warning">Due Soon</small>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card shadow-sm border-0 p-3 h-100">
         <h6 class="text-muted">Next Payment</h6>
-        <h3 class="fw-bold">${{ next_payment.amount }}</h3>
+        <h3 class="fw-bold">SAR {{ next_payment.amount }}</h3>
         <small class="text-success">Due {{ next_payment.date|date:"M d, Y" }}</small>
       </div>
     </div>
@@ -87,18 +90,25 @@
                 <small class="text-muted">{{ payment.description }}</small><br>
                 <small class="text-muted">{{ payment.academy_name }}</small><br>
                 <span class="badge {% if payment.status == 'paid' %}bg-success-subtle text-success
+                                   {% elif payment.status == 'not_paid' %}bg-danger-subtle text-danger
                                    {% elif payment.status == 'pending' %}bg-warning-subtle text-warning
-                                   {% else %}bg-danger-subtle text-danger{% endif %}">
-                  {{ payment.status|title }}
+                                   {% else %}bg-secondary-subtle text-secondary{% endif %}">
+                  {% if payment.status == 'not_paid' %}Not Paid{% else %}{{ payment.status|title }}{% endif %}
                 </span>
               </div>
             </div>
 
             <!-- Right Side -->
             <div class="text-end">
-              <h6 class="fw-bold mb-1">${{ payment.amount }}</h6>
+              <h6 class="fw-bold mb-1">SAR {{ payment.amount }}</h6>
               <small class="text-muted">{{ payment.date|date:"M d, Y" }}</small><br>
-              <a href="#" class="btn btn-outline-secondary btn-sm mt-1">View Receipt</a>
+              {% if payment.status == 'not_paid' %}
+                <button class="btn btn-success btn-sm mt-1" onclick="makePayment('{{ payment.academy_name|escapejs }}', '{{ payment.description|escapejs }}', {{ payment.amount }}, {{ payment.enrollment.id }})">
+                  Pay Now
+                </button>
+              {% else %}
+                <a href="#" class="btn btn-outline-secondary btn-sm mt-1">View Receipt</a>
+              {% endif %}
             </div>
           </div>
           {% empty %}
@@ -115,8 +125,18 @@
           <h5 class="fw-bold">Upcoming Payments</h5>
           <p class="text-muted">Your upcoming scheduled fees and invoices.</p>
           {% for item in upcoming %}
-            <div class="border-bottom py-2">
-              <strong>{{ item.description }}</strong> – ${{ item.amount }} due {{ item.due_date|date:"M d, Y" }}
+            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+              <div>
+                <strong>{{ item.child }} - {{ item.program }}</strong><br>
+                <small class="text-muted">{{ item.academy }}</small>
+              </div>
+              <div class="text-end">
+                <h6 class="fw-bold mb-1">SAR {{ item.amount }}</h6>
+                <small class="text-muted">Due {{ item.date|date:"M d, Y" }}</small><br>
+                <button class="btn btn-success btn-sm mt-1" onclick="makePayment('{{ item.academy|escapejs }}', '{{ item.program|escapejs }}', {{ item.amount }})">
+                  Pay Now
+                </button>
+              </div>
             </div>
           {% empty %}
             <p class="text-muted">No upcoming payments.</p>
@@ -132,11 +152,22 @@
           <h5 class="fw-bold">Payment Methods</h5>
           <p class="text-muted">Manage your saved payment methods.</p>
           {% for method in methods %}
-            <div class="border-bottom py-2">
-              {{ method.type }} – **** {{ method.last4 }}
+            <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi {{ method.icon }} fs-4 text-success"></i>
+                <div>
+                  <strong>{{ method.name }}</strong><br>
+                  <small class="text-muted">{{ method.description }}</small>
+                </div>
+              </div>
+              <div class="text-end">
+                <button class="btn btn-outline-success btn-sm" onclick="selectPaymentMethod('{{ method.name }}')">
+                  Select
+                </button>
+              </div>
             </div>
           {% empty %}
-            <p class="text-muted">No payment methods saved.</p>
+            <p class="text-muted">No payment methods available.</p>
           {% endfor %}
         </div>
       </div>
@@ -144,4 +175,294 @@
 
   </div>
 </div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="fw-bold mb-0">Complete Payment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Order Summary -->
+          <div class="col-lg-5 mb-4">
+            <div class="card h-100">
+              <div class="card-header">
+                <h6 class="mb-0">Payment Summary</h6>
+              </div>
+              <div class="card-body">
+                <!-- Selected Program -->
+                <div class="selected-program mb-4">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="program-icon me-3 bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                         style="width: 50px; height: 50px;">
+                      <i class="bi bi-person-check"></i>
+                    </div>
+                    <div>
+                      <h6 class="mb-1" id="summaryProgram">Program Name</h6>
+                      <span class="badge bg-success" id="summaryAcademy">Academy Name</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cost Breakdown -->
+                <div class="cost-breakdown">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Program Fee:</span>
+                    <span id="summaryAmount">SAR 0</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>VAT (15%):</span>
+                    <span id="summaryVat">SAR 0</span>
+                  </div>
+                  <hr>
+                  <div class="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total:</span>
+                    <span class="text-success" id="summaryTotal">SAR 0</span>
+                  </div>
+                </div>
+
+                <div class="mt-3 text-center">
+                  <small class="text-muted">
+                    <i class="bi bi-shield-lock me-1"></i>
+                    Secure SSL encrypted payment
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Form -->
+          <div class="col-lg-7">
+            <div class="card">
+              <div class="card-header">
+                <h6 class="mb-1">Complete Your Payment</h6>
+                <p class="text-muted mb-0">Enter your payment information to complete the enrollment</p>
+              </div>
+              <div class="card-body">
+                <form id="paymentForm" method="POST" action="{% url 'parents:process_payment' %}">
+                  {% csrf_token %}
+                  
+                  <!-- Hidden fields -->
+                  <input type="hidden" id="enrollmentId" name="enrollment_id">
+                  <input type="hidden" id="paymentAmount" name="amount">
+                  
+                  <!-- Payment Method -->
+                  <div class="section mb-4">
+                    <div class="section-header mb-3">
+                      <i class="bi bi-credit-card me-2"></i>
+                      <h6 class="mb-0">Payment Method</h6>
+                    </div>
+                    
+                    <div class="mb-3">
+                      {% for choice in payment_form.payment_method %}
+                      <div class="form-check mb-2">
+                        {{ choice.tag }}
+                        <label class="form-check-label" for="{{ choice.id_for_label }}">
+                          {{ choice.choice_label }}
+                          {% if choice.choice_value == 'card' %}
+                          <small class="text-muted d-block">Visa, Mastercard, Mada</small>
+                          {% elif choice.choice_value == 'transfer' %}
+                          <small class="text-muted d-block">Local Saudi banks</small>
+                          {% endif %}
+                        </label>
+                      </div>
+                      {% endfor %}
+                    </div>
+
+                    <!-- Card Details (shown when card is selected) -->
+                    <div id="card-details" class="card-details">
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.cardholder_name.id_for_label }}" class="form-label">
+                            Cardholder Name <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.cardholder_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.card_number.id_for_label }}" class="form-label">
+                            Card Number <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.card_number }}
+                        </div>
+                      </div>
+                      
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.expiry_date.id_for_label }}" class="form-label">
+                            Expiry Date <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.expiry_date }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.cvv.id_for_label }}" class="form-label">
+                            CVV <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.cvv }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Bank Transfer Details (shown when transfer is selected) -->
+                    <div id="transfer-details" class="transfer-details" style="display: none;">
+                      <div class="row">
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.bank_name.id_for_label }}" class="form-label">
+                            Bank Name <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.bank_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                          <label for="{{ payment_form.account_number.id_for_label }}" class="form-label">
+                            Account Number <span class="text-danger">*</span>
+                          </label>
+                          {{ payment_form.account_number }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Additional Information -->
+                  <div class="section mb-4">
+                    <div class="section-header mb-3">
+                      <i class="bi bi-chat-text me-2"></i>
+                      <h6 class="mb-0">Additional Information</h6>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="{{ payment_form.notes.id_for_label }}" class="form-label">
+                        Notes (Optional)
+                      </label>
+                      {{ payment_form.notes }}
+                    </div>
+                  </div>
+
+                  <!-- Agreements -->
+                  <div class="section mb-4">
+                    <div class="form-check mb-3">
+                      {{ payment_form.terms_agreement }}
+                      <label class="form-check-label" for="{{ payment_form.terms_agreement.id_for_label }}">
+                        I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-success btn-lg" id="submit-button">
+                      Complete Payment - SAR 0
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentPaymentData = {};
+
+function makePayment(academy, program, amount, enrollmentId = null) {
+    currentPaymentData = {
+        academy: academy,
+        program: program,
+        amount: amount,
+        enrollmentId: enrollmentId
+    };
+    
+    // Update summary
+    document.getElementById('summaryProgram').textContent = program;
+    document.getElementById('summaryAcademy').textContent = academy;
+    document.getElementById('summaryAmount').textContent = `SAR ${amount}`;
+    
+    // Calculate VAT and total
+    const vat = Math.round(amount * 0.15);
+    const total = amount + vat;
+    
+    document.getElementById('summaryVat').textContent = `SAR ${vat}`;
+    document.getElementById('summaryTotal').textContent = `SAR ${total}`;
+    document.getElementById('submit-button').textContent = `Complete Payment - SAR ${total}`;
+    
+    // Set hidden fields
+    if (enrollmentId) {
+        document.getElementById('enrollmentId').value = enrollmentId;
+    }
+    document.getElementById('paymentAmount').value = amount;
+    
+    // Reset form
+    document.getElementById('paymentForm').reset();
+    document.querySelector('input[name="payment_method"][value="card"]').checked = true;
+    
+    // Show modal
+    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    
+    // Update form display
+    togglePaymentMethodDisplay();
+}
+
+function selectPaymentMethod(methodName) {
+    // You can implement payment method selection logic here
+    alert(`Selected payment method: ${methodName}`);
+}
+
+function togglePaymentMethodDisplay() {
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    const cardDetails = document.getElementById('card-details');
+    const transferDetails = document.getElementById('transfer-details');
+    
+    if (paymentMethod && paymentMethod.value === 'card') {
+        cardDetails.style.display = 'block';
+        transferDetails.style.display = 'none';
+    } else if (paymentMethod && paymentMethod.value === 'transfer') {
+        cardDetails.style.display = 'none';
+        transferDetails.style.display = 'block';
+    } else {
+        cardDetails.style.display = 'none';
+        transferDetails.style.display = 'none';
+    }
+}
+
+// Payment method toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+    
+    paymentMethodRadios.forEach(radio => {
+        radio.addEventListener('change', togglePaymentMethodDisplay);
+    });
+    
+    // Initial state
+    togglePaymentMethodDisplay();
+});
+
+// Handle form submission
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Simulate payment processing
+    const submitButton = document.getElementById('submit-button');
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+    
+    // In production, you'd send this to your payment gateway
+    setTimeout(() => {
+        // Simulate successful payment
+        alert('Payment processed successfully!');
+        
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+        
+        // Reload page to show updated payment data
+        location.reload();
+    }, 2000);
+});
+</script>
+
 {% endblock %}

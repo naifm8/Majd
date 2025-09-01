@@ -19,4 +19,7 @@ urlpatterns = [
     path("enroll/", views.enroll_child, name="enroll_child"),
     path("enrollment/<int:enrollment_id>/pause/", views.pause_enrollment, name="pause_enrollment"),
     path("enrollment/<int:enrollment_id>/resume/", views.resume_enrollment, name="resume_enrollment"),
+    
+    # Payment URLs
+    path("process-payment/", views.process_payment, name="process_payment"),
 ]

@@ -171,7 +171,7 @@
       </div>
       <div class="modal-body">
         <div class="row g-3">
-          {% for academy in academies %}
+          {% for academy_data in academies %}
           <div class="col-md-6">
             <div class="card shadow-sm border-0 h-100">
               <div class="card-body">
@@ -179,17 +179,19 @@
                   <div class="d-flex gap-2">
                     <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
                          style="width:40px;height:40px;">
-                      {{ academy.name|slice:":3"|upper }}
+                      {{ academy_data.academy.name|slice:":3"|upper }}
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-0">{{ academy.name }}</h6>
-                      <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ academy.city }}</small>
+                      <h6 class="fw-bold mb-0">{{ academy_data.academy.name }}</h6>
+                      <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ academy_data.academy.city }}</small>
                     </div>
                   </div>
                 </div>
-                <p class="text-muted small">{{ academy.description|truncatewords:20 }}</p>
+                <p class="text-muted small">{{ academy_data.academy.description|truncatewords:20 }}</p>
+                <p class="fw-bold text-success mb-2">SAR {{ academy_data.price }}/month</p>
+                <small class="text-muted mb-2 d-block">{{ academy_data.plan_type }}</small>
                 <div class="mb-2">
-                  {% for program in academy.programs.all %}
+                  {% for program in academy_data.academy.programs.all %}
                     <span class="badge bg-light text-dark border me-1">{{ program.sport_type.title }}</span>
                   {% endfor %}
                 </div>
