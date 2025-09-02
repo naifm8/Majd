@@ -20,9 +20,11 @@ def _academy(user):
     return user.academy_admin_profile.academy
 
 def academy_list_view(request):
-    academies = Academy.objects.prefetch_related("programs").all()
+    academies = Academy.objects.prefetch_related(
+        "programs__enrollments__child"
+    ).all()
 
-    #  Filters 
+    # Filters
     search = request.GET.get("search")
     sport = request.GET.get("sport")
     city = request.GET.get("city")
@@ -34,22 +36,29 @@ def academy_list_view(request):
     if city:
         academies = academies.filter(city=city)
 
-    #  Stats 
+    # Stats
     total_academies = Academy.objects.count()
-    total_players = Child.objects.distinct().count()
-    satisfaction_rate = 95  # static for now
-    sport_choices = Program.SportType.choices
-    cities = Academy.objects.values_list("city", flat=True).distinct()
+    total_children = Child.objects.count()  # all players in system
+    total_enrolled = (
+        Enrollment.objects.filter(is_active=True)
+        .values("child")
+        .distinct()
+        .count()
+    )
 
     context = {
         "academies": academies,
         "total_academies": total_academies,
-        "total_players": total_players,
-        "satisfaction_rate": satisfaction_rate,
-        "sport_choices": sport_choices,
-        "cities": cities,
+        "total_children": total_children,   # all players
+        "total_enrolled": total_enrolled,   # active enrolled players
+        "satisfaction_rate": 95,
+        "sport_choices": Program.SportType.choices,
+        "cities": Academy.objects.exclude(city="")
+                    .values_list("city", flat=True)
+                    .distinct(),
     }
     return render(request, "academies/academy_list.html", context)
+
 
 
 def AcademyDetailView(request, slug):
@@ -246,34 +255,52 @@ def subscription_enroll_redirect(request, academy_slug, plan_id):
 
 
 # ✅ Programs Dashboard
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from django.shortcuts import render
+
+from academies.models import Program, Session
+from parents.models import Enrollment  # <-- use Enrollment to count players
+
+def _academy(user):
+    return user.academy_admin_profile.academy
+
 @login_required
 def program_dashboard(request):
+    # Which programs to show
     if request.user.is_superuser:
         programs = Program.objects.all().prefetch_related("sessions")
         academy = None
     else:
         academy = _academy(request.user)
-        programs = Program.objects.filter(academy=academy).prefetch_related("sessions")
+        programs = (
+            Program.objects
+            .filter(academy=academy)
+            .prefetch_related("sessions")
+        )
 
-    sessions = Session.objects.filter(program__in=programs)
+    # Sessions under those programs
+    sessions = (
+        Session.objects
+        .filter(program__in=programs)
+        .select_related("program")
+    )
 
-    # Global stats
+    # Stats
     total_programs = programs.count()
     total_sessions = sessions.count()
-    total_enrollment = Child.objects.filter(programs__in=programs).distinct().count()
 
-    total_capacity = sum(s.capacity for s in sessions)
+    # ✅ Use Enrollment instead of Child.programs
+    total_enrollment = (
+        Enrollment.objects
+        .filter(program__in=programs, is_active=True)
+        .values("child")
+        .distinct()
+        .count()
+    )
+
+    total_capacity = sessions.aggregate(total=Sum("capacity"))["total"] or 0
     utilization = round((total_enrollment / total_capacity) * 100, 1) if total_capacity else 0
-
-    # ✅ Per-session enrollment + utilization
-    session_data = {}
-    for s in sessions:
-        # adjust this if you have a different enrollment relation
-        enrolled = s.enrollment_set.count() if hasattr(s, "enrollment_set") else 0  
-        session_data[s.id] = {
-            "enrolled": enrolled,
-            "utilization": round((enrolled / s.capacity) * 100, 1) if s.capacity else 0,
-        }
 
     context = {
         "academy": academy,
@@ -283,9 +310,10 @@ def program_dashboard(request):
         "total_enrollment": total_enrollment,
         "utilization_pct": utilization,
         "revenue": 60450,  # placeholder
-        "session_data": session_data,
+        "total_capacity": total_capacity,  # if your template uses it
     }
     return render(request, "academies/dashboard_programs.html", context)
+
 
 
 
@@ -357,6 +385,9 @@ def session_create(request, program_id):
         "form": form,
         "program": program,
     })
+
+
+
 
 @login_required
 def session_edit(request, pk):

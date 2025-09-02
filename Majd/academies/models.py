@@ -1,8 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.models import User
-from accounts.models import TrainerProfile, AcademyAdminProfile
+from accounts.models import AcademyAdminProfile
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
 
@@ -13,12 +12,15 @@ class Academy(models.Model):
     cover = CloudinaryField('cover', folder='Majd/academies/covers', blank=True, null=True)
     description = models.TextField(max_length=500)
     city = models.CharField(max_length=80)
-    email= models.CharField(max_length=50)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
     latitude  = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     establishment_year = models.PositiveIntegerField(default=timezone.now().year, blank=True)
     owner = models.OneToOneField(AcademyAdminProfile,on_delete=models.CASCADE,related_name="academy")
     created_at = models.DateTimeField(auto_now_add=True)
+    mission = models.TextField(max_length=500, blank=True, null=True)
+
 
     def __str__(self) -> str:
         return self.name
@@ -27,8 +29,16 @@ class Academy(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+    
 
-
+    @property
+    def enrolled_players(self):
+        return (
+            self.programs.filter(enrollments__is_active=True)
+            .values("enrollments__child")
+            .distinct()
+            .count()
+        )
 
 
 
@@ -132,6 +142,21 @@ class Session(models.Model):
             days = (self.end_datetime.date() - self.start_datetime.date()).days
             return max(1, days // 7)
         return None
+    
+class SessionSlot(models.Model):
+    class Weekday(models.TextChoices):
+        SUNDAY    = "sun", "Sunday"
+        MONDAY    = "mon", "Monday"
+        TUESDAY   = "tue", "Tuesday"
+        WEDNESDAY = "wed", "Wednesday"
+        THURSDAY  = "thu", "Thursday"
+        FRIDAY    = "fri", "Friday"
+        SATURDAY  = "sat", "Saturday"
+
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="slots")
+    weekday = models.CharField(max_length=10, choices=Weekday.choices)
+    start_time = models.TimeField()
+    end_time   = models.TimeField()
             
 
 
@@ -163,22 +188,6 @@ class SessionSkill(models.Model):
 
     def __str__(self):
         return f"{self.skill.name} ({self.skill.position}) - {self.session}"
-
-
-class SessionSlot(models.Model):
-    class Weekday(models.TextChoices):
-        SUNDAY    = "sun", "Sunday"
-        MONDAY    = "mon", "Monday"
-        TUESDAY   = "tue", "Tuesday"
-        WEDNESDAY = "wed", "Wednesday"
-        THURSDAY  = "thu", "Thursday"
-        FRIDAY    = "fri", "Friday"
-        SATURDAY  = "sat", "Saturday"
-
-    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="slots")
-    weekday = models.CharField(max_length=10, choices=Weekday.choices)
-    start_time = models.TimeField()
-    end_time   = models.TimeField()
     
     
 class TrainingClass(models.Model):

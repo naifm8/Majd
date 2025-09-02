@@ -12,7 +12,6 @@ class AcademyAdminProfile(models.Model):
         return f"AcademyAdmin<{self.user}>"
 
 
-
 class TrainerProfile(models.Model):
     user = models.OneToOneField( User, on_delete=models.SET_NULL, null=True, blank=True, related_name='trainer_profile')
     certifications = models.TextField(blank=True)
@@ -47,8 +46,6 @@ class TrainerProfile(models.Model):
             academy_name = "❌ أكاديمية محذوفة"
 
         return f"{full_name} ({academy_name})"
-
-
 
 
 class ParentProfile(models.Model):

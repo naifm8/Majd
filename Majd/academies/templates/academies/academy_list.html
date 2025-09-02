@@ -1,16 +1,28 @@
 {% extends 'main/base.html' %}
 {% load static %}
-{%block title%}Academies{% endblock %}
+{% block title %}Academies{% endblock %}
 {% block content %}
 <section class="py-5 text-center container">
   <h2 class="fw-bold">Registered Academies</h2>
-  <p class="text-muted">Browse our network of verified sports academies. Each academy is carefully vetted to ensure quality training and professional coaching for your child.</p>
+  <p class="text-muted">
+    Browse our network of verified sports academies. Each academy is carefully vetted to ensure
+    quality training and professional coaching for your child.
+  </p>
 
+  <!-- Hero Stats -->
   <div class="row text-center my-4">
-    <div class="col"><h5><strong>{{ total_academies }}+</strong><br><small>Total Academies</small></h5></div>
-    <div class="col"><h5><strong>{{ sport_choices|length }}+</strong><br><small>Sports Covered</small></h5></div>
-    <div class="col"><h5><strong>{{ total_players }}+</strong><br><small>Active Students</small></h5></div>
-    <div class="col"><h5><strong>{{ satisfaction_rate }}%</strong><br><small>Satisfaction Rate</small></h5></div>
+    <div class="col">
+      <h5><strong>{{ total_academies }}+</strong><br><small>Total Academies</small></h5>
+    </div>
+    <div class="col">
+      <h5><strong>{{ sport_choices|length }}+</strong><br><small>Sports Covered</small></h5>
+    </div>
+    <div class="col">
+      <h5><strong>{{ total_children }}+</strong><br><small>Total Players</small></h5>
+    </div>
+    <div class="col">
+      <h5><strong>{{ satisfaction_rate }}%</strong><br><small>Satisfaction Rate</small></h5>
+    </div>
   </div>
 
   <!-- Search & Filters -->
@@ -34,6 +46,7 @@
   <p class="text-muted">Showing {{ academies|length }} of {{ total_academies }} academies</p>
 </section>
 
+<!-- Academy Cards -->
 <div class="container pb-5">
   <div class="row row-cols-1 row-cols-md-2 g-4">
     {% for academy in academies %}
@@ -48,18 +61,21 @@
           <h5 class="card-title">{{ academy.name }}</h5>
           <p class="card-text text-muted">{{ academy.description|truncatewords:18 }}</p>
 
+          <!-- Academy Info -->
           <div class="mb-2">
             <small class="text-muted me-3">
               <i class="bi bi-geo-alt"></i> {{ academy.city }}
             </small>
             <small class="text-muted me-3">
-              <i class="bi bi-people"></i> {{ academy.registered_players }} Students
+              <i class="bi bi-person-check"></i> {{ academy.enrolled_players }} Enrolled
             </small>
             <small class="text-muted">
               <i class="bi bi-calendar-check"></i> Est. {{ academy.establishment_year }}
             </small>
           </div>
+          
 
+          <!-- Programs Offered -->
           <div class="mb-2">
             <strong>Programs Offered:</strong>
             {% for prog in academy.programs.all|slice:":3" %}
@@ -67,13 +83,24 @@
             {% endfor %}
           </div>
 
+          <!-- Contact Info -->
           <div class="mt-3">
-            {% if academy.email %}<p class="mb-0"><i class="bi bi-envelope"></i> {{ academy.email }}</p>{% endif %}
-            {% if academy.contact_number %}<p class="mb-0"><i class="bi bi-telephone"></i> {{ academy.contact_number }}</p>{% endif %}
-            {% if academy.website %}<p class="mb-0"><i class="bi bi-globe"></i> {{ academy.website }}</p>{% endif %}
+            {% if academy.email %}
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ academy.email }}</p>
+            {% endif %}
+            {% if academy.contact_number %}
+            <p class="mb-0"><i class="bi bi-telephone"></i> {{ academy.contact_number }}</p>
+            {% endif %}
+            {% if academy.website %}
+            <p class="mb-0"><i class="bi bi-globe"></i> {{ academy.website }}</p>
+            {% endif %}
           </div>
+            
+
+               
         </div>
 
+        <!-- Card Footer -->
         <div class="card-footer bg-white d-flex justify-content-between">
           <a href="{% url 'academies:detail' academy.slug %}" class="btn btn-success btn-sm">Visit Academy Page</a>
           <a href="mailto:{{ academy.email }}" class="btn btn-outline-secondary btn-sm">Contact Academy</a>
@@ -83,5 +110,4 @@
     {% endfor %}
   </div>
 </div>
-
 {% endblock %}
