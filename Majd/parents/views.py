@@ -1,11 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse,HttpRequest
-from .models import Child, Enrollment
-from accounts.models import ParentProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from academies.models import Academy, TrainingClass
-from datetime import date
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from datetime import date, datetime, timedelta
+from django.utils import timezone
+from .models import Child, Enrollment
+from .forms import EnrollmentForm, ParentPaymentForm
+from academies.models import Academy, TrainingClass, Program
+from accounts.models import ParentProfile
+from payment.models import SubscriptionPlan
 
 # Create your views here.
 
@@ -41,7 +45,7 @@ def add_child_view(request):
 
         if not parent_profile:
             messages.error(request, "You must be a parent to add a child.")
-            return redirect("parents:dashboard_view")
+            return redirect("parents:dashboard")
 
         # Collect form data
         first_name = request.POST.get("first_name")
@@ -69,9 +73,9 @@ def add_child_view(request):
         )
 
         messages.success(request, f"Child {child.first_name} has been added successfully!")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
-    return redirect("parents:dashboard_view")
+    return redirect("parents:dashboard")
 
 
 @login_required
@@ -93,9 +97,9 @@ def edit_child_view(request, child_id):
 
         child.save()
         messages.success(request, f"{child.first_name}'s profile has been updated.")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
-    return redirect("parents:dashboard_view")
+    return redirect("parents:dashboard")
 
 @login_required
 def delete_child_view(request, child_id):
@@ -104,11 +108,11 @@ def delete_child_view(request, child_id):
     if request.method == "POST":
         child.delete()
         messages.success(request, f"Child '{child.first_name} {child.last_name}' deleted successfully.")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
     # If someone tries GET request
     messages.error(request, "Invalid request.")
-    return redirect("parents:my_children_view")
+    return redirect("parents:children")
 
 
 @login_required
@@ -136,31 +140,98 @@ def schedule_view(request):
 
 @login_required
 def payments_view(request):
+    # Get user's parent profile
+    try:
+        parent_profile = request.user.parent_profile
+    except:
+        parent_profile = None
     
-    # hard coded data for view the frontend
-    payments = [
-        {"child": {"first_name": "Alex", "last_name": "Johnson"},
-         "description": "Monthly Training Fee",
-         "academy_name": "Elite Soccer Academy",
-         "status": "paid",
-         "amount": 150,
-         "date": "2024-03-01"},
-        {"child": {"first_name": "Emma", "last_name": "Johnson"},
-         "description": "Swimming Lessons",
-         "academy_name": "AquaLife Swimming",
-         "status": "paid",
-         "amount": 120,
-         "date": "2024-03-01"},
+    if not parent_profile:
+        return render(request, "main/payments.html", {
+            "payments": [],
+            "total_paid": 0,
+            "outstanding": 0,
+            "next_payment": {"amount": 0, "date": None},
+            "upcoming": [],
+            "methods": [],
+            "parent_profile": None,
+        })
+    
+    # Get real payment data from enrollments
+    payments = []
+    total_paid = 0
+    outstanding = 0
+    upcoming_payments = []
+    
+    for child in parent_profile.children.all():
+        for enrollment in child.parent_enrollments.all():
+            if enrollment.is_active:
+                # Get subscription plan price
+                from payment.models import SubscriptionPlan
+                subscription_plan = SubscriptionPlan.objects.filter(
+                    academy=enrollment.program.academy,
+                    is_active=True
+                ).first()
+                
+                price = subscription_plan.price if subscription_plan else 0
+                
+                # Calculate payment status
+                payment_status = "not_paid"  # Default to not paid
+                payment_date = enrollment.enrolled_at.strftime("%Y-%m-%d")
+                
+                payments.append({
+                    "child": {"first_name": child.first_name, "last_name": child.last_name},
+                    "description": f"{enrollment.program.title} - {enrollment.program.academy.name}",
+                    "academy_name": enrollment.program.academy.name,
+                    "status": payment_status,
+                    "amount": price,
+                    "date": payment_date,
+                    "enrollment": enrollment,
+                    "subscription_plan": subscription_plan,
+                })
+                
+                if payment_status == "paid":
+                    total_paid += price
+                else:
+                    outstanding += price
+                
+                # Add to upcoming payments (next month)
+                from datetime import date, timedelta
+                next_month = date.today() + timedelta(days=30)
+                upcoming_payments.append({
+                    "amount": price,
+                    "date": next_month,
+                    "child": child.first_name,
+                    "academy": enrollment.program.academy.name,
+                    "program": enrollment.program.title,
+                })
+    
+    # Calculate next payment (sum of all upcoming)
+    next_payment_amount = sum(p["amount"] for p in upcoming_payments)
+    next_payment_date = upcoming_payments[0]["date"] if upcoming_payments else None
+    
+    # Payment methods available
+    payment_methods = [
+        {"name": "Credit/Debit Card", "icon": "bi-credit-card", "description": "Secure online payment"},
+        {"name": "Bank Transfer", "icon": "bi-bank", "description": "Direct bank transfer"},
+        {"name": "Cash Payment", "icon": "bi-cash", "description": "Pay at academy location"},
     ]
-
-    return render(request, "main/payments.html", {
+    
+    # Create payment form
+    payment_form = ParentPaymentForm()
+    
+    context = {
         "payments": payments,
-        "total_paid": 345,
-        "outstanding": 75,
-        "next_payment": {"amount": 270, "date": "2024-04-01"},
-        "upcoming": [],
-        "methods": [],
-    })
+        "total_paid": total_paid,
+        "outstanding": outstanding,
+        "next_payment": {"amount": next_payment_amount, "date": next_payment_date},
+        "upcoming": upcoming_payments,
+        "methods": payment_methods,
+        "parent_profile": parent_profile,
+        "payment_form": payment_form,
+    }
+    
+    return render(request, "main/payments.html", context)
 
 @login_required
 def reports_view(request):
@@ -197,77 +268,283 @@ def reports_view(request):
 
 @login_required
 def subscriptions_view(request):
-    # Dummy subscriptions data (replace with QuerySet from your models)
-    subscriptions = [
-        {
-            "academy": {"name": "Elite Soccer Academy"},
-            "plan": "Premium Training",
-            "location": "Downtown Sports Complex",
-            "children": "Alex Johnson",
-            "features": ["Unlimited training sessions", "1-on-1 coaching sessions", "Performance analytics"],
-            "status": "Active",
-            "price": 450,
-            "next_payment": date(2024, 4, 15),
-        },
-        {
-            "academy": {"name": "AquaLife Swimming Academy"},
-            "plan": "Basic Swimming",
-            "location": "Aquatic Center North",
-            "children": "Emma Johnson",
-            "features": ["2 sessions per week", "Group coaching", "Swimming competitions"],
-            "status": "Active",
-            "price": 280,
-            "next_payment": date(2024, 4, 20),
-        },
-        {
-            "academy": {"name": "Tennis Pro Academy"},
-            "plan": "Intermediate",
-            "location": "City Tennis Center",
-            "children": "Alex Johnson",
-            "features": ["3 sessions per week", "Court access", "Equipment rental"],
-            "status": "Paused",
-            "price": 320,
-            "next_payment": date(2024, 5, 1),
-        },
-    ]
-
-    academies = [
-        {
-            "name": "Basketball Elite Training",
-            "location": "Sports Arena West",
-            "price": 380,
-            "rating": 4.8,
-            "features": ["Youth Development", "Competitive Training", "Skills Clinic"],
-        },
-        {
-            "name": "Martial Arts Academy",
-            "location": "Downtown Dojo",
-            "price": 250,
-            "rating": 4.9,
-            "features": ["Karate", "Taekwondo", "Self Defense"],
-        },
-        {
-            "name": "Athletic Performance Center",
-            "location": "North Fitness Complex",
-            "price": 420,
-            "rating": 4.7,
-            "features": ["Speed Training", "Strength Conditioning", "Sports Nutrition"],
-        },
-    ]
-
+    # Get real academies and programs from database with pricing
+    academies = []
+    for academy in Academy.objects.all():
+        # Get the subscription plan for this academy
+        subscription_plan = SubscriptionPlan.objects.filter(
+            academy=academy,
+            is_active=True
+        ).first()
+        
+        academies.append({
+            "academy": academy,
+            "price": subscription_plan.price if subscription_plan else 0,
+            "plan_type": subscription_plan.plan_type.name if subscription_plan else "No Plan"
+        })
+    
+    programs = Program.objects.filter(academy__isnull=False)
+    
+    # Get user's parent profile
+    try:
+        parent_profile = request.user.parent_profile
+    except:
+        parent_profile = None
+    
+    # Create enrollment form
+    enrollment_form = EnrollmentForm(parent=parent_profile) if parent_profile else None
+    
+    # Get real enrollments if parent profile exists
+    if parent_profile:
+        enrollments = []
+        for child in parent_profile.children.all():
+            for enrollment in child.parent_enrollments.all():
+                if enrollment.is_active:
+                    # Get the subscription plan price for this program
+                    subscription_plan = SubscriptionPlan.objects.filter(
+                        academy=enrollment.program.academy,
+                        is_active=True
+                    ).first()
+                    
+                    price = subscription_plan.price if subscription_plan else 0
+                    
+                    enrollments.append({
+                        "id": enrollment.id,
+                        "academy": enrollment.program.academy,
+                        "program": enrollment.program.title,
+                        "location": enrollment.program.academy.city,
+                        "children": f"{child.first_name} {child.last_name}".strip(),
+                        "features": [enrollment.program.sport_type.title()],
+                        "status": "Active" if enrollment.is_active else "Inactive",
+                        "price": price,
+                        "next_payment": date.today(),
+                        "enrollment": enrollment,
+                        "child": child,
+                    })
+    else:
+        enrollments = []
+    
     # Calculate totals
-    total_subscriptions = len(subscriptions)
-    active_subscriptions = sum(1 for s in subscriptions if s["status"] == "Active")
-    monthly_spend = sum(s["price"] for s in subscriptions if s["status"] == "Active")
+    total_subscriptions = len(enrollments)
+    active_subscriptions = sum(1 for e in enrollments if e["status"] == "Active")
+    monthly_spend = sum(e.get("price", 0) for e in enrollments if e["status"] == "Active")
 
     context = {
-        "subscriptions": subscriptions,
+        "enrollments": enrollments,
         "academies": academies,
+        "programs": programs,
         "total_subscriptions": total_subscriptions,
         "active_subscriptions": active_subscriptions,
         "monthly_spend": monthly_spend,
+        "parent_profile": parent_profile,
+        "form": enrollment_form,  # Add the form to context
     }
     return render(request, "main/subscriptions.html", context)
+
+
+@login_required
+@require_POST
+def enroll_child(request):
+    """Handle child enrollment in a program"""
+    if request.method == "POST":
+        try:
+            parent_profile = request.user.parent_profile
+            if not parent_profile:
+                return JsonResponse({"success": False, "error": "Parent profile not found"})
+            
+            form = EnrollmentForm(request.POST, parent=parent_profile)
+            if form.is_valid():
+                # Check if enrollment already exists
+                existing_enrollment = Enrollment.objects.filter(
+                    child=form.cleaned_data['child'],
+                    program=form.cleaned_data['program']
+                ).first()
+                
+                if existing_enrollment:
+                    if existing_enrollment.is_active:
+                        return JsonResponse({"success": False, "error": "Child is already enrolled in this program"})
+                    else:
+                        # Reactivate existing enrollment
+                        existing_enrollment.is_active = True
+                        existing_enrollment.save()
+                        messages.success(request, f"Successfully re-enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
+                else:
+                    # Create new enrollment
+                    enrollment = form.save(commit=False)
+                    enrollment.save()
+                    messages.success(request, f"Successfully enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
+                
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "Invalid form data"})
+                
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+@login_required
+@require_POST
+def process_payment(request):
+    """Process payment for an enrollment"""
+    if request.method == "POST":
+        try:
+            enrollment_id = request.POST.get('enrollment_id')
+            payment_method = request.POST.get('payment_method', 'card')
+            amount = request.POST.get('amount')
+            
+            if not all([enrollment_id, amount]):
+                return JsonResponse({"success": False, "error": "Missing required payment information"})
+            
+            # Get the enrollment
+            enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+            
+            # Verify the enrollment belongs to the user's child
+            if enrollment.child.parent != request.user.parent_profile:
+                return JsonResponse({"success": False, "error": "Unauthorized"})
+            
+            # Get subscription plan for pricing verification
+            from payment.models import SubscriptionPlan
+            subscription_plan = SubscriptionPlan.objects.filter(
+                academy=enrollment.program.academy,
+                is_active=True
+            ).first()
+            
+            if not subscription_plan:
+                return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
+            
+            # Calculate expected total with VAT (15%) - using same rounding as frontend
+            base_price = float(subscription_plan.price)
+            vat_amount = round(base_price * 0.15, 2)  # Round to 2 decimal places
+            expected_total = round(base_price + vat_amount, 2)  # Round to 2 decimal places
+            
+            # Debug logging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Payment calculation - Base: {base_price}, VAT: {vat_amount}, Expected Total: {expected_total}, Received: {amount}")
+            
+            # Verify amount matches expected total (base price + VAT)
+            if abs(float(amount) - expected_total) > 0.01:  # Allow for small rounding differences
+                return JsonResponse({"success": False, "error": f"Payment amount does not match expected total. Expected: SAR {expected_total:.2f}, Received: SAR {amount}"})
+            
+            # Create payment record (you can extend this with your payment gateway)
+            from player_payments.models import PaymentTransaction, PlayerEnrollment
+            
+            # Create or get player enrollment
+            # First, we need to find or create a PlayerSubscription for this academy
+            from player_payments.models import PlayerSubscription
+            player_subscription, created = PlayerSubscription.objects.get_or_create(
+                academy=enrollment.program.academy,
+                defaults={
+                    'title': f"{enrollment.program.academy.name} Subscription",
+                    'price': subscription_plan.price,
+                    'billing_type': '3m',  # Default to 3 months
+                    'description': f"Subscription for {enrollment.program.academy.name}",
+                }
+            )
+            
+            # Log the subscription creation/retrieval
+            logger.info(f"PlayerSubscription {'created' if created else 'found'}: {player_subscription.id} for academy {enrollment.program.academy.name}")
+            
+            # Now create the PlayerEnrollment with the subscription
+            player_enrollment, created = PlayerEnrollment.objects.get_or_create(
+                subscription=player_subscription,
+                child=enrollment.child,
+                parent=request.user,
+                start_date=date.today(),
+                defaults={
+                    'status': 'active',
+                    'payment_method': payment_method,
+                    'end_date': date.today() + timedelta(days=30),
+                    'amount_paid': amount,  # This is the total amount including VAT
+                    'payment_date': timezone.now(),
+                }
+            )
+            
+            # Log the enrollment creation/retrieval
+            logger.info(f"PlayerEnrollment {'created' if created else 'found'}: {player_enrollment.id} for child {enrollment.child.first_name}")
+            
+            # Create payment transaction
+            transaction = PaymentTransaction.objects.create(
+                enrollment=player_enrollment,
+                transaction_type='initial',
+                status='completed',
+                amount=amount,
+                currency='SAR',
+                processed_at=timezone.now(),
+                notes=f'Payment for {enrollment.program.title} at {enrollment.program.academy.name}'
+            )
+            
+            # Update enrollment status to paid
+            enrollment.is_active = True  # Keep enrollment active after payment
+            
+            # Send invoice email to parent
+            from .utils import send_payment_invoice_email
+            email_sent = send_payment_invoice_email(transaction, player_enrollment, request.user)
+            
+            # Log the email sending result for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Payment processed for {enrollment.child.first_name}. Email sent: {email_sent}. Parent email: {request.user.email}")
+            
+            success_message = f"Payment of SAR {amount} processed successfully for {enrollment.child.first_name}"
+            if email_sent:
+                success_message += ". An invoice has been sent to your email."
+            else:
+                success_message += ". Note: Invoice email could not be sent."
+            
+            messages.success(request, success_message)
+            return JsonResponse({"success": True, "transaction_id": transaction.id, "email_sent": email_sent})
+            
+        except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Payment processing error: {str(e)}")
+            return JsonResponse({"success": False, "error": str(e)})
+    
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+@login_required
+@require_POST
+def pause_enrollment(request, enrollment_id):
+    """Pause an active enrollment"""
+    try:
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        
+        # Check if the enrollment belongs to the user's child
+        if enrollment.child.parent != request.user.parent_profile:
+            return JsonResponse({"success": False, "error": "Unauthorized"})
+        
+        enrollment.is_active = False
+        enrollment.save()
+        
+        messages.success(request, f"Enrollment paused for {enrollment.child.first_name}")
+        return JsonResponse({"success": True})
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+@login_required
+@require_POST
+def resume_enrollment(request, enrollment_id):
+    """Resume a paused enrollment"""
+    try:
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        
+        # Check if the enrollment belongs to the user's child
+        if enrollment.child.parent != request.user.parent_profile:
+            return JsonResponse({"success": False, "error": "Unauthorized"})
+        
+        enrollment.is_active = True
+        enrollment.save()
+        
+        messages.success(request, f"Enrollment resumed for {enrollment.child.first_name}")
+        return JsonResponse({"success": True})
+        
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
 
 
 

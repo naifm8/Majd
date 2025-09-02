@@ -36,14 +36,14 @@
 
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="fw-bold">My Academy Subscriptions</h5>
-    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#findAcademyModal">
-      <i class="bi bi-plus-lg"></i> Find New Academy
+    <h5 class="fw-bold">My Academy Enrollments</h5>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#enrollModal">
+      <i class="bi bi-plus-lg"></i> Enroll Child
     </button>
   </div>
 
-  <!-- Subscriptions List -->
-  {% for sub in subscriptions %}
+  <!-- Enrollments List -->
+  {% for enrollment in enrollments %}
   <div class="card shadow-sm border-0 mb-3">
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start">
@@ -51,17 +51,17 @@
           <!-- Academy Logo Initial -->
           <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
                style="width:45px;height:45px;">
-            {{ sub.academy.name|slice:":3"|upper }}
+            {{ enrollment.academy.name|slice:":3"|upper }}
           </div>
           <div>
-            <h6 class="fw-bold mb-1">{{ sub.academy.name }}</h6>
-            <small class="text-muted d-block">{{ sub.plan }}</small>
-            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ sub.location }}</small>
-            <p class="mt-2 small mb-0"><strong>Enrolled Children:</strong> {{ sub.children }}</p>
+            <h6 class="fw-bold mb-1">{{ enrollment.academy.name }}</h6>
+            <small class="text-muted d-block">{{ enrollment.program }}</small>
+            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ enrollment.location }}</small>
+            <p class="mt-2 small mb-0"><strong>Enrolled Child:</strong> {{ enrollment.children }}</p>
 
             <!-- Features -->
             <div class="mt-2">
-              {% for feature in sub.features %}
+              {% for feature in enrollment.features %}
                 <span class="badge bg-light text-dark border me-1">{{ feature }}</span>
               {% endfor %}
             </div>
@@ -70,33 +70,98 @@
 
         <!-- Right Side -->
         <div class="text-end">
-          <span class="badge {% if sub.status == 'Active' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-dark{% endif %}">
-            {{ sub.status }}
+          <span class="badge {% if enrollment.status == 'Active' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-dark{% endif %}">
+            {{ enrollment.status }}
           </span>
-          <p class="fw-bold mt-2">SAR {{ sub.price }}/month</p>
-          <small class="text-muted">Next Payment: <i class="bi bi-calendar-event"></i> {{ sub.next_payment }}</small>
+          <p class="fw-bold mt-2">SAR {{ enrollment.price }}/month</p>
+          <small class="text-muted">Next Payment: <i class="bi bi-calendar-event"></i> {{ enrollment.next_payment }}</small>
         </div>
       </div>
 
       <!-- Actions -->
       <div class="mt-3 d-flex gap-2">
         <a href="#" class="btn btn-outline-secondary btn-sm">View Details</a>
-        {% if sub.status == 'Active' %}
-          <a href="#" class="btn btn-outline-warning btn-sm">Pause</a>
+        {% if enrollment.status == 'Active' %}
+          <button class="btn btn-outline-warning btn-sm pause-enrollment" data-enrollment-id="{{ enrollment.id }}">
+            Pause
+          </button>
         {% else %}
-          <a href="#" class="btn btn-outline-success btn-sm">Resume</a>
+          <button class="btn btn-outline-success btn-sm resume-enrollment" data-enrollment-id="{{ enrollment.id }}">
+            Resume
+          </button>
         {% endif %}
         <a href="#" class="btn btn-outline-success btn-sm">Payment</a>
       </div>
     </div>
   </div>
   {% empty %}
-  <p class="text-muted">No subscriptions yet.</p>
+  <div class="text-center py-5">
+    <i class="bi bi-calendar-x display-1 text-muted"></i>
+    <h5 class="text-muted mt-3">No Enrollments Yet</h5>
+    <p class="text-muted">Enroll your child in an academy program to get started!</p>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#enrollModal">
+      <i class="bi bi-plus-lg"></i> Enroll Now
+    </button>
+  </div>
   {% endfor %}
 
 </div>
 
-<!-- Modal: Find New Academies -->
+<!-- Modal: Enroll Child -->
+<div class="modal fade" id="enrollModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="fw-bold mb-0">Enroll Your Child</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% if parent_profile %}
+          <form id="enrollmentForm" method="POST" action="{% url 'parents:enroll_child' %}">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="{{ form.child.id_for_label }}" class="form-label">{{ form.child.label }}</label>
+                {{ form.child }}
+                {% if form.child.help_text %}
+                  <div class="form-text">{{ form.child.help_text }}</div>
+                {% endif %}
+                {% if form.child.errors %}
+                  <div class="invalid-feedback d-block">{{ form.child.errors.0 }}</div>
+                {% endif %}
+              </div>
+              
+              <div class="col-md-6">
+                <label for="{{ form.program.id_for_label }}" class="form-label">{{ form.program.label }}</label>
+                {{ form.program }}
+                {% if form.program.help_text %}
+                  <div class="form-text">{{ form.program.help_text }}</div>
+                {% endif %}
+                {% if form.program.errors %}
+                  <div class="invalid-feedback d-block">{{ form.program.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success">Enroll Child</button>
+            </div>
+          </form>
+        {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-exclamation-triangle display-1 text-warning"></i>
+            <h5 class="text-warning mt-3">Parent Profile Required</h5>
+            <p class="text-muted">You need to complete your parent profile before enrolling children.</p>
+            <a href="{% url 'parents:settings' %}" class="btn btn-primary">Complete Profile</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Browse Academies -->
 <div class="modal fade" id="findAcademyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -106,7 +171,7 @@
       </div>
       <div class="modal-body">
         <div class="row g-3">
-          {% for academy in academies %}
+          {% for academy_data in academies %}
           <div class="col-md-6">
             <div class="card shadow-sm border-0 h-100">
               <div class="card-body">
@@ -114,22 +179,23 @@
                   <div class="d-flex gap-2">
                     <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
                          style="width:40px;height:40px;">
-                      {{ academy.name|slice:":3"|upper }}
+                      {{ academy_data.academy.name|slice:":3"|upper }}
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-0">{{ academy.name }}</h6>
-                      <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ academy.location }}</small>
+                      <h6 class="fw-bold mb-0">{{ academy_data.academy.name }}</h6>
+                      <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ academy_data.academy.city }}</small>
                     </div>
                   </div>
-                  <span class="text-warning fw-bold"><i class="bi bi-star-fill"></i> {{ academy.rating }}</span>
                 </div>
-                <p class="fw-bold text-success">SAR {{ academy.price }}/month</p>
+                <p class="text-muted small">{{ academy_data.academy.description|truncatewords:20 }}</p>
+                <p class="fw-bold text-success mb-2">SAR {{ academy_data.price }}/month</p>
+                <small class="text-muted mb-2 d-block">{{ academy_data.plan_type }}</small>
                 <div class="mb-2">
-                  {% for feature in academy.features %}
-                    <span class="badge bg-light text-dark border me-1">{{ feature }}</span>
+                  {% for program in academy_data.academy.programs.all %}
+                    <span class="badge bg-light text-dark border me-1">{{ program.sport_type.title }}</span>
                   {% endfor %}
                 </div>
-                <a href="#" class="btn btn-success w-100">View Details</a>
+                <button class="btn btn-success w-100" onclick="openEnrollModal()">Enroll Now</button>
               </div>
             </div>
           </div>
@@ -141,4 +207,89 @@
     </div>
   </div>
 </div>
+
+<script>
+// Handle enrollment form submission
+document.getElementById('enrollmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "parents:enroll_child" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal and reload page
+            bootstrap.Modal.getInstance(document.getElementById('enrollModal')).hide();
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+});
+
+// Handle pause/resume enrollment
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('pause-enrollment')) {
+        const enrollmentId = e.target.dataset.enrollmentId;
+        if (confirm('Are you sure you want to pause this enrollment?')) {
+            pauseEnrollment(enrollmentId);
+        }
+    } else if (e.target.classList.contains('resume-enrollment')) {
+        const enrollmentId = e.target.dataset.enrollmentId;
+        if (confirm('Are you sure you want to resume this enrollment?')) {
+            resumeEnrollment(enrollmentId);
+        }
+    }
+});
+
+function pauseEnrollment(enrollmentId) {
+    fetch(`/parents/enrollment/${enrollmentId}/pause/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function resumeEnrollment(enrollmentId) {
+    fetch(`/parents/enrollment/${enrollmentId}/resume/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function openEnrollModal() {
+    bootstrap.Modal.getInstance(document.getElementById('findAcademyModal')).hide();
+    bootstrap.Modal.getInstance(document.getElementById('enrollModal')).show();
+}
+</script>
 {% endblock %}

@@ -95,7 +95,7 @@
                                 </li>
                                 <li>
                                     {% if request.user.groups.all.0.name == "parent" %}
-                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:dashboard_view'%}">
+                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:dashboard'%}">
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
                                     {% elif request.user.groups.all.0.name == "trainer" %}

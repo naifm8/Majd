@@ -13,9 +13,26 @@ class PlanTypeAdmin(admin.ModelAdmin):
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ("academy", "plan_type", "price", "duration_days", "is_active", "created_at")
-    list_filter = ("is_active", "plan_type", "academy")
-    search_fields = ("academy__name", "plan_type__name")
+    list_display = ("title", "academy", "plan_type", "price", "billing_type", "is_active", "created_at")
+    list_filter = ("is_active", "billing_type", "plan_type", "academy")
+    search_fields = ("title", "academy__name", "plan_type__name", "description")
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'academy', 'plan_type', 'description')
+        }),
+        ('Pricing & Billing', {
+            'fields': ('price', 'billing_type', 'is_active')
+        }),
+        ('Program Features', {
+            'fields': ('program_features',),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(Subscription)
