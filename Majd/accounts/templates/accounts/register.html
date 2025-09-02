@@ -64,7 +64,7 @@
           {% endif %}
 
           <!-- Form -->
-          <form method="post">
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             <!-- Username -->
@@ -94,6 +94,14 @@
               <input type="email" name="email" class="form-control" placeholder="name@example.com" required
                      value="{{ request.POST.email|default:'' }}">
             </div>
+
+            {% if pre_selected_role == "trainer" or request.POST.user_type == "trainer" %}
+            <!-- Profile Image -->
+            <div class="form-group">
+              <label class="form-label">Profile Image</label>
+              <input type="file" name="profile_image" class="form-control">
+            </div>
+            {% endif %}
 
             <!-- Password -->
             <div class="form-group">

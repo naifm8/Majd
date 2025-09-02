@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 class AcademyAdminProfile(models.Model):
     user = models.OneToOneField(
@@ -18,8 +19,12 @@ class TrainerProfile(models.Model):
     specialty = models.CharField(max_length=100, blank=True)
     years_of_experience = models.PositiveIntegerField(null=True, blank=True)
     position= models.CharField(blank=True, max_length=100)
-    profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True
-    )
+    profile_image = CloudinaryField(
+    'profile_image',
+    folder='Majd/trainers/profile_images',
+    blank=True,
+    default='https://res.cloudinary.com/do1wotvij/image/upload/v1699999999/Majd/trainers/profile_images/profileImage.webp')
+    
     
     academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
      

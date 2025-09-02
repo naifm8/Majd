@@ -62,9 +62,9 @@
 
 .roles-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto 2.5rem auto;
 }
 

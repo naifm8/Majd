@@ -3,6 +3,7 @@ from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay, No
 from django.db.models import IntegerField, Case, When, Value, Q, F
 from academies.models import Program, Session
 from accounts.models import ParentProfile
+from cloudinary.models import CloudinaryField
 
 # Create your models here.    
 
@@ -50,7 +51,11 @@ class Child(models.Model):
     primary_sport = models.CharField(max_length=100, blank=True)
     skill_level = models.CharField(max_length=20, choices=SkillLevel.choices, default=SkillLevel.BEGINNER, blank=True)
     medical_notes = models.TextField(blank=True, null=True)
-    profile_image = models.ImageField(upload_to="images/profileImage/", default="images/profileImage/profileImage.webp", blank=True)
+    profile_image = CloudinaryField(
+    'profile_image',
+    folder='Majd/children/profile_images',
+    blank=True,
+    default='https://res.cloudinary.com/do1wotvij/image/upload/v1699999999/Majd/children/profile_images/default_profile.webp')
     objects = ChildQuerySet.as_manager()
     
 
