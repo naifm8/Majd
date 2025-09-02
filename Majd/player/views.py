@@ -3,6 +3,7 @@ from django.utils import timezone
 from parents.models import Child
 from .models import PlayerProfile
 from academies.models import TrainingClass
+from academies.models import SessionSkill
 
 
 def player_dashboard_view(request, child_id):
@@ -15,7 +16,26 @@ def player_dashboard_view(request, child_id):
         })
 
     # ✅ Skills progress
-    skills = player.skills.all()
+    if player.position:
+        session_skills = SessionSkill.objects.filter(skill__position=player.position)
+    else:
+        session_skills = SessionSkill.objects.none()
+
+    # ✅ 2. مهارات اللاعب الحالية
+    player_skills = {ps.name: ps for ps in player.skills.all()}
+
+    # ✅ 3. تجهيز المهارات للعرض
+    skills_data = []
+    for s_skill in session_skills:
+        skill_name = s_skill.skill.name
+        ps = player_skills.get(skill_name)
+        skills_data.append({
+            "name": skill_name,
+            "current_level": ps.current_level if ps else 0,
+            "target_level": ps.target_level if ps else s_skill.target_level,
+            
+        })
+
     skills_avg_progress = player.compute_skill_progress()
 
 
@@ -44,7 +64,7 @@ def player_dashboard_view(request, child_id):
     context = {
         "child": child,
         "player": player,
-        "skills": skills,
+        "skills": skills_data,
         "skills_avg_progress": skills_avg_progress,   # من PlayerSkill
         "avg_progress": player.avg_progress,          # من Evaluations
         "grade": player.current_grade,                # الدرجة

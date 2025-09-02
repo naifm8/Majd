@@ -1,5 +1,6 @@
 {% extends "trainers/base_dashboard.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}Evaluate – {{ class_info.title }}{% endblock %}
 {% block page_title %}Evaluate Class{% endblock %}
@@ -43,36 +44,45 @@
           <thead class="table-light">
             <tr class="text-center">
               <th style="min-width:220px;">Student</th>
-              <th>Technique<br><small>0–5</small></th>
-              <th>Tactical<br><small>0–5</small></th>
-              <th>Fitness<br><small>0–5</small></th>
-              <th>Mental<br><small>0–5</small></th>
-              <th>Skill Score<br><small>0–5</small></th>
+              <th colspan="99">Skills (0–100)</th>
               <th style="min-width:200px;">Notes</th>
             </tr>
           </thead>
+
           <tbody>
             {% for form in formset.forms %}
               {% with pid=form.initial.player_id %}
-              <tr>
-                <td>
-                  <div class="fw-semibold">
-                    {% for pair in row_names %}
-                      {% if pair.0 == pid %}{{ pair.1 }}{% endif %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">
+                      {% for pair in row_names %}
+                        {% if pair.0 == pid %}{{ pair.1 }}{% endif %}
+                      {% endfor %}
+                    </div>
+                    {{ form.player_id }}
+                  </td>
+
+                  {% with skills=player_skills|get_item:pid %}
+                    {% for skill in skills %}
+                      {% with field_name="skill_"|add:forloop.counter0|stringformat:"d" %}
+                        <td class="text-center">
+                          <label class="d-block small">{{ skill }}</label>
+                          {% if form.fields|get_item:field_name %}
+                            {{ form|get_field:field_name }}
+                          {% else %}
+                            <span class="text-danger">Missing field: {{ field_name }}</span>
+                          {% endif %}
+                        </td>
+                      {% endwith %}
                     {% endfor %}
-                  </div>
-                  {{ form.player_id }}
-                </td>
-                <td class="text-center">{{ form.technique }}</td>
-                <td class="text-center">{{ form.tactical }}</td>
-                <td class="text-center">{{ form.fitness }}</td>
-                <td class="text-center">{{ form.mental }}</td>
-                <td class="text-center">{{ form.skill_score }}</td>
-                <td>{{ form.notes }}</td>
-              </tr>
+                  {% endwith %}
+
+                  <td>{{ form.notes }}</td>
+                </tr>
               {% endwith %}
             {% endfor %}
           </tbody>
+
         </table>
       </div>
 
@@ -84,8 +94,6 @@
     </div>
   </form>
 
-  <div class="small text-secondary mt-2">
-    * Score = (Technique×40% + Tactical×30% + Fitness×20% + Mental×10%) with 0–5 scale → normalized to 0–100.
-  </div>
+
 </div>
 {% endblock %}
