@@ -68,6 +68,11 @@
                             <i class="bi bi-credit-card me-2"></i> Payments
                         </a>
                     </li>
+                     <li class="nav-item">
+                        <a href="{% url 'communication:parent_conversations_view' %}" class="nav-link {% if request.path == '/communication/parent/conversations/' %}active{% endif %}">
+                            <i class="bi bi-chat-dots me-2"></i> Messages
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{% url 'parents:settings_view' %}" class="nav-link {% if request.path == '/parents/settings/' %}active{% endif %}">
                             <i class="bi bi-gear me-2"></i> Settings
@@ -183,6 +188,7 @@
                     <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-bar-chart-line me-2"></i> Analytics</a></li>
                     <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-calendar-event me-2"></i> Events</a></li>
                     <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-credit-card me-2"></i> Subscription</a></li>
+                    <li class="nav-item"><a href="{% url 'communication:parent_conversations_view' %}" class="nav-link {% if request.path == '/communication/parent/conversations/' %}active{% endif %}"><i class="bi bi-chat-dots me-2"></i> Messages</a></li>
                     <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-gear me-2"></i> Settings</a></li>
                 </ul>
 

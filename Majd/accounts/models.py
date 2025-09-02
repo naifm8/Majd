@@ -54,14 +54,3 @@ class ParentProfile(models.Model):
 
     def __str__(self):
         return f"ParentProfile<{self.user}>"
-
-
-
-
-
-
-
-
-
-
-

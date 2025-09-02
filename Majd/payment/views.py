@@ -11,8 +11,6 @@ class PlanTypeListView(ListView):
     template_name = "payment/plan_type_list.html"
     queryset = PlanType.objects.all().order_by('display_order')
 
-
-
 class PlanTypeDetailView(DetailView):
     model = PlanType
     context_object_name = "plan_type"
