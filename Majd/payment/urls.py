@@ -11,4 +11,7 @@ urlpatterns = [
     path("checkout/<int:plan_id>/success/", views.CheckoutSuccessView.as_view(), name="checkout_success"),
     path("plans/", views.SubscriptionPlanListView.as_view(), name="plan_list"),
     path("plans/<int:pk>/", views.SubscriptionPlanDetailView.as_view(), name="plan_detail"),
+
+    # Academy Subscription
+    path("subscribe/", views.subscription_step, name="subscription_step"),
 ]
