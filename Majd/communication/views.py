@@ -4,8 +4,6 @@ from .models import Conversation, Message
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-
-
 def conversations_list_view(request):
     user = request.user
     if not user.is_authenticated:
