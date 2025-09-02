@@ -150,8 +150,8 @@
             </li>
             
             <li class="nav-item">
-              <a href="#" 
-                 class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+              <a href="{% url 'academies:subscription_dashboard' %}" 
+                 class="nav-link {% if request.resolver_match.url_name == 'subscription_dashboard' %}active{% endif %}">
                  <i class="bi bi-credit-card me-2"></i> Subscriptions
               </a>
             </li>
@@ -255,8 +255,8 @@
             </li>
             
             <li class="nav-item">
-              <a href="#" 
-                 class="nav-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+              <a href="{% url 'academies:subscription_dashboard' %}" 
+                 class="nav-link {% if request.resolver_match.url_name == 'subscription_dashboard' %}active{% endif %}">
                  <i class="bi bi-credit-card me-2"></i> Subscriptions
               </a>
             </li>

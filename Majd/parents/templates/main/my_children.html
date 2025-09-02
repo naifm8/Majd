@@ -125,7 +125,7 @@
           <div class="modal fade" id="deleteChildModal{{ child.id }}" tabindex="-1" aria-labelledby="deleteChildModalLabel{{ child.id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
-                <form method="post" action="{% url 'parents:delete_child_view' child.id %}">
+                <form method="post" action="{% url 'parents:delete_child' child.id %}">
                   {% csrf_token %}
                   <div class="modal-header">
                     <h5 class="modal-title" id="deleteChildModalLabel{{ child.id }}">
@@ -151,7 +151,7 @@
         <div class="modal fade" id="editChildModal{{ child.id }}" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-              <form method="post" enctype="multipart/form-data" action="{% url 'parents:edit_child_view' child.id %}">
+                              <form method="post" enctype="multipart/form-data" action="{% url 'parents:edit_child' child.id %}">
                 {% csrf_token %}
                 <div class="modal-header">
                   <h5 class="modal-title">Edit Child - {{ child.first_name }}</h5>
@@ -363,7 +363,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form method="post" enctype="multipart/form-data" action="{% url 'parents:add_child_view' %}">
+      <form method="post" enctype="multipart/form-data" action="{% url 'parents:add_child' %}">
         {% csrf_token %}
         <div class="modal-body">
           <div class="row g-3">

@@ -39,32 +39,32 @@
 
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a href="{% url 'parents:dashboard_view' %}" class="nav-link {% if request.path == '/parents/dashboard/overview/' %}active{% endif %}">    
+                        <a href="{% url 'parents:dashboard' %}" class="nav-link {% if request.path == '/parents/' %}active{% endif %}">    
                             <i class="bi bi-grid me-2"></i> Overview
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:my_children_view' %}" class="nav-link {% if request.path == '/parents/dashboard/children/' %}active{% endif %}">
+                        <a href="{% url 'parents:children' %}" class="nav-link {% if request.path == '/parents/children/' %}active{% endif %}">
                             <i class="bi bi-people me-2"></i> My Children
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:schedule_view' %}" class="nav-link {% if request.path == '/parents/schedule/' %}active{% endif %}">
+                        <a href="{% url 'parents:schedule' %}" class="nav-link {% if request.path == '/parents/schedule/' %}active{% endif %}">
                             <i class="bi bi-calendar-event me-2"></i> Schedule
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:reports_view' %}" class="nav-link {% if request.path == '/parents/reports/' %}active{% endif %}">
+                        <a href="{% url 'parents:reports' %}" class="nav-link {% if request.path == '/parents/reports/' %}active{% endif %}">
                             <i class="bi bi-file-text me-2"></i> Reports
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:subscriptions_view' %}" class="nav-link {% if request.path == '/parents/subscriptions/' %}active{% endif %}">
+                        <a href="{% url 'parents:subscriptions' %}" class="nav-link {% if request.path == '/parents/subscriptions/' %}active{% endif %}">
                             <i class="bi bi-cash-stack me-2"></i> Subscription
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:payments_view' %}" class="nav-link {% if request.path == '/parents/payments/' %}active{% endif %}">
+                        <a href="{% url 'parents:payments' %}" class="nav-link {% if request.path == '/parents/payments/' %}active{% endif %}">
                             <i class="bi bi-credit-card me-2"></i> Payments
                         </a>
                     </li>
@@ -74,7 +74,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'parents:settings_view' %}" class="nav-link {% if request.path == '/parents/settings/' %}active{% endif %}">
+                        <a href="{% url 'parents:settings' %}" class="nav-link {% if request.path == '/parents/settings/' %}active{% endif %}">
                             <i class="bi bi-gear me-2"></i> Settings
                         </a>
                     </li>

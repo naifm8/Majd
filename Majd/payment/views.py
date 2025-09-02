@@ -1,6 +1,6 @@
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from .models import PlanType, SubscriptionPlan, Subscription
 from .forms import CheckoutForm
@@ -83,3 +83,23 @@ class SubscriptionPlanDetailView(DetailView):
     model = SubscriptionPlan
     context_object_name = "plan"
     template_name = "payment/plan_detail.html"
+
+
+# ✅ Plan Type Get Started Redirect
+def plan_type_get_started_redirect(request, plan_id):
+    """
+    Redirect users based on their authentication status and profile type:
+    - If authenticated academy admin: redirect to checkout
+    - If not authenticated or not academy admin: redirect to get started page
+    """
+    if request.user.is_authenticated:
+        # Check if user has an academy admin profile
+        if hasattr(request.user, 'academy_admin_profile'):
+            # Redirect to checkout for this plan
+            return redirect('payment:checkout', plan_id=plan_id)
+        else:
+            # User is authenticated but not an academy admin, redirect to get started
+            return redirect('accounts:selection_view')
+    else:
+        # Not authenticated, redirect to get started
+        return redirect('accounts:selection_view')

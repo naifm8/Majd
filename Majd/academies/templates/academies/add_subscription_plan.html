@@ -1,0 +1,152 @@
+{% extends "academies/base_dashboard.html" %}
+
+{% block content %}
+<div class="content-area">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1">Add New Subscription Plan</h4>
+      <p class="text-muted mb-0">Create a new subscription plan for your academy</p>
+    </div>
+    <a href="{% url 'academies:subscription_dashboard' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-2"></i>Back to Subscriptions
+    </a>
+  </div>
+
+  <!-- Form -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+        <div class="card-body p-4">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+              <!-- Title -->
+              <div class="col-12">
+                <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.title.label }}
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.title.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Plan Type -->
+              <div class="col-md-6">
+                <label for="{{ form.plan_type.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.plan_type.label }}
+                </label>
+                {{ form.plan_type }}
+                {% if form.plan_type.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.plan_type.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Billing Type -->
+              <div class="col-md-6">
+                <label for="{{ form.billing_type.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.billing_type.label }}
+                </label>
+                {{ form.billing_type }}
+                {% if form.billing_type.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.billing_type.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Price -->
+              <div class="col-12">
+                <label for="{{ form.price.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.price.label }}
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  {{ form.price }}
+                </div>
+                {% if form.price.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.price.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Description -->
+              <div class="col-12">
+                <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.description.label }}
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.description.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Program Features -->
+              <div class="col-12">
+                <label for="{{ form.program_features.id_for_label }}" class="form-label fw-semibold">
+                  {{ form.program_features.label }}
+                </label>
+                {{ form.program_features }}
+                <small class="text-muted">Enter features separated by commas (e.g., "Skill Development, Teamwork Drills, Fitness Training")</small>
+                {% if form.program_features.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.program_features.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Active Status -->
+              <div class="col-12">
+                <div class="form-check">
+                  {{ form.is_active }}
+                  <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                    {{ form.is_active.label }}
+                  </label>
+                </div>
+                {% if form.is_active.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.is_active.errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-lg me-2"></i>Create Plan
+              </button>
+              <a href="{% url 'academies:subscription_dashboard' %}" class="btn btn-outline-secondary">
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
