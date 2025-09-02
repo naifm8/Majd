@@ -4,12 +4,13 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from accounts.models import TrainerProfile, AcademyAdminProfile
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 class Academy(models.Model):
     name = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(max_length=140, blank=True, null=True)
-    logo = models.ImageField(upload_to="academies/logos/", blank=True, null=True)
-    cover = models.ImageField(upload_to="academies/covers/", blank=True, null=True)
+    logo = CloudinaryField('logo', folder='Majd/academies/logos', blank=True, null=True)
+    cover = CloudinaryField('cover', folder='Majd/academies/covers', blank=True, null=True)
     description = models.TextField(max_length=500)
     city = models.CharField(max_length=80)
     email= models.CharField(max_length=50)
@@ -44,7 +45,7 @@ class Program(models.Model):
     academy = models.ForeignKey(Academy, on_delete=models.SET_NULL, null=True, blank=True, related_name="programs")
     title = models.CharField(max_length=120)
     short_description = models.TextField(max_length=300, blank=True)
-    image = models.ImageField(upload_to="programs/", blank=True, null=True)
+    image = CloudinaryField('program', folder='Majd/academies/programs', blank=True, null=True)
     sport_type = models.CharField(max_length=20, choices=SportType.choices, default=SportType.FOOTBALL)
 
     def age_group_display(self):
