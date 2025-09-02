@@ -15,7 +15,7 @@
 
   <!-- Search & Filters -->
   <form method="get" class="d-flex gap-2 justify-content-center mb-4">
-    <input type="text" name="search" class="form-control w-25" placeholder="Search by academy name..." value="{{ request.GET.search }}">
+    <input type="text" name="search" class="form-control w-100" placeholder="Search by academy name..." value="{{ request.GET.search }}">
     <select name="sport" class="form-select w-15">
       <option value="">All Sports</option>
       {% for key, value in sport_choices %}
@@ -44,7 +44,6 @@
         {% endif %}
 
         <div class="card-body">
-          <span class="badge bg-success mb-2">{{ academy.programs.first.sport_type|title }}</span>
 
           <h5 class="card-title">{{ academy.name }}</h5>
           <p class="card-text text-muted">{{ academy.description|truncatewords:18 }}</p>
