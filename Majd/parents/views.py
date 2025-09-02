@@ -5,12 +5,14 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from datetime import date, datetime, timedelta
 from django.utils import timezone
+
+from player.models import PlayerProfile
 from .models import Child, Enrollment
 from .forms import EnrollmentForm, ParentPaymentForm
 from academies.models import Academy, TrainingClass, Program
 from accounts.models import ParentProfile
 from payment.models import SubscriptionPlan
-
+from django.db import transaction
 # Create your views here.
 
 @login_required
@@ -55,24 +57,32 @@ def add_child_view(request):
         primary_sport = request.POST.get("primary_sport", "")
         skill_level = request.POST.get("skill_level", "beginner")
         medical_notes = request.POST.get("medical_notes", "")
-
-
         profile_image = request.FILES.get("profile_image")
 
-        # Create the child
-        child = Child.objects.create(
-            parent=parent_profile,
-            first_name=first_name,
-            last_name=last_name,
-            gender=gender,
-            date_of_birth=date_of_birth,
-            primary_sport=primary_sport,
-            skill_level=skill_level,
-            medical_notes=medical_notes,
-            profile_image=profile_image if profile_image else "images/profileImage/profileImage.webp"
-        )
+        try:
+            with transaction.atomic():
+                # Create the child
+                child = Child.objects.create(
+                    parent=parent_profile,
+                    first_name=first_name,
+                    last_name=last_name,
+                    gender=gender,
+                    date_of_birth=date_of_birth,
+                    primary_sport=primary_sport,
+                    skill_level=skill_level,
+                    medical_notes=medical_notes,
+                    profile_image=profile_image if profile_image else "images/profileImage/profileImage.webp"
+                )
 
-        messages.success(request, f"Child {child.first_name} has been added successfully!")
+                # Create linked player profile
+                PlayerProfile.objects.create(child=child)
+
+
+            messages.success(request, f"Child {child.first_name} has been added successfully!")
+
+        except Exception as e:
+            messages.error(request, f"Error creating child and player profile: {str(e)}")
+
         return redirect("parents:children")
 
     return redirect("parents:dashboard")

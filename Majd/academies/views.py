@@ -733,3 +733,35 @@ def export_players(players, export_type):
         return response
 
 
+@login_required
+def enrollment_sessions_view(request, academy_slug, program_id):
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
+        return redirect("academies:detail", slug=academy.slug)
+
+    # نجيب الـ enrollments المرتبطة بالأب
+    enrollments = Enrollment.objects.filter(
+        program=program,
+        child__parent=parent_profile
+    )
+
+    # كل الجلسات للبرنامج
+    sessions = Session.objects.filter(program=program).prefetch_related("slots", "required_skills")
+
+    if request.method == "POST":
+        selected_sessions = request.POST.getlist("sessions")  # IDs من الفورم
+        for enrollment in enrollments:
+            enrollment.sessions.set(selected_sessions)
+        messages.success(request, "Sessions selected successfully!")
+        return redirect("academies:detail", slug=academy.slug)
+
+    return render(request, "academies/enrollment_sessions.html", {
+        "academy": academy,
+        "program": program,
+        "sessions": sessions,
+        "enrollments": enrollments,
+    })

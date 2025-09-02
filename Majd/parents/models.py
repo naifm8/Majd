@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.functions import ExtractYear, ExtractMonth, ExtractDay, Now
 from django.db.models import IntegerField, Case, When, Value, Q, F
-from academies.models import Program
+from academies.models import Program, Session
 from accounts.models import ParentProfile
 
 # Create your models here.    
@@ -62,6 +62,7 @@ class Child(models.Model):
 class Enrollment(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="parent_enrollments")
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
+    sessions = models.ManyToManyField(Session, blank=True)
     enrolled_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     emergency_contact_name  = models.CharField(max_length=100, blank=True)

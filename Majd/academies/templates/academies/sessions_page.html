@@ -1,29 +1,25 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block title %}Sessions{% endblock %}
+{% block title %}Select Sessions{% endblock %}
 
 {% block fileStyle %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
-    {% endblock %}
-{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+{% endblock %}
 
+{% block content %}
 <div class="container py-4" style="max-width:1200px;">
-  
+
   <!-- Back link -->
-  <a href="{{ request.META.HTTP_REFERER|default:'/' }}" 
-    class="back-link d-inline-flex align-items-center mb-3 px-3 py-2 rounded-pill">
+  <a href="{% url 'academies:enrollment_details' academy.slug program.id %}" 
+     class="back-link d-inline-flex align-items-center mb-3 px-3 py-2 rounded-pill">
     <i class="bi bi-arrow-left me-1"></i> Back
   </a>
-
-
 
   <!-- Header -->
   <div class="card border shadow-sm rounded-3 p-3 mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap">
-      
-      <!-- Left: Logo + Title + Meta -->
       <div class="d-flex align-items-center">
         {% if academy.logo %}
           <img src="{{ academy.logo.url }}" class="rounded-circle me-3" width="48" height="48" style="object-fit:cover;">
@@ -32,12 +28,8 @@
             {{ academy.name|slice:":1"|upper }}
           </div>
         {% endif %}
-
         <div>
-          <!-- Program Title -->
-          <h5 class="mb-1 fw-bold text-success">{{ program.title }} Sessions</h5>
-
-          <!-- Academy Info -->
+          <h5 class="mb-1 fw-bold text-success">{{ program.title }} – Select Sessions</h5>
           <small class="text-muted">
             <i class="bi bi-geo-alt me-1"></i> {{ academy.name }} &nbsp;
             <i class="bi bi-star-fill text-warning me-1"></i> 4.9 &nbsp;
@@ -45,279 +37,135 @@
           </small>
         </div>
       </div>
-
+      <div class="text-end">
+        <span class="text-muted small">Step 3 of 3</span>
+        <div class="progress mt-1" style="height:4px; width:160px; margin-left:auto;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-
-  <!-- Filters -->
-  <div class="card border shadow-sm p-2 px-3 mb-4">
-    <form method="get" class="d-flex justify-content-between align-items-center flex-wrap w-100">
-      
-      <!-- Left: Filters -->
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="fw-semibold text-muted small me-2">
-          <i class="bi bi-funnel me-1"></i> Filters:
-        </span>
-
-        <!-- Level -->
-        <select name="level" class="selectpicker rounded-pill" data-width="auto" onchange="this.form.submit()">
-          <option value="all" {% if filters.level == "all" %}selected{% endif %}>All Levels</option>
-          <option value="beginner" {% if filters.level == "beginner" %}selected{% endif %}>Beginner</option>
-          <option value="intermediate" {% if filters.level == "intermediate" %}selected{% endif %}>Intermediate</option>
-          <option value="advanced" {% if filters.level == "advanced" %}selected{% endif %}>Advanced</option>
-        </select>
-
-        <!-- Gender -->
-        <select name="gender" class="selectpicker rounded-pill" data-width="auto" onchange="this.form.submit()">
-          <option value="all" {% if filters.gender == "all" %}selected{% endif %}>All</option>
-          <option value="male" {% if filters.gender == "male" %}selected{% endif %}>Male</option>
-          <option value="female" {% if filters.gender == "female" %}selected{% endif %}>Female</option>
-          <option value="mix" {% if filters.gender == "mix" %}selected{% endif %}>Mix</option>
-        </select>
-
-        <!-- Age -->
-        <select name="age" class="selectpicker rounded-pill" data-width="auto" onchange="this.form.submit()">
-          <option value="all" {% if filters.age == "all" %}selected{% endif %}>All Ages</option>
-          {% for min, max in age_ranges %}
-            {% with range_val=min|stringformat:"s"|add:"-"|add:max|stringformat:"s" %}
-            <option value="{{ min }}-{{ max }}" {% if filters.age == min|stringformat:"s"|add:"-"|add:max|stringformat:"s" %}selected{% endif %}>
-              {{ min }} - {{ max }} years
-            </option>
-
-            {% endwith %}
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Right: Count -->
-      <div class="small text-muted mt-2 mt-md-0">
-        Showing {{ sessions.count }} session{% if sessions.count != 1 %}s{% endif %}
-      </div>
-    </form>
-  </div>
-
-
-
-
-  <!-- Sessions Grid -->
-  <div class="row g-4">
-    {% for session in sessions %}
-    <div class="col-md-6">
-      <div class="card border rounded-3 shadow-sm p-4 h-100">
-        
-        <!-- Title & Description -->
-        <h5 class="fw-bold text-success">{{ session.title }}</h5>
-        <p class="text-muted small">{{ session.description }}</p>
-
-        <!-- Trainer -->
-        {% if session.trainer %}
-        <div class="d-flex align-items-center border rounded p-2 mb-3 bg-light">
-          {% if session.trainer.profile_image %}
-            <img src="{{ session.trainer.profile_image.url }}" class="rounded-circle me-2" width="36" height="36" style="object-fit:cover;">
-          {% else %}
-            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width:36px; height:36px;">
-              {{ session.trainer.user.first_name|slice:":1"|upper }}
+  <!-- Sessions Selection Form -->
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-4">
+      {% for session in sessions %}
+      <div class="col-md-6">
+        <div class="card border rounded-3 shadow-sm p-4 h-100 session-card">
+          <!-- Checkbox + Title -->
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="fw-bold text-success">{{ session.title }}</h5>
+            <div class="form-check">
+              <input class="form-check-input session-checkbox" type="checkbox" 
+                     name="sessions" value="{{ session.id }}" id="session{{ session.id }}">
+              <label class="form-check-label" for="session{{ session.id }}"></label>
             </div>
-          {% endif %}
-          <div>
-            <span class="fw-semibold">{{ session.trainer.user.get_full_name }}</span><br>
-            <small class="text-muted">{{ session.trainer.qualifications }}</small>
           </div>
-        </div>
-        {% endif %}
 
-      <!-- Info -->
-      <div class="row text-muted small mb-3">
-        
-        <!-- Left Column -->
-        <div class="col-md-6 d-flex flex-column gap-3">
-          <div><strong>Age Range:</strong> <span class="ms-1 text-dark">{{ session.age_min }} - {{ session.age_max }} years</span></div>
-          <div><strong>Gender:</strong> 
-            <span class="ms-1 text-dark">
-              {{ session.get_gender_display }}
-              {% if session.gender == 'mix' %}
-                <i class="bi bi-gender-ambiguous ms-1"></i>
-              {% elif session.gender == 'male' %}
-                <i class="bi bi-gender-male ms-1"></i>
-              {% elif session.gender == 'female' %}
-                <i class="bi bi-gender-female ms-1"></i>
-              {% endif %}
-            </span>
-          </div>
-          <div><strong>Level:</strong> 
-            <span class="badge ms-1
-              {% if session.level == 'beginner' %} bg-success
-              {% elif session.level == 'advanced' %} bg-danger
-              {% else %} bg-secondary
-              {% endif %}">
-              {{ session.get_level_display }}
-            </span>
-          </div>
-        </div>
+          <p class="text-muted small">{{ session.description }}</p>
 
-        <!-- Right Column -->
-        <div class="col-md-6 d-flex flex-column gap-3">
-          <div><strong>Capacity:</strong> 
-            <span class="ms-1 fw-semibold text-warning">{{ session.enrolled|default:"0" }}/{{ session.capacity }}</span>
-          </div>
-          <div><strong>Status:</strong> 
-            {% if session.enrolled >= session.capacity %}
-              <span class="badge bg-danger">Full</span>
-            {% elif session.enrolled >= session.capacity|add:"-3" %}
-              <span class="badge bg-warning text-dark">Filling Up</span>
+          <!-- Trainer -->
+          {% if session.trainer %}
+          <div class="d-flex align-items-center border rounded p-2 mb-3 bg-light">
+            {% if session.trainer.profile_image %}
+              <img src="{{ session.trainer.profile_image.url }}" class="rounded-circle me-2" width="36" height="36" style="object-fit:cover;">
             {% else %}
-              <span class="badge bg-success">Available</span>
+              <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width:36px; height:36px;">
+                {{ session.trainer.user.first_name|slice:":1"|upper }}
+              </div>
             {% endif %}
-          </div>
-          <div><strong>Duration:</strong> 
-            <span class="ms-1 text-dark">
-              {% if session.duration_weeks %}
-                {{ session.duration_weeks }} week{% if session.duration_weeks > 1 %}s{% endif %} <br>
-                ({{ session.start_datetime|date:"M j, Y" }} - {{ session.end_datetime|date:"M j, Y" }})
-              {% else %}
-                N/A
-              {% endif %}
-            </span>
-          </div>
-
-
-        </div>
-      </div>
-
-
-      <!-- Schedule -->
-      <h6 class="mb-2"><i class="bi bi-clock me-1"></i> Training Schedule</h6>
-      <div class="list-group list-group-flush">
-        {% for slot in session.slots.all %}
-          <div class="d-flex justify-content-between align-items-center px-3 py-2 mb-2 bg-light rounded small">
-            <span class="fw-semibold">{{ slot.get_weekday_display }}</span>
-            <span class="text-muted">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
-          </div>
-        {% empty %}
-          <div class="px-3 py-2 text-muted small">No schedule assigned</div>
-        {% endfor %}
-      </div>
-
-      <!-- Skills & Curriculum -->
-      <button type="button" 
-              class="btn btn-outline-success w-100 mt-3" 
-              data-bs-toggle="modal" 
-              data-bs-target="#skillsModal{{ session.id }}">
-        <i class="bi bi-bullseye me-1"></i> View Skills & Curriculum
-      </button>
-
-
-
-      <!-- Skills Modal -->
-      <div class="modal fade" id="skillsModal{{ session.id }}" tabindex="-1" aria-labelledby="skillsModalLabel{{ session.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content">
-            
-            <!-- Header -->
-            <div class="modal-header">
-              <h5 class="modal-title fw-bold text-success" id="skillsModalLabel{{ session.id }}">
-                Skills You'll Learn – {{ session.title }}
-              </h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div>
+              <span class="fw-semibold">{{ session.trainer.user.get_full_name }}</span><br>
+              <small class="text-muted">{{ session.trainer.qualifications }}</small>
             </div>
+          </div>
+          {% endif %}
 
-            <!-- Body -->
-            <div class="modal-body">
-              {% if session.required_skills.all %}
-                {% regroup session.required_skills.all by skill.position.name as skills_by_position %}
-
-                {% for group in skills_by_position %}
-                  <h6 class="fw-bold mb-3">
-                    <i class="bi bi-bullseye text-success me-1"></i> {{ group.grouper }}
-                  </h6>
-
-                  <div class="row g-3 mb-4">
-                    {% for ss in group.list %}
-                      <div class="col-md-6">
-                        <div class="border rounded p-3 h-100 bg-light">
-                          <h6 class="fw-semibold mb-1">{{ ss.skill.name }}</h6>
-                          <p class="text-muted small mb-2">
-                            {% if ss.skill.description %}{{ ss.skill.description }}{% else %}No description{% endif %}
-                          </p>
-                        </div>
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% endfor %}
-
-              {% else %}
-                <p class="text-muted">No skills defined for this session yet.</p>
-              {% endif %}
+          <!-- Info -->
+          <div class="row text-muted small mb-3">
+            <div class="col-md-6 d-flex flex-column gap-2">
+              <div><strong>Age Range:</strong> <span class="ms-1 text-dark">{{ session.age_min }} - {{ session.age_max }} years</span></div>
+              <div><strong>Gender:</strong> <span class="ms-1 text-dark">{{ session.get_gender_display }}</span></div>
+              <div><strong>Level:</strong> 
+                <span class="badge ms-1
+                  {% if session.level == 'beginner' %} bg-success
+                  {% elif session.level == 'advanced' %} bg-danger
+                  {% else %} bg-secondary
+                  {% endif %}">
+                  {{ session.get_level_display }}
+                </span>
+              </div>
             </div>
+            <div class="col-md-6 d-flex flex-column gap-2">
+              <div><strong>Capacity:</strong> <span class="ms-1 fw-semibold text-warning">{{ session.enrolled|default:"0" }}/{{ session.capacity }}</span></div>
+              <div><strong>Status:</strong> 
+                {% if session.enrolled >= session.capacity %}
+                  <span class="badge bg-danger">Full</span>
+                {% elif session.enrolled >= session.capacity|add:"-3" %}
+                  <span class="badge bg-warning text-dark">Filling Up</span>
+                {% else %}
+                  <span class="badge bg-success">Available</span>
+                {% endif %}
+              </div>
+              <div><strong>Duration:</strong> 
+                <span class="ms-1 text-dark">
+                  {% if session.duration_weeks %}
+                    {{ session.duration_weeks }} week{% if session.duration_weeks > 1 %}s{% endif %}<br>
+                    ({{ session.start_datetime|date:"M j, Y" }} – {{ session.end_datetime|date:"M j, Y" }})
+                  {% else %} N/A {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <h6 class="mb-2"><i class="bi bi-clock me-1"></i> Training Schedule</h6>
+          <div class="list-group list-group-flush">
+            {% for slot in session.slots.all %}
+              <div class="d-flex justify-content-between align-items-center px-3 py-2 mb-2 bg-light rounded small">
+                <span class="fw-semibold">{{ slot.get_weekday_display }}</span>
+                <span class="text-muted">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+              </div>
+            {% empty %}
+              <div class="px-3 py-2 text-muted small">No schedule assigned</div>
+            {% endfor %}
           </div>
         </div>
       </div>
-
-
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-between mt-4">
+      <a href="{% url 'academies:enrollment_details' academy.slug program.id %}" class="btn btn-outline-secondary">Back</a>
+      <button type="submit" class="btn btn-success">Confirm Sessions</button>
+    </div>
+  </form>
 </div>
+
 <style>
-/* Active (selected) option style */
-.bootstrap-select .dropdown-menu li.active a,
-.bootstrap-select .dropdown-menu li a:active {
-  background-color: #eafaf1 !important; /* light green */
-  color: #198754 !important;            /* Bootstrap green */
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Back link */
+.back-link { color: #646464 !important; font-weight: 500; text-decoration: none; }
+.back-link:hover { background-color: #eafaf1; color: #198754 !important; font-weight: 600; }
 
-
-.bootstrap-select .dropdown-menu li.active a::after {
-  content: '\2713';  /* Unicode check mark */
-  font-family: Arial, sans-serif !important; /* force normal font */
-  font-weight: bold;
-  color: #198754; /* Bootstrap green */
-  font-size: 0.9rem;
-  margin-left: 8px;
-}
-
-/* Default style */
-.back-link {
-  color: #646464 !important; /* green text */
-  text-decoration: none !important;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-}
-
-/* Hover style */
-.back-link:hover {
-  background-color: #eafaf1; /* light green background */
-  color: #198754 !important; 
-  font-weight: 600;
-}
-
-.modal-body .border {
-  transition: 0.2s ease;
-}
-.modal-body .border:hover {
-  background-color: #f8fdfb;
-  border-color: #198754;
-}
-
-
-
+/* Session card highlight when selected */
+.session-card { transition: 0.2s ease; }
+.session-card.selected { border: 2px solid #198754; background-color: #f8fdfb; }
 </style>
-{% endblock %}
-
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    $('.selectpicker').selectpicker();
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".session-checkbox").forEach(cb => {
+    cb.addEventListener("change", function() {
+      const card = this.closest(".session-card");
+      if (this.checked) {
+        card.classList.add("selected");
+      } else {
+        card.classList.remove("selected");
+      }
+    });
   });
-  
+});
 </script>
-
-
-
-
+{% endblock %}

@@ -37,6 +37,7 @@ urlpatterns = [
     path("dashboard/sessions/<int:pk>/delete/", views.session_delete, name="session_delete"),
     path("<slug:academy_slug>/program/<int:program_id>/enrollment-details/", views.enrollment_details_view, name="enrollment_details"),
     path("<slug:academy_slug>/<int:program_id>/sessions/",views.program_sessions,name="program_sessions"),
+    path("<slug:academy_slug>/program/<int:program_id>/sessions/", views.enrollment_sessions_view, name="enrollment_sessions"),
 
     # Players
     path("dashboard/players/", views.players_dashboard, name="players_dashboard"),
