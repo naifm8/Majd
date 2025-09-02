@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Invoice - {{ academy_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            color: #333;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+        .invoice-container {
+            max-width: 450px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #198754;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 6px 6px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .header h2 {
+            margin: 5px 0 0 0;
+            font-size: 16px;
+            font-weight: normal;
+        }
+        .content {
+            background-color: white;
+            padding: 15px;
+        }
+        .invoice-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+            border: 2px solid #198754;
+        }
+        .invoice-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 8px;
+        }
+        .invoice-date {
+            color: #666;
+            font-size: 13px;
+        }
+        .info-section {
+            background-color: #f8f9fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 3px solid #198754;
+        }
+        .info-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .price-breakdown {
+            background-color: #f8f9fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 3px solid #198754;
+        }
+        .price-breakdown h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .total-section {
+            background-color: #198754;
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .total-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .total-amount {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .label {
+            font-weight: bold;
+            color: #666;
+        }
+        .value {
+            color: #333;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 11px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .status-successful { background-color: #d4edda; color: #155724; }
+        ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        li {
+            margin: 4px 0;
+            font-size: 14px;
+        }
+        p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="header">
+            <h1>MAJD Sports Academy</h1>
+            <h2>Payment Invoice</h2>
+        </div>
+        
+        <div class="content">
+            <div class="invoice-header">
+                <div class="invoice-number">INVOICE #{{ transaction_id|stringformat:"06d" }}</div>
+                <div class="invoice-date">Date: {{ payment_date|date:"M d, Y" }}</div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Parent Information</h3>
+                <div class="info-row">
+                    <span class="label">Parent Name:</span>
+                    <span class="value">{{ parent_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Child Name:</span>
+                    <span class="value">{{ child_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Academy:</span>
+                    <span class="value">{{ academy_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Program:</span>
+                    <span class="value">{{ program_title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Sport Type:</span>
+                    <span class="value">{{ sport_type }}</span>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3>Payment Details</h3>
+                <div class="info-row">
+                    <span class="label">Payment Method:</span>
+                    <span class="value">{{ payment_method }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Payment Date:</span>
+                    <span class="value">{{ payment_date|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Transaction ID:</span>
+                    <span class="value">#{{ transaction_id }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="value">
+                        <span class="status-badge status-successful">Completed</span>
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Enrollment Period:</span>
+                    <span class="value">{{ start_date }} to {{ end_date }}</span>
+                </div>
+            </div>
+            
+            <div class="price-breakdown">
+                <h3>Price Breakdown</h3>
+                <div class="info-row">
+                    <span class="label">Program Fee:</span>
+                    <span class="value">{{ base_amount }} {{ currency }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">VAT (15%):</span>
+                    <span class="value">{{ vat_amount }} {{ currency }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Total Amount:</span>
+                    <span class="value">{{ amount }} {{ currency }}</span>
+                </div>
+            </div>
+            
+            <div class="total-section">
+                <h3>Total Amount Paid</h3>
+                <div class="total-amount">{{ amount }} {{ currency }}</div>
+                <p>Payment Status: Completed</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>🎉 Payment Successful!</h3>
+                <p>Thank you for your payment. Your child's enrollment is now active and you can access all the features included in your plan.</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>Next Steps</h3>
+                <ul>
+                    <li>Your child's enrollment is now active</li>
+                    <li>You will receive class schedules and updates via email</li>
+                    <li>You can track your child's progress through the parent dashboard</li>
+                    <li>If you have any questions, please contact us at {{ academy_email }}</li>
+                </ul>
+            </div>
+            
+            <div class="info-section">
+                <h3>Need Help?</h3>
+                <p>If you have any questions about this invoice or need assistance, please contact our support team:</p>
+                <ul>
+                    <li>Email: support@majd.com</li>
+                    <li>Phone: +966 50 123 4567</li>
+                    <li>Support Hours: Sunday - Thursday, 9:00 AM - 6:00 PM (AST)</li>
+                </ul>
+            </div>
+            
+            <div class="footer">
+                <p>This is an automated invoice from MAJD Sports Academy Platform.</p>
+                <p>Please do not reply to this email. For support, contact us at support@majd.com</p>
+                <p>Invoice #{{ transaction_id|stringformat:"06d" }} | Generated on {{ payment_date|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

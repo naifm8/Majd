@@ -60,7 +60,7 @@
               {% endfor %}
             </ul>
 
-            <a href="{% url 'payment:checkout' pt.id %}" class="btn {% if pt.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100">Get Started</a>
+            <a href="{% url 'payment:plan_type_get_started' pt.id %}" class="btn {% if pt.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100">Get Started</a>
           </div>
         </div>
         {% endfor %}

@@ -381,9 +381,16 @@ function makePayment(academy, program, amount, enrollmentId = null) {
     document.getElementById('summaryAcademy').textContent = academy;
     document.getElementById('summaryAmount').textContent = `SAR ${amount}`;
     
-    // Calculate VAT and total
-    const vat = Math.round(amount * 0.15);
-    const total = amount + vat;
+    // Calculate VAT and total (using same rounding as backend)
+    const vat = Math.round((amount * 0.15) * 100) / 100; // Round to 2 decimal places
+    const total = Math.round((amount + vat) * 100) / 100; // Round to 2 decimal places
+    
+    // Debug logging
+    console.log('Payment calculation:', {
+        baseAmount: amount,
+        vat: vat,
+        total: total
+    });
     
     document.getElementById('summaryVat').textContent = `SAR ${vat}`;
     document.getElementById('summaryTotal').textContent = `SAR ${total}`;
@@ -393,7 +400,8 @@ function makePayment(academy, program, amount, enrollmentId = null) {
     if (enrollmentId) {
         document.getElementById('enrollmentId').value = enrollmentId;
     }
-    document.getElementById('paymentAmount').value = amount;
+    // Send the total amount (including VAT) to the backend
+    document.getElementById('paymentAmount').value = total;
     
     // Reset form
     document.getElementById('paymentForm').reset();
@@ -445,23 +453,48 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
-    
-    // Simulate payment processing
     const submitButton = document.getElementById('submit-button');
+    
+    // Disable button and show processing state
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
     
-    // In production, you'd send this to your payment gateway
-    setTimeout(() => {
-        // Simulate successful payment
-        alert('Payment processed successfully!');
+    // Submit to Django backend
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alert('Payment processed successfully!' + (data.email_sent ? ' An invoice has been sent to your email.' : ' Note: Invoice email could not be sent.'));
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            
+            // Reload page to show updated payment data
+            location.reload();
+        } else {
+            // Show error message
+            alert('Payment failed: ' + (data.error || 'Unknown error occurred'));
+            
+            // Re-enable button
+            submitButton.disabled = false;
+            submitButton.innerHTML = `Complete Payment - SAR ${document.getElementById('paymentAmount').value}`;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Payment failed: Network error occurred');
         
-        // Close modal
-        bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
-        
-        // Reload page to show updated payment data
-        location.reload();
-    }, 2000);
+        // Re-enable button
+        submitButton.disabled = false;
+        submitButton.innerHTML = `Complete Payment - SAR ${document.getElementById('paymentAmount').value}`;
+    });
 });
 </script>
 

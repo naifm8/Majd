@@ -1,0 +1,56 @@
+MAJD Sports Academy - Payment Invoice
+
+INVOICE #{{ transaction_id|stringformat:"06d" }}
+Date: {{ payment_date|date:"M d, Y" }}
+
+PARENT INFORMATION:
+===================
+Parent Name: {{ parent_name }}
+Child Name: {{ child_name }}
+Academy: {{ academy_name }}
+Program: {{ program_title }}
+Sport Type: {{ sport_type }}
+
+PAYMENT DETAILS:
+================
+Payment Method: {{ payment_method }}
+Payment Date: {{ payment_date|date:"M d, Y H:i" }}
+Transaction ID: #{{ transaction_id }}
+Status: Completed
+Enrollment Period: {{ start_date }} to {{ end_date }}
+
+PRICE BREAKDOWN:
+================
+Program Fee: {{ base_amount }} {{ currency }}
+VAT (15%): {{ vat_amount }} {{ currency }}
+Total Amount: {{ amount }} {{ currency }}
+
+TOTAL AMOUNT PAID: {{ amount }} {{ currency }}
+Payment Status: Completed
+
+🎉 PAYMENT SUCCESSFUL!
+======================
+Thank you for your payment. Your child's enrollment is now active and you can 
+access all the features included in your plan.
+
+NEXT STEPS:
+===========
+• Your child's enrollment is now active
+• You will receive class schedules and updates via email
+• You can track your child's progress through the parent dashboard
+• If you have any questions, please contact us at {{ academy_email }}
+
+NEED HELP?
+==========
+If you have any questions about this invoice or need assistance, 
+please contact our support team:
+
+Email: support@majd.com
+Phone: +966 50 123 4567
+Support Hours: Sunday - Thursday, 9:00 AM - 6:00 PM (AST)
+
+---
+This is an automated invoice from MAJD Sports Academy Platform.
+Please do not reply to this email. For support, contact us at support@majd.com
+
+Invoice #{{ transaction_id|stringformat:"06d" }} | Generated on {{ payment_date|date:"M d, Y" }}

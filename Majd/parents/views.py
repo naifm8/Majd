@@ -45,7 +45,7 @@ def add_child_view(request):
 
         if not parent_profile:
             messages.error(request, "You must be a parent to add a child.")
-            return redirect("parents:dashboard_view")
+            return redirect("parents:dashboard")
 
         # Collect form data
         first_name = request.POST.get("first_name")
@@ -73,9 +73,9 @@ def add_child_view(request):
         )
 
         messages.success(request, f"Child {child.first_name} has been added successfully!")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
-    return redirect("parents:dashboard_view")
+    return redirect("parents:dashboard")
 
 
 @login_required
@@ -97,9 +97,9 @@ def edit_child_view(request, child_id):
 
         child.save()
         messages.success(request, f"{child.first_name}'s profile has been updated.")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
-    return redirect("parents:dashboard_view")
+    return redirect("parents:dashboard")
 
 @login_required
 def delete_child_view(request, child_id):
@@ -108,11 +108,11 @@ def delete_child_view(request, child_id):
     if request.method == "POST":
         child.delete()
         messages.success(request, f"Child '{child.first_name} {child.last_name}' deleted successfully.")
-        return redirect("parents:my_children_view")
+        return redirect("parents:children")
 
     # If someone tries GET request
     messages.error(request, "Invalid request.")
-    return redirect("parents:my_children_view")
+    return redirect("parents:children")
 
 
 @login_required
@@ -414,27 +414,56 @@ def process_payment(request):
             if not subscription_plan:
                 return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
             
-            # Verify amount matches subscription plan
-            if float(amount) != float(subscription_plan.price):
-                return JsonResponse({"success": False, "error": "Payment amount does not match subscription price"})
+            # Calculate expected total with VAT (15%) - using same rounding as frontend
+            base_price = float(subscription_plan.price)
+            vat_amount = round(base_price * 0.15, 2)  # Round to 2 decimal places
+            expected_total = round(base_price + vat_amount, 2)  # Round to 2 decimal places
+            
+            # Debug logging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Payment calculation - Base: {base_price}, VAT: {vat_amount}, Expected Total: {expected_total}, Received: {amount}")
+            
+            # Verify amount matches expected total (base price + VAT)
+            if abs(float(amount) - expected_total) > 0.01:  # Allow for small rounding differences
+                return JsonResponse({"success": False, "error": f"Payment amount does not match expected total. Expected: SAR {expected_total:.2f}, Received: SAR {amount}"})
             
             # Create payment record (you can extend this with your payment gateway)
             from player_payments.models import PaymentTransaction, PlayerEnrollment
             
             # Create or get player enrollment
+            # First, we need to find or create a PlayerSubscription for this academy
+            from player_payments.models import PlayerSubscription
+            player_subscription, created = PlayerSubscription.objects.get_or_create(
+                academy=enrollment.program.academy,
+                defaults={
+                    'title': f"{enrollment.program.academy.name} Subscription",
+                    'price': subscription_plan.price,
+                    'billing_type': '3m',  # Default to 3 months
+                    'description': f"Subscription for {enrollment.program.academy.name}",
+                }
+            )
+            
+            # Log the subscription creation/retrieval
+            logger.info(f"PlayerSubscription {'created' if created else 'found'}: {player_subscription.id} for academy {enrollment.program.academy.name}")
+            
+            # Now create the PlayerEnrollment with the subscription
             player_enrollment, created = PlayerEnrollment.objects.get_or_create(
-                subscription__academy=enrollment.program.academy,
+                subscription=player_subscription,
                 child=enrollment.child,
                 parent=request.user,
+                start_date=date.today(),
                 defaults={
                     'status': 'active',
                     'payment_method': payment_method,
-                    'start_date': date.today(),
                     'end_date': date.today() + timedelta(days=30),
-                    'amount_paid': amount,
+                    'amount_paid': amount,  # This is the total amount including VAT
                     'payment_date': timezone.now(),
                 }
             )
+            
+            # Log the enrollment creation/retrieval
+            logger.info(f"PlayerEnrollment {'created' if created else 'found'}: {player_enrollment.id} for child {enrollment.child.first_name}")
             
             # Create payment transaction
             transaction = PaymentTransaction.objects.create(
@@ -450,10 +479,29 @@ def process_payment(request):
             # Update enrollment status to paid
             enrollment.is_active = True  # Keep enrollment active after payment
             
-            messages.success(request, f"Payment of SAR {amount} processed successfully for {enrollment.child.first_name}")
-            return JsonResponse({"success": True, "transaction_id": transaction.id})
+            # Send invoice email to parent
+            from .utils import send_payment_invoice_email
+            email_sent = send_payment_invoice_email(transaction, player_enrollment, request.user)
+            
+            # Log the email sending result for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Payment processed for {enrollment.child.first_name}. Email sent: {email_sent}. Parent email: {request.user.email}")
+            
+            success_message = f"Payment of SAR {amount} processed successfully for {enrollment.child.first_name}"
+            if email_sent:
+                success_message += ". An invoice has been sent to your email."
+            else:
+                success_message += ". Note: Invoice email could not be sent."
+            
+            messages.success(request, success_message)
+            return JsonResponse({"success": True, "transaction_id": transaction.id, "email_sent": email_sent})
             
         except Exception as e:
+            # Log the error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Payment processing error: {str(e)}")
             return JsonResponse({"success": False, "error": str(e)})
     
     return JsonResponse({"success": False, "error": "Invalid request method"})

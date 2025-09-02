@@ -19,6 +19,15 @@ class PlanType(models.Model):
 
 
 class SubscriptionPlan(models.Model):
+    BILLING_TYPE_CHOICES = [
+        ('3m', '3-Month'),
+        ('6m', '6-Month'),
+        ('12m', '12-Month'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    ]
+    
+    title = models.CharField(max_length=200, default="Subscription Plan")
     academy = models.ForeignKey(
         "academies.Academy",
         on_delete=models.CASCADE,
@@ -28,20 +37,28 @@ class SubscriptionPlan(models.Model):
         PlanType,
         on_delete=models.CASCADE,
         related_name="subscription_plans",
+        null=True,
+        blank=True,
     )
 
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    duration_days = models.PositiveIntegerField(default=30)
+    billing_type = models.CharField(
+        max_length=10,
+        choices=BILLING_TYPE_CHOICES,
+        default='monthly'
+    )
+    description = models.TextField(blank=True, null=True)
+    program_features = models.JSONField(default=list, blank=True)
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.academy.name} - {self.plan_type.name} (${self.price})"
+        return f"{self.academy.name} - {self.title} (${self.price})"
 
     class Meta:
-        unique_together = ("academy", "plan_type")
+        unique_together = ("academy", "title")
 
 
 class Subscription(models.Model):
