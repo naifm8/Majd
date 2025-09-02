@@ -12,11 +12,10 @@
 <div class="container py-4" style="max-width:1200px;">
   
   <!-- Back link -->
-  <a href="{{ request.META.HTTP_REFERER|default:'/' }}" 
+  <a href="{% url 'academies:detail' academy.slug %}" 
     class="back-link d-inline-flex align-items-center mb-3 px-3 py-2 rounded-pill">
-    <i class="bi bi-arrow-left me-1"></i> Back
+    <i class="bi bi-arrow-left me-1"></i> Back to Enrollment
   </a>
-
 
 
   <!-- Header -->
@@ -46,6 +45,12 @@
         </div>
       </div>
 
+      <!-- Right: Price -->
+      <div class="text-md-end mt-3 mt-md-0">
+        <h5 class="text-success fw-bold mb-0">
+          $150<span class="small fw-normal">/month</span>
+        </h5>
+      </div>
     </div>
   </div>
 
@@ -317,7 +322,3 @@
   });
   
 </script>
-
-
-
-

@@ -32,9 +32,9 @@
       </div>
       <!-- Right -->
       <div class="text-end">
-        <span class="text-muted small">Step 1 of 2</span>
+        <span class="text-muted small">Step 1 of 3</span>
         <div class="progress mt-1" style="height:4px; width:120px; margin-left:auto;">
-          <div class="progress-bar bg-success" role="progressbar" style="width: 50%;"></div>
+          <div class="progress-bar bg-success" role="progressbar" style="width: 30%;"></div>
         </div>
       </div>
     </div>
@@ -100,40 +100,52 @@
       <input type="hidden" name="program" value="{{ program.id }}">
       <div class="row g-4 mt-2">
         {% for child in children %}
-        <div class="col-md-4">
-          <div class="card child-card border rounded-3 p-3 h-100 position-relative" data-child-id="{{ child.id }}">
-          <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
-                type="checkbox" 
-                name="children" 
-                value="{{ child.id }}" 
-                id="child{{ child.id }}"
-                hidden>
+          <div class="col-md-4">
+            <div class="card child-card border rounded-3 p-3 h-100 position-relative 
+                        {% if not child.is_eligible or child.already_enrolled %}not-eligible{% endif %}"
+                data-child-id="{{ child.id }}">
 
+              <!-- Disable checkbox if not eligible -->
+              <input class="form-check-input position-absolute top-0 end-0 m-2 child-checkbox"
+                    type="checkbox" 
+                    name="children" 
+                    value="{{ child.id }}" 
+                    id="child{{ child.id }}"
+                    {% if not child.is_eligible or child.already_enrolled %}disabled{% endif %}
+                    hidden>
 
-            <div class="d-flex align-items-center">
-              {% if child.profile_image %}
-                <img src="{{ child.profile_image.url }}" class="rounded-circle me-2" width="40" height="40" style="object-fit:cover;">
-              {% else %}
-                <div class="avatar-circle me-2">{{ child.first_name|slice:":1"|upper }}</div>
-              {% endif %}
-              <div>
-                <h6 class="fw-bold mb-0">{{ child.first_name }} {{ child.last_name }}</h6>
-                <p class="text-muted small mb-0">Age {{ child.age }} • {{ child.gender }}</p>
+              <div class="d-flex align-items-center">
+                {% if child.profile_image %}
+                  <img src="{{ child.profile_image.url }}" class="rounded-circle me-2" width="40" height="40" style="object-fit:cover;">
+                {% else %}
+                  <div class="avatar-circle me-2">{{ child.first_name|slice:":1"|upper }}</div>
+                {% endif %}
+                <div>
+                  <h6 class="fw-bold mb-0">{{ child.first_name }} {{ child.last_name }}</h6>
+                  <p class="text-muted small mb-0">Age {{ child.age }} • {{ child.gender }}</p>
+                </div>
               </div>
+
+              <div class="d-flex justify-content-between small text-muted mt-2">
+                <span>Born:</span>
+                <span>{{ child.date_of_birth|date:"M j, Y" }}</span>
+              </div>
+
+              {% if not child.is_eligible %}
+                <div class="status-bar not-eligible-bar rounded-2 text-center py-1 small fw-semibold mt-2">
+                  Not Eligible – Age {{ min_age }}–{{ max_age }} Required
+
+                </div>
+              {% elif child.already_enrolled %}
+                <div class="status-bar not-eligible-bar rounded-2 text-center py-1 small fw-semibold mt-2">
+                  Already Enrolled
+                </div>
+              {% else %}
+                <div class="status-bar rounded-2 text-center py-1 small fw-semibold mt-2">Eligible</div>
+              {% endif %}
             </div>
-
-            <div class="d-flex justify-content-between small text-muted mt-2">
-              <span>Born:</span>
-              <span>{{ child.date_of_birth|date:"M j, Y" }}</span>
-            </div>
-
-            {% if child.medical_notes %}
-              <p class="small text-danger mt-1">Medical: {{ child.medical_notes }}</p>
-            {% endif %}
-
-            <div class="status-bar rounded-2 text-center py-1 small fw-semibold mt-2">Eligible</div>
           </div>
-        </div>
+
         {% empty %}
           <p class="text-center text-muted">You don’t have any registered children yet.</p>
         {% endfor %}
@@ -173,11 +185,16 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // Handle card click (toggle select)
+  // ✅ Handle card click (only once, with eligibility check)
   cards.forEach(card => {
     card.addEventListener("click", function(e) {
       const checkbox = card.querySelector(".child-checkbox");
       const status = card.querySelector(".status-bar");
+
+      // 🚫 Skip if not eligible
+      if (card.classList.contains("not-eligible")) {
+        return;
+      }
 
       // Prevent double toggle when clicking directly on checkbox
       if (e.target === checkbox) {
@@ -203,8 +220,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
   updateUI(); // initialize
 });
-
 </script>
+
 
 <style>
   /* Default avatar */
@@ -280,6 +297,25 @@ document.addEventListener("DOMContentLoaded", function() {
   padding: 0.25rem 0.5rem;
   border-radius: 50rem; /* pill */
 }
+
+/* Disabled/Not eligible card */
+.child-card.not-eligible {
+  cursor: not-allowed !important;
+  background: #fbeaea; /* light red background */
+  opacity: 0.8;
+}
+
+.child-card.not-eligible .avatar-circle {
+  background: #dc3545;
+  color: #fff;
+}
+
+.status-bar.not-eligible-bar {
+  cursor: not-allowed !important;
+  background: #dc3545;
+  color: #fff;
+}
+
 
 
 </style>

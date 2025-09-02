@@ -76,7 +76,6 @@ class PlayerSkill(models.Model):
 
 
 class PlayerSession(models.Model):
-
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE, related_name="player_sessions")
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="attendances")
 
