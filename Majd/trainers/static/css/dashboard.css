@@ -295,3 +295,16 @@ body {
   margin-bottom: .5rem;
   background: #f8f9fa;
 }
+
+
+
+.card-details {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height .25s ease, opacity .25s ease;
+}
+.card-details.is-open {
+  max-height: 1000px; 
+  opacity: 1;
+}
