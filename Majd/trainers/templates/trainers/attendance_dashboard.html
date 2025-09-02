@@ -1,0 +1,213 @@
+{% extends "trainers/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Attendance Management{% endblock %}
+{% block page_title %}Attendance Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Page header -->
+  <div class="mb-3">
+    <h4 class="fw-semibold mb-1">Attendance Management</h4>
+    <p class="text-muted mb-0">Track and manage student attendance across all your classes</p>
+  </div>
+
+  <!-- Stats row -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex justify-content-between align-items-start">
+          <div>
+            <small class="text-muted">Today's Attendance</small>
+            <div class="d-flex align-items-baseline gap-2 mt-1">
+              <h4 class="fw-bold mb-0">{{ stats.today_attendance_pct }}%</h4>
+            </div>
+            <small class="text-muted">{{ stats.today_present }} of {{ stats.today_total }} students</small>
+          </div>
+          <i class="bi bi-graph-up-arrow fs-3 text-success"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex justify-content-between align-items-start">
+          <div>
+            <small class="text-muted">Average Attendance</small>
+            <div class="d-flex align-items-baseline gap-2 mt-1">
+              <h4 class="fw-bold mb-0">{{ stats.avg_attendance_pct }}%</h4>
+            </div>
+            <small class="text-muted">Across all sessions</small>
+          </div>
+          <i class="bi bi-person-check fs-3 text-warning"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex justify-content-between align-items-start">
+          <div>
+            <small class="text-muted">Total Sessions</small>
+            <h4 class="fw-bold mt-1 mb-0">{{ stats.completed_sessions }}</h4>
+            <small class="text-muted">Completed sessions</small>
+          </div>
+          <i class="bi bi-calendar-event fs-3 text-primary"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body d-flex justify-content-between align-items-start">
+          <div>
+            <small class="text-muted">Classes Active</small>
+            <h4 class="fw-bold mt-1 mb-0">{{ stats.active_classes }}</h4>
+            <small class="text-muted">Total classes</small>
+          </div>
+          <i class="bi bi-people fs-3 text-success"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <!-- Filter by session -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label small text-muted mb-1">Filter by Sessions</label>
+          <select class="form-select" name="filter_session">
+            <option value="all" {% if filter_options.selected_session == "all" %}selected{% endif %}>All Classes</option>
+            {% for s in filter_options.sessions %}
+              <option value="{{ s.id }}" {% if filter_options.selected_session|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+                {{ s.title }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Filter by date -->
+        <div class="col-12 col-lg-3">
+          <label class="form-label small text-muted mb-1">Filter by Date</label>
+          <input type="date" class="form-control" name="filter_date" value="{{ filter_options.selected_date }}">
+        </div>
+
+        <!-- Search by student name -->
+        <div class="col-12 col-lg-4">
+          <label class="form-label small text-muted mb-1">Search Students</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" name="q" placeholder="Search by student name..." value="{{ filter_options.student_query }}">
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 col-lg-2 d-flex gap-2">
+          <button type="submit" class="btn btn-success w-100">Apply</button>
+          <a class="btn btn-outline-secondary w-100" href="{% url 'trainers:attendance_view' %}">Clear Filters</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Classes list -->
+  {% if class_cards %}
+    {% for class in class_cards %}
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+
+          <!-- Header line -->
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+
+              <h6 class="fw-semibold mb-0">{{ class.title }}</h6>
+
+              <span class="badge rounded-pill {{ class.status_css }}">{{ class.status_label }}</span>
+
+              {% if class.attendance_pct %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  {{ class.attendance_pct }}% Attendance
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <a class="btn btn-primary btn-sm text-white"
+                 href="{% url 'trainers:take_attendance' class.id %}">
+                <i class="bi bi-pencil-square me-1"></i> Take Attendance
+              </a>
+
+              <!-- Expand/Collapse (GET, no JS) -->
+              {% if not class.is_expanded %}
+                <form method="get" class="m-0">
+                  <input type="hidden" name="filter_session" value="{{ filter_options.selected_session }}">
+                  <input type="hidden" name="filter_date" value="{{ filter_options.selected_date }}">
+                  <input type="hidden" name="q" value="{{ filter_options.student_query }}">
+                  <input type="hidden" name="expand" value="{{ class.id }}">
+                  <button type="submit" class="btn btn-outline-secondary btn-sm" title="Expand">
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                </form>
+              {% else %}
+                <form method="get" class="m-0">
+                  <input type="hidden" name="filter_session" value="{{ filter_options.selected_session }}">
+                  <input type="hidden" name="filter_date" value="{{ filter_options.selected_date }}">
+                  <input type="hidden" name="q" value="{{ filter_options.student_query }}">
+                  <!-- لا نرسل expand لإغلاق الكارد -->
+                  <button type="submit" class="btn btn-outline-secondary btn-sm" title="Collapse">
+                    <i class="bi bi-chevron-up"></i>
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Meta row -->
+          <div class="d-flex flex-wrap gap-3 text-muted small mt-2">
+            <div><i class="bi bi-calendar me-1"></i>{{ class.date_label }}</div>
+            <div><i class="bi bi-clock me-1"></i>{{ class.time_label }}</div>
+            <div><i class="bi bi-geo-alt me-1"></i>{{ class.location_label }}</div>
+            <div><i class="bi bi-people me-1"></i>{{ class.enrolled }} / {{ class.capacity }} students</div>
+          </div>
+
+          <!-- Summary row -->
+          <div class="d-flex gap-4 mt-3 small">
+            <div class="text-success"><i class="bi bi-check-circle me-1"></i> Present: {{ class.present }}</div>
+            <div class="text-danger"><i class="bi bi-x-circle me-1"></i> Absent: {{ class.absent }}</div>
+          </div>
+
+          <!-- Expanded details -->
+          {% if class.is_expanded %}
+            <hr class="my-3">
+            {% if class.attendance_details %}
+              <div class="fw-semibold small mb-2">Student Attendance</div>
+              <div class="list-group list-group-flush">
+                {% for a in class.attendance_details %}
+                  <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                    <div class="text-dark">{{ a.name }}</div>
+                    <div class="d-flex align-items-center gap-2">
+                      {% if a.note %}
+                        <small class="text-muted">{{ a.note }}</small>
+                      {% endif %}
+                      <span class="badge rounded-pill bg-light {{ a.status_css }}">{{ a.status_label }}</span>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-muted small">No attendance records yet.</div>
+            {% endif %}
+          {% endif %}
+
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">No classes found.</div>
+  {% endif %}
+
+</div>
+{% endblock %}

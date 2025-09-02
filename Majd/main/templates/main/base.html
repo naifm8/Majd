@@ -99,7 +99,7 @@
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
                                     {% elif request.user.groups.all.0.name == "trainer" %}
-                                        <a class="dropdown-item d-flex align-items-center" href="#">
+                                        <a class="dropdown-item d-flex align-items-center" href="{% url 'trainers:overview_view'%}">
                                             <i class="bi bi-people me-2"></i> Dashboard
                                         </a>
                                     {% elif request.user.groups.all.0.name == "academy_admin" %}

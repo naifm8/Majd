@@ -41,6 +41,11 @@ class SessionSkillInline(admin.TabularInline):
     extra = 1
     autocomplete_fields = ["skill"]
 
+class SessionSkill(admin.TabularInline):
+    model = SessionSkill
+    extra = 1
+    autocomplete_fields = ["skill"]
+
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ("title", "academy", "sport_type")

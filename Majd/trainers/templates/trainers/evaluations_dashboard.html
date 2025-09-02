@@ -1,0 +1,214 @@
+{% extends "trainers/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Evaluations{% endblock %}
+{% block page_title %}Student Evaluations{% endblock %}
+
+{% block content %}
+<div class="container mt-3">
+
+  <!-- KPI -->
+  <div class="row row-cols-1 row-cols-md-4 g-3 mb-3">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 text-success fs-3"><i class="bi bi-clipboard2-check"></i></div>
+          <div>
+            <div class="text-secondary small">Total Evaluations</div>
+            <div class="h3 fw-bold mb-0">{{ kpi.total }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 text-success fs-3"><i class="bi bi-bullseye"></i></div>
+          <div>
+            <div class="text-secondary small">Average Score</div>
+            <div class="h3 fw-bold mb-0">{% if kpi.average %}{{ kpi.average }}{% else %}—{% endif %}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 text-success fs-3"><i class="bi bi-graph-up-arrow"></i></div>
+          <div>
+            <div class="text-secondary small">Improving Students</div>
+            <div class="h3 fw-bold mb-0">{{ kpi.improving }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 text-warning fs-3"><i class="bi bi-calendar2-week"></i></div>
+          <div>
+            <div class="text-secondary small">Pending Reviews</div>
+            <div class="h3 fw-bold mb-0 text-warning">{{ kpi.pending }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters under KPIs -->
+  <form method="get" class="row g-3 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label">Session</label>
+      <select class="form-select" name="filter_session">
+        <option value="all" {% if filter_options.selected_session == "all" %}selected{% endif %}>All Sessions</option>
+        {% for s in filter_options.sessions %}
+          <option value="{{ s.id }}" {% if filter_options.selected_session|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-control" name="filter_date" value="{{ filter_options.selected_date }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Search student</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" name="q" placeholder="Type a name…" value="{{ filter_options.student_query }}">
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <button class="btn btn-success">Apply</button>
+      <a href="{% url 'trainers:evaluations_view' %}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label d-block">View</label>
+      <div class="nav nav-pills rounded-3">
+        <input type="hidden" name="view" value="{{ filter_options.active_view }}">
+        <a class="nav-link {% if filter_options.active_view == 'classes' %}active{% endif %}" href="?view=classes">Classes</a>
+        <a class="nav-link {% if filter_options.active_view == 'students' %}active{% endif %}" href="?view=students">Students</a>
+      </div>
+    </div>
+  </form>
+
+  {% if filter_options.active_view == 'classes' %}
+    <!-- Classes grid -->
+    <div class="row g-3">
+      {% for c in class_cards %}
+        <div class="col-12 col-md-6">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="small text-secondary">{{ c.date_label }} • {{ c.time_label }}</div>
+                  <h6 class="mb-1">{{ c.title }}</h6>
+                  <span class="badge {{ c.status_css }}">{{ c.status_label }}</span>
+                </div>
+                <div class="text-end">
+                  <div class="fs-5 fw-bold {% if c.avg %}text-success{% else %}text-secondary{% endif %}">{% if c.avg %}{{ c.avg }}{% else %}—{% endif %}</div>
+                  <div class="text-secondary small">Avg score</div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <div class="d-flex justify-content-between small">
+                  <span>Coverage</span>
+                  <span>{{ c.rated }}/{{ c.enrolled }} ({{ c.coverage_pct }}%)</span>
+                </div>
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success" style="width: {{ c.coverage_pct }}%"></div>
+                </div>
+              </div>
+
+              <div class="row text-center mt-3 g-2">
+                <div class="col">
+                  <div class="border rounded py-2 small"><div class="fw-semibold">Max</div>{% if c.max is not None %}{{ c.max }}{% else %}—{% endif %}</div>
+                </div>
+                <div class="col">
+                  <div class="border rounded py-2 small"><div class="fw-semibold">Min</div>{% if c.min is not None %}{{ c.min }}{% else %}—{% endif %}</div>
+                </div>
+                <div class="col">
+                  <div class="border rounded py-2 small"><div class="fw-semibold">Not rated</div>{{ c.not_rated }}</div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-3">
+                <a href="{% url 'trainers:take_evaluations' c.id %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-pencil-square me-1"></i>Evaluate Now
+                </a>
+                <a href="?view=classes&filter_session={{ filter_options.selected_session }}&filter_date={{ filter_options.selected_date }}&q={{ filter_options.student_query }}&expand={{ c.id }}" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi bi-chevron-down me-1"></i>{% if c.expanded %}Collapse{% else %}Expand{% endif %}
+                </a>
+              </div>
+
+              {% if c.expanded %}
+                <div class="mt-3">
+                  <div class="list-group small">
+                    {% for row in c.expanded_items %}
+                      <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>{{ row.name }}</div>
+                        {% if row.score is not None %}
+                          <div class="d-flex align-items-center gap-3">
+                            <span class="text-secondary">Score</span><span class="fw-semibold">{{ row.score }}</span>
+                            {% if row.has_notes %}<span class="badge bg-warning-subtle text-warning">Notes</span>{% endif %}
+                          </div>
+                        {% else %}
+                          <div class="text-secondary">Not evaluated</div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12"><div class="text-muted">No classes found.</div></div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <!-- Students grid -->
+    <div class="row row-cols-1 row-cols-md-2 g-3">
+      {% for s in student_cards %}
+        <div class="col">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="avatar-circle">{{ s.initial }}</span>
+                  <div>
+                    <div class="fw-semibold">{{ s.name }}</div>
+                    <div class="text-secondary small">{{ s.track }}</div>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold {% if s.last_score %}text-success{% else %}text-secondary{% endif %}">
+                    {% if s.last_score %}{{ s.last_score }}{% else %}—{% endif %}
+                  </div>
+                  <div class="text-secondary small">
+                    {% if s.delta < 0 %}
+                      <span class="text-danger">{{ s.delta }}%</span>
+                    {% elif s.delta > 0 %}
+                      <span class="text-success">+{{ s.delta }}%</span>
+                    {% else %}Δ 0%{% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="small text-secondary mt-2">Next: {{ s.next_label }}</div>
+              <div class="mt-auto d-flex gap-2 pt-3">
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12"><div class="text-muted">No students found.</div></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

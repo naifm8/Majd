@@ -1,0 +1,110 @@
+
+{% extends "trainers/base_dashboard.html" %}
+{% load static %}
+
+{% block title %}Take Attendance{% endblock %}
+{% block page_title %}Take Attendance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Class header -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-start">
+      <div>
+        <h5 class="fw-semibold mb-1">{{ class_info.title }}</h5>
+        <div class="d-flex flex-wrap gap-3 text-muted small">
+          <div><i class="bi bi-calendar me-1"></i>{{ class_info.date_label }}</div>
+          <div><i class="bi bi-clock me-1"></i>{{ class_info.time_label }}</div>
+          <div><i class="bi bi-people me-1"></i>{{ class_info.enrolled }} / {{ class_info.capacity }} students</div>
+        </div>
+      </div>
+      <span class="badge rounded-pill {{ class_info.status_css }}">{{ class_info.status_label }}</span>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="post" class="card border-0 shadow-sm">
+    {% csrf_token %}
+    <div class="card-body">
+
+      <!-- tools -->
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <div class="input-group" style="max-width: 320px;">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input id="studentFilter" type="text" class="form-control" placeholder="Search by name…">
+        </div>
+        <button type="button" id="markAllPresent" class="btn btn-outline-success btn-sm">
+          Mark all Present
+        </button>
+        <button type="button" id="markAllAbsent" class="btn btn-outline-danger btn-sm">
+          Mark all Absent
+        </button>
+      </div>
+
+      {{ formset.management_form }}
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr class="text-muted">
+              <th style="width: 40%;">Student</th>
+              <th style="width: 25%;">Status</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTable">
+            {% for form in formset %}
+              <tr class="student-row">
+                <td class="student-name">
+                  {{ form.player_id }} {{ form.player_name }}
+                  <span class="fw-semibold">
+                    {{ form.initial.player_name }}
+                  </span>
+                </td>
+                <td>{{ form.status }}</td>
+                <td>{{ form.notes }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if formset.total_form_count == 0 %}
+        <div class="alert alert-info mb-0">No enrolled students for this class.</div>
+      {% endif %}
+    </div>
+
+    <div class="card-footer d-flex gap-2 justify-content-end">
+      <a href="{% url 'trainers:attendance_view' %}" class="btn btn-outline-secondary">Back</a>
+      <button type="submit" class="btn btn-success text-white">Save Attendance</button>
+    </div>
+  </form>
+</div>
+
+<!-- Minimal JS: filter + mark-all -->
+<script>
+  (function(){
+    const filter = document.getElementById('studentFilter');
+    const rows   = document.querySelectorAll('#studentsTable .student-row');
+    filter && filter.addEventListener('input', function(){
+      const q = this.value.trim().toLowerCase();
+      rows.forEach(r => {
+        const nameCell = r.querySelector('.student-name');
+        const txt = (nameCell && nameCell.textContent || '').toLowerCase();
+        r.style.display = txt.includes(q) ? '' : 'none';
+      });
+    });
+
+    function setAll(toValue){
+      document.querySelectorAll('select[name$="-status"]').forEach(sel => {
+        sel.value = toValue;
+      });
+    }
+    const btnP = document.getElementById('markAllPresent');
+    const btnA = document.getElementById('markAllAbsent');
+    btnP && btnP.addEventListener('click', ()=> setAll('present'));
+    btnA && btnA.addEventListener('click', ()=> setAll('absent'));
+  })();
+</script>
+{% endblock %}
