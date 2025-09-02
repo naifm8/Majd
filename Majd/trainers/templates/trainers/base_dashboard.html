@@ -13,6 +13,10 @@
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=sports" />
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+    {% block fileStyle %}
+
+    {% endblock %}
 </head>
 
 <body>
@@ -43,7 +47,7 @@
                     <li class="nav-item"><a href="{% url 'trainers:training_sessions_view' %}" class="nav-link"><i class="bi bi-people me-2"></i>Sessions</a></li>
                     <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-person-badge me-2"></i>Evaluations</a></li>
                     <li class="nav-item">
-                    <a href="{% url 'communication:conversations_list' %}" class="nav-link">
+                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link">
                         <i class="bi bi-chat-dots me-2"></i>Messages
                     </a>
                     </li>
@@ -107,7 +111,7 @@
 
             <!-- Content -->
             <main>
-                {% if messages %}
+               {% if messages and not hide_django_messages %}
                 <div class="messages">
                     {% for message in messages %}
                     <div class="alert {% if 'error' in message.tags or 'danger' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %} alert-dismissible fade show"
@@ -118,6 +122,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+
 
                 {% block content %}{% endblock %}
             </main>
@@ -141,7 +146,7 @@
                     <li class="nav-item"><a href="#" class="nav-link"><i
                                 class="bi bi-person-badge me-2"></i>Evaluations</a></li>
                     <li class="nav-item">
-                    <a href="{% url 'communication:conversations_list' %}" class="nav-link">
+                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link">
                         <i class="bi bi-chat-dots me-2"></i>Messages
                     </a>
                     </li>
