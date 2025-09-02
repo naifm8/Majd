@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from networkx import reverse
 from .models import Academy, Program, Session
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -8,7 +9,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ProgramForm, SessionForm, AcademyForm, SubscriptionPlanForm
 from accounts.models import TrainerProfile
 from parents.models import Child, Enrollment
-from player.models import PlayerProfile
+from player.models import PlayerProfile, PlayerSession
 from .forms import TrainerProfileForm
 from datetime import date
 from django.db.models import Q
@@ -514,104 +515,9 @@ def calculate_age(born):
     today = date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-@login_required
-def join_program_view(request, academy_slug, program_id):
-    academy = get_object_or_404(Academy, slug=academy_slug)
-    program = get_object_or_404(Program, id=program_id, academy=academy)
 
-    parent_profile = getattr(request.user, "parent_profile", None)
-    if not parent_profile:
-        messages.error(request, "Only parents can join programs.")
-        return redirect("academies:detail", slug=academy.slug)
 
-    children = Child.objects.filter(parent=parent_profile)
 
-    # derive min/max from sessions
-    sessions = program.sessions.all()
-    if sessions.exists():
-        min_age = min(s.age_min for s in sessions)
-        max_age = max(s.age_max for s in sessions)
-    else:
-        min_age = None
-        max_age = None
-        
-# annotate children with eligibility
-    for child in children:
-        child.age = calculate_age(child.date_of_birth) if child.date_of_birth else None
-        if min_age is not None and max_age is not None and child.age is not None:
-            child.is_eligible = min_age <= child.age <= max_age
-        else:
-            child.is_eligible = True  # if no age restriction
-        child.already_enrolled = Enrollment.objects.filter(child=child, program=program).exists()
-
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("children")
-        if not selected_ids:
-            messages.warning(request, "Please select at least one child.")
-            return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
-
-        # Store selected children temporarily (session)
-        request.session["selected_children"] = selected_ids
-        return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
-
-    return render(request, "academies/join_program.html", {
-        "academy": academy,
-        "program": program,
-        "children": children,
-        "min_age": min_age,
-        "max_age": max_age,
-    })
-
-@login_required
-def enrollment_details_view(request, academy_slug, program_id):
-    """
-    Step 2: Parent enters emergency info and finalizes enrollment.
-    """
-    academy = get_object_or_404(Academy, slug=academy_slug)
-    program = get_object_or_404(Program, id=program_id, academy=academy)
-
-    parent_profile = getattr(request.user, "parent_profile", None)
-    if not parent_profile:
-        messages.error(request, "Only parents can join programs.")
-        return redirect("academies:detail", slug=academy.slug)
-
-    # Get children from session
-    selected_ids = request.session.get("selected_children", [])
-    children = Child.objects.filter(id__in=selected_ids, parent=parent_profile)
-
-    if not children.exists():
-        messages.warning(request, "No children selected for enrollment.")
-        return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
-
-    if request.method == "POST":
-        emergency_name = request.POST.get("emergency_name", "").strip()
-        emergency_phone = request.POST.get("emergency_phone", "").strip()
-
-        # Validate
-        if not emergency_name or not emergency_phone:
-            messages.error(request, "Emergency contact name and phone are required.")
-            return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
-
-        # Create enrollment per child (skip if already exists)
-        for child in children:
-            Enrollment.objects.get_or_create(
-                child=child,
-                program=program,
-                defaults={
-                    "emergency_contact_name": emergency_name,
-                    "emergency_contact_phone": emergency_phone,
-                },
-            )
-
-        messages.success(request, f"Enrollment completed for {len(children)} child(ren).")
-        request.session.pop("selected_children", None)  # clear session after enrollment
-        return redirect("academies:detail", slug=academy.slug)
-
-    return render(request, "academies/enrollment_details.html", {
-        "academy": academy,
-        "program": program,
-        "children": children,
-    })
 
 @login_required
 def players_dashboard(request):
@@ -734,7 +640,8 @@ def export_players(players, export_type):
 
 
 @login_required
-def enrollment_sessions_view(request, academy_slug, program_id):
+def join_program_view(request, academy_slug, program_id):
+    # step 1
     academy = get_object_or_404(Academy, slug=academy_slug)
     program = get_object_or_404(Program, id=program_id, academy=academy)
 
@@ -743,25 +650,197 @@ def enrollment_sessions_view(request, academy_slug, program_id):
         messages.error(request, "Only parents can join programs.")
         return redirect("academies:detail", slug=academy.slug)
 
-    # نجيب الـ enrollments المرتبطة بالأب
-    enrollments = Enrollment.objects.filter(
-        program=program,
-        child__parent=parent_profile
-    )
+    children = Child.objects.filter(parent=parent_profile)
 
-    # كل الجلسات للبرنامج
-    sessions = Session.objects.filter(program=program).prefetch_related("slots", "required_skills")
+    # derive min/max from sessions
+    sessions = program.sessions.all()
+    if sessions.exists():
+        min_age = min(s.age_min for s in sessions)
+        max_age = max(s.age_max for s in sessions)
+    else:
+        min_age = None
+        max_age = None
+        
+    # annotate children with eligibility
+    for child in children:
+        child.age = calculate_age(child.date_of_birth) if child.date_of_birth else None
+        if min_age is not None and max_age is not None and child.age is not None:
+            child.is_eligible = min_age <= child.age <= max_age
+        else:
+            child.is_eligible = True  # if no age restriction
+        child.already_enrolled = Enrollment.objects.filter(child=child, program=program).exists()
 
     if request.method == "POST":
-        selected_sessions = request.POST.getlist("sessions")  # IDs من الفورم
-        for enrollment in enrollments:
-            enrollment.sessions.set(selected_sessions)
-        messages.success(request, "Sessions selected successfully!")
+        selected_ids = request.POST.getlist("children")
+        if not selected_ids:
+            messages.warning(request, "Please select at least one child.")
+            return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
+
+        # Store selected children temporarily (session)
+        request.session["selected_children"] = selected_ids
+        
+        # Go to Step 2 (select sessions)
+        return redirect("academies:enrollment_sessions", academy_slug=academy.slug, program_id=program.id)
+
+
+    return render(request, "academies/join_program.html", {
+        "academy": academy,
+        "program": program,
+        "children": children,
+        "min_age": min_age,
+        "max_age": max_age,
+    })
+
+
+@login_required
+def enrollment_sessions_view(request, academy_slug, program_id):
+    # step 2: choose sessions
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
         return redirect("academies:detail", slug=academy.slug)
 
-    return render(request, "academies/enrollment_sessions.html", {
+    # All sessions for this program
+    sessions = (
+        Session.objects.filter(program=program)
+        .select_related("trainer")
+        .prefetch_related("slots", "required_skills")
+    )
+
+    # Distinct age ranges for filters
+    age_ranges = (
+        sessions.values_list("age_min", "age_max")
+        .distinct()
+        .order_by("age_min")
+    )
+
+    # --- Filters ---
+    level = request.GET.get("level")
+    gender = request.GET.get("gender")
+    age = request.GET.get("age")  # e.g. "6-10"
+
+    if level and level != "all":
+        sessions = sessions.filter(level=level)
+
+    if gender and gender != "all":
+        sessions = sessions.filter(gender=gender)
+
+    if age and age != "all":
+        try:
+            age_min, age_max = map(int, age.replace(" ", "").split("-"))
+            sessions = sessions.filter(age_min__lte=age_min, age_max__gte=age_max)
+        except ValueError:
+            pass
+
+    # Handle POST (user selecting sessions)
+    if request.method == "POST":
+        selected_sessions = request.POST.getlist("sessions")
+
+        if not selected_sessions:
+            messages.error(request, "You did not select any session.", "alert-danger")
+        else:
+            # store as integers in session
+            request.session["selected_sessions"] = [int(sid) for sid in selected_sessions]
+            messages.success(request, "Sessions selected successfully!")
+
+            # Go to Step 3 (enrollment details)
+            return redirect(
+                "academies:enrollment_details",
+                academy_slug=academy.slug,
+                program_id=program.id,
+            )
+
+    context = {
         "academy": academy,
         "program": program,
         "sessions": sessions,
-        "enrollments": enrollments,
+        "filters": {
+            "level": level or "all",
+            "gender": gender or "all",
+            "age": age or "all",
+        },
+        "age_ranges": age_ranges,
+    }
+    return render(request, "academies/enrollment_sessions.html", context)
+
+
+@login_required
+def enrollment_details_view(request, academy_slug, program_id):
+    academy = get_object_or_404(Academy, slug=academy_slug)
+    program = get_object_or_404(Program, id=program_id, academy=academy)
+
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can join programs.")
+        return redirect("academies:detail", slug=academy.slug)
+
+    # cast child IDs to int
+    selected_child_ids = [int(cid) for cid in request.session.get("selected_children", [])]
+    children = Child.objects.filter(id__in=selected_child_ids, parent=parent_profile)
+
+    # cast session IDs to int
+    selected_session_ids = [int(sid) for sid in request.session.get("selected_sessions", [])]
+    sessions = Session.objects.filter(id__in=selected_session_ids, program=program)
+
+    if not children.exists():
+        messages.error(request, "No children selected for enrollment.")
+        return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
+
+    if not sessions.exists():
+        messages.error(request, "No sessions selected for enrollment.")
+        return redirect("academies:enrollment_sessions", academy_slug=academy.slug, program_id=program.id)
+
+    if request.method == "POST":
+        emergency_name = request.POST.get("emergency_name", "").strip()
+        emergency_phone = request.POST.get("emergency_phone", "").strip()
+
+        if not emergency_name or not emergency_phone:
+            messages.error(request, "Emergency contact name and phone are required.")
+            return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
+
+        for child in children:
+            enrollment, created = Enrollment.objects.get_or_create(
+                child=child,
+                program=program,
+                defaults={
+                    "emergency_contact_name": emergency_name,
+                    "emergency_contact_phone": emergency_phone,
+                },
+            )
+
+            # Attach sessions
+            enrollment.sessions.set(sessions)
+
+            # Create PlayerSession
+            if hasattr(child, "player_profile"):
+                player = child.player_profile
+
+                # Update academy if not already set or different
+                if player.academy != academy:
+                    player.academy = academy
+                    player.save()
+
+                for session in sessions:
+                    PlayerSession.objects.get_or_create(
+                        player=child.player_profile,
+                        session=session,
+                    )
+
+        request.session.pop("selected_children", None)
+        request.session.pop("selected_sessions", None)
+
+        messages.success(request, f"Enrollment completed for {len(children)} child(ren).")
+        return redirect("academies:detail", slug=academy.slug)
+
+    return render(request, "academies/enrollment_details.html", {
+        "academy": academy,
+        "program": program,
+        "children": children,
+        "sessions": sessions,
     })
+
+
+

@@ -32,9 +32,9 @@
       </div>
       <!-- Right -->
       <div class="text-end">
-        <span class="text-muted small">Step 1 of 2</span>
+        <span class="text-muted small">Step 1 of 3</span>
         <div class="progress mt-1" style="height:4px; width:120px; margin-left:auto;">
-          <div class="progress-bar bg-success" role="progressbar" style="width: 50%;"></div>
+          <div class="progress-bar bg-success" role="progressbar" style="width: 30%;"></div>
         </div>
       </div>
     </div>
@@ -95,7 +95,7 @@
 
 
     <!-- Children -->
-      <form method="post" id="enrollForm" action="{% url 'academies:enrollment_sessions' academy.slug program.id %}">
+      <form method="post" id="enrollForm" action="{% url 'academies:join_program_view' academy.slug program.id %}">
       {% csrf_token %}
       <input type="hidden" name="program" value="{{ program.id }}">
       <div class="row g-4 mt-2">
