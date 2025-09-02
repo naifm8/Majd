@@ -32,16 +32,27 @@ class FocusSkillForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-select"})
     )
 
+SCALE_CHOICES = [(i, str(i)) for i in range(0, 6)]  # 0..5
+
 class EvaluationRowForm(forms.Form):
     """
-    صف واحد (طالب واحد) في التقييم المجمّع.
+    فورم لصف واحد (طالب واحد) في التقييم.
+    المهارات تُضاف ديناميكيًا من view.
     """
-    player_id   = forms.IntegerField(widget=forms.HiddenInput())
-    # للعرض فقط في الجدول (نمرر الاسم عبر الكونتكست)
-    technique   = forms.ChoiceField(choices=SCALE_CHOICES, initial=3, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
-    tactical    = forms.ChoiceField(choices=SCALE_CHOICES, initial=3, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
-    fitness     = forms.ChoiceField(choices=SCALE_CHOICES, initial=3, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
-    mental      = forms.ChoiceField(choices=SCALE_CHOICES, initial=3, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
-    # لو في مهارة تركيز تم اختيارها، هذا يصير فعال
-    skill_score = forms.ChoiceField(choices=SCALE_CHOICES, required=False, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
-    notes       = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "form-control form-control-sm", "placeholder": "Notes (optional)"}))
+    player_id = forms.IntegerField(widget=forms.HiddenInput())
+
+    # للمهارة المركزية (Focus Skill)
+    skill_score = forms.ChoiceField(
+        choices=SCALE_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select form-select-sm"})
+    )
+
+    # ملاحظات عامة
+    notes = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "form-control form-control-sm",
+            "placeholder": "Notes (optional)"
+        })
+    )
