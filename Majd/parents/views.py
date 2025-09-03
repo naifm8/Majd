@@ -128,25 +128,61 @@ def delete_child_view(request, child_id):
 @login_required
 def schedule_view(request):
     schedule_items = []
+    today = timezone.localdate()
+    tomorrow = today + timedelta(days=1)
 
     if hasattr(request.user, "parent_profile"):
         children = request.user.parent_profile.children.all()
 
         for child in children:
-            classes = TrainingClass.objects.filter(
-                session__program__children=child
-            ).order_by("date", "start_time")
+            for enrollment in child.parent_enrollments.filter(
+                is_active=True
+            ).prefetch_related("sessions__program__academy", "sessions__slots"):
+                for session in enrollment.sessions.all():
+                    # compute next slot occurrence
+                    next_occurrence = None
+                    if session.start_datetime and session.end_datetime:
+                        current_date = max(today, session.start_datetime.date())
+                        end_date = session.end_datetime.date()
 
-            for c in classes:
-                schedule_items.append({
-                    "child": child,
-                    "class": c
-                })
+                        while current_date <= end_date:
+                            weekday = current_date.strftime("%a").lower()[:3]  # mon/tue/...
+                            slot = session.slots.filter(weekday=weekday).first()
+                            if slot:
+                                next_occurrence = {
+                                    "date": current_date,
+                                    "start_time": slot.start_time,
+                                    "end_time": slot.end_time,
+                                }
+                                break
+                            current_date += timedelta(days=1)
 
-    # Sort all sessions across children by date/time
-    schedule_items = sorted(schedule_items, key=lambda x: (x["class"].date, x["class"].start_time))
+                    if next_occurrence:
+                        schedule_items.append({
+                            "child": child,
+                            "session": session,
+                            "academy": session.program.academy,
+                            "program": session.program,
+                            "next_occurrence": next_occurrence,
+                        })
 
-    return render(request, "main/schedule.html", {"schedule_items": schedule_items})
+    # Deduplicate child-session pairs
+    schedule_items = list({(i["child"].id, i["session"].id): i for i in schedule_items}.values())
+    print(schedule_items)
+    # Sort by next occurrence date + time
+    schedule_items.sort(key=lambda i: (i["next_occurrence"]["date"], i["next_occurrence"]["start_time"]))
+
+    return render(
+        request,
+        "main/schedule.html",
+        {
+            "schedule_items": schedule_items,
+            "today": today,
+            "tomorrow": tomorrow,
+        },
+    )
+
+
 
 @login_required
 def payments_view(request):

@@ -23,10 +23,10 @@
   </div>
 
   <!-- Tabs -->
-  <div class="d-flex justify-content-center mb-4">
+  <div class="d-flex justify-content-start mb-4">
     <div class="view-toggle bg-light p-1 rounded-pill d-inline-flex">
       <button id="listViewBtn" class="btn btn-sm px-4 btn-success rounded-pill active">List View</button>
-      <button id="calendarViewBtn" class="btn btn-sm px-4 btn-light rounded-pill text-success">Calendar View</button>
+      
     </div>
   </div>
 
@@ -45,97 +45,138 @@
             <div class="d-flex align-items-start gap-3">
               <!-- Avatar -->
               <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
-                   style="width: 45px; height: 45px;">
+                  style="width: 45px; height: 45px;">
                 {{ item.child.first_name|slice:":1"|upper }}
               </div>
 
               <!-- Info -->
               <div>
-                <h6 class="fw-bold mb-0">{{ item.child.first_name }} {{ item.child.last_name }}</h6>
-                <span class="badge bg-light text-dark border">
-                  {{ item.class.get_level_display|default:"Session" }}
-                </span>
+                <div class="d-flex gap-2">
+                  <h6 class="fw-bold mb-0">{{ item.child.first_name }} {{ item.child.last_name }}</h6>
+                  <span class="badge bg-light text-dark border">
+                    {{ item.session.get_level_display|default:"Session" }}
+                  </span>
+                </div>
                 <p class="mb-0 small text-muted">
-                  {{ item.child.primary_sport|default:"-" }} • {{ item.class.session.program.academy.name }}
+                  {{ item.child.primary_sport|default:"-" }} • {{ item.session.program.academy.name }}
                 </p>
 
                 <!-- Date & Location -->
                 <div class="text-muted small mt-1">
-                  <i class="bi bi-calendar-event me-1"></i> {{ item.class.date|date:"l" }},
-                  {{ item.class.date|date:"M d, Y" }} <br>
-                  <i class="bi bi-clock me-1"></i> {{ item.class.start_time|time:"H:i" }} - {{ item.class.end_time|time:"H:i" }} <br>
-                  <i class="bi bi-geo-alt me-1"></i> {{ item.class.location|default:"TBD" }}
-                </div>
+                  <i class="bi bi-calendar-event me-1"></i>
+                  {% if item.next_occurrence.date == today %}
+                    Today
+                  {% elif item.next_occurrence.date == tomorrow %}
+                    Tomorrow
+                  {% else %}
+                    {{ item.next_occurrence.date|date:"l, M d, Y" }}
+                  {% endif %} <br>
 
-                <p class="small mt-2">Coach: {{ item.class.session.trainer.user.get_full_name|default:"Unassigned" }}</p>
+                  <i class="bi bi-clock me-1"></i>
+                  {{ item.next_occurrence.start_time|time:"H:i" }} - {{ item.next_occurrence.end_time|time:"H:i" }} <br>
+
+                  <i class="bi bi-geo-alt me-1"></i> TBD
+                </div>
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="mt-3 mt-md-0 d-flex gap-2">
-              <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-              <a href="#" class="btn btn-outline-secondary btn-sm">Reschedule</a>
+            
+            
+            <!-- Trigger modal -->
+            <button class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#sessionModal{{ item.session.id }}">
+              View Details
+            </button>
+            
+          </div>
+        </div>
+
+        <!-- Session Details Modal -->
+        <div class="modal fade" id="sessionModal{{ item.session.id }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+              
+              <!-- Header -->
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold">
+                  {{ item.session.title }} : {{ item.session.program.academy.name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+
+              <!-- Body -->
+              <div class="modal-body">
+
+                <!-- Trainer -->
+                {% if item.session.trainer %}
+                <div class="d-flex align-items-center mb-3 p-2 border rounded bg-light">
+                  <img src="{{ item.session.trainer.user.profile_image.url|default:'https://via.placeholder.com/40' }}"
+                      class="rounded-circle me-2" width="40" height="40" style="object-fit:cover;">
+                  <span class="fw-semibold">{{ item.session.trainer.user.get_full_name }}</span>
+                </div>
+                {% endif %}
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <p><strong>Age Range:</strong> {{ item.session.age_min }} - {{ item.session.age_max }} years</p>
+                    <p><strong>Gender:</strong> {{ item.session.get_gender_display }}</p>
+                    <p><strong>Level:</strong> <span class="badge bg-secondary">{{ item.session.get_level_display }}</span></p>
+                  </div>
+                  <div class="col-md-6">
+                    <p>
+                      <strong>Capacity:</strong> 
+                      <span class="{% if item.session.enrolled >= item.session.capacity %}text-danger{% else %}text-success{% endif %}">
+                        {{ item.session.enrolled }}/{{ item.session.capacity }}
+                      </span>
+                    </p>
+                    <p><strong>Status:</strong> 
+                      {% if item.session.enrolled < item.session.capacity %}
+                        <span class="badge bg-success">Available</span>
+                      {% else %}
+                        <span class="badge bg-danger">Full</span>
+                      {% endif %}
+                    </p>
+                    <p><strong>Duration:</strong> {{ item.session.duration_display }} <br>
+                      <small>({{ item.session.start_datetime|date:"M d, Y" }} - {{ item.session.end_datetime|date:"M d, Y" }})</small>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Training Schedule -->
+                <div class="mb-3">
+                  <h6 class="fw-bold"><i class="bi bi-clock-history me-1"></i> Training Schedule</h6>
+                  <ul class="list-group">
+                    {% for slot in item.session.slots.all %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ slot.get_weekday_display }}
+                        <span>{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                      </li>
+                    {% empty %}
+                      <li class="list-group-item text-muted">No schedule available</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+
+
+
+              </div>
+
+              <!-- Footer -->
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
         </div>
-        {% empty %}
-          <p class="text-muted">No upcoming sessions scheduled.</p>
+
         {% endfor %}
 
+
       </div>
     </div>
   </div>
 
-  <!-- Calendar View -->
-  <div id="calendarView" style="display: none;">
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold">Weekly Calendar</h5>
-          <div>
-            <button class="btn btn-sm btn-outline-secondary">&lt;</button>
-            <span class="mx-2 fw-semibold">March 18-24, 2024</span>
-            <button class="btn btn-sm btn-outline-secondary">&gt;</button>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between text-center">
-          <div class="flex-fill">
-            <div class="fw-semibold">Mon</div>
-            <div class="text-muted small">18</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Tue</div>
-            <div class="text-muted small">19</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Wed</div>
-            <div class="text-muted small">20</div>
-            <div class="badge bg-success-subtle text-success mt-2">Alex - Soccer 4:00 PM</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Thu</div>
-            <div class="text-muted small">21</div>
-            <div class="badge bg-primary-subtle text-primary mt-2">Emma - Swimming 3:30 PM</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Fri</div>
-            <div class="text-muted small">22</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Sat</div>
-            <div class="text-muted small">23</div>
-            <div class="badge bg-warning-subtle text-warning mt-2">Alex - Match 10:00 AM</div>
-          </div>
-          <div class="flex-fill">
-            <div class="fw-semibold">Sun</div>
-            <div class="text-muted small">24</div>
-            <div class="badge bg-purple-subtle text-dark mt-2">Emma - Competition 9:00 AM</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div>
 {% endblock %}
@@ -163,33 +204,7 @@
 }
 </style>
 
-{% block extra_js %}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const listBtn = document.getElementById("listViewBtn");
-  const calBtn = document.getElementById("calendarViewBtn");
-  const listView = document.getElementById("listView");
-  const calendarView = document.getElementById("calendarView");
 
-  listBtn.addEventListener("click", function () {
-    listView.style.display = "block";
-    calendarView.style.display = "none";
-    listBtn.classList.add("btn-success", "active");
-    listBtn.classList.remove("btn-light", "text-success");
-    calBtn.classList.remove("btn-success", "active");
-    calBtn.classList.add("btn-light", "text-success");
-  });
 
-  calBtn.addEventListener("click", function () {
-    listView.style.display = "none";
-    calendarView.style.display = "block";
-    calBtn.classList.add("btn-success", "active");
-    calBtn.classList.remove("btn-light", "text-success");
-    listBtn.classList.remove("btn-success", "active");
-    listBtn.classList.add("btn-light", "text-success");
-  });
-});
-</script>
-{% endblock %}
 
 
