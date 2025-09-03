@@ -44,6 +44,22 @@ The system provides separate dashboards for **Academy Admins**, **Trainers**, an
 - **Environment**: `.env` file required for sensitive keys (DB, Cloudinary, etc.)  
 
 ---
+## 💳 Subscriptions
+
+### 🏫 Academy Subscriptions
+- Each academy can subscribe to the platform to showcase its programs.  
+- Subscriptions unlock features such as:
+  - Managing trainers and students within the academy.  
+  - Accessing advanced reports and analytics.  
+- Subscription fees are applied at the academy level.
+
+### 👨‍👩‍👧 Student Subscriptions
+- Parents can register their children in specific academy sessions.  
+- Subscription per student includes:
+  - Enrollment in academy programs and classes.  
+  - Attendance tracking.  
+  - Progress and evaluation reports.  
+- Fees are determined by the academy program and paid per child.
 
 ## ⚙️ Installation & Setup
 
