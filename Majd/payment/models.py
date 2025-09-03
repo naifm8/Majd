@@ -116,7 +116,8 @@ class Subscription(models.Model):
     error_message = models.TextField(blank=True)
     
     def __str__(self):
-        return f"{self.academy_name} - {self.plan_type.name} ({self.status})"
+        plan_name = self.plan_type.name if self.plan_type else "Basic Plan"
+        return f"{self.academy_name} - {plan_name} ({self.status})"
     
     def save(self, *args, **kwargs):
         """Override save to send notifications on status changes"""
@@ -182,7 +183,8 @@ class Subscription(models.Model):
     def send_invoice(self):
         """Send invoice email to academy"""
         try:
-            subject = f"Invoice for {self.plan_type.name} - {self.academy_name}"
+            plan_name = self.plan_type.name if self.plan_type else "Basic Plan"
+            subject = f"Invoice for {plan_name} - {self.academy_name}"
             
             # Render invoice template
             context = {

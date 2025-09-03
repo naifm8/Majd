@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{% load dict_extras %}
 
 {% block title %} {{academy.name}} {% endblock %}
 
@@ -204,8 +205,12 @@
           </div>
 
           <ul class="plan-features">
-            {% if plan.description_as_list %}
-              {% for feature in plan.description_as_list %}
+            {% if plan.program_features %}
+              {% for feature in plan.program_features %}
+                <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
+              {% endfor %}
+            {% elif plan.description %}
+              {% for feature in plan.description|split:"," %}
                 <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
               {% endfor %}
             {% else %}
