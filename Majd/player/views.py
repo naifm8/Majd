@@ -4,6 +4,7 @@ from parents.models import Child
 from .models import PlayerProfile
 from academies.models import TrainingClass
 from academies.models import SessionSkill
+from academies.models import Position
 
 
 def player_dashboard_view(request, child_id):
@@ -60,6 +61,8 @@ def player_dashboard_view(request, child_id):
 
     # ✅ Achievements
     achievements = player.achievements.order_by("-date_awarded")[:5]
+    
+    opened_from = request.GET.get("from") or "parent"
 
     context = {
         "child": child,
@@ -73,5 +76,7 @@ def player_dashboard_view(request, child_id):
         "attendances": attendances,
         "achievements": achievements,
         "evaluations": evaluations,
+        "opened_from": opened_from,  # ✅ هذا هو السطر المطلوب
+        "positions": Position.objects.all(),
     }
     return render(request, "player/dashboard.html", context)

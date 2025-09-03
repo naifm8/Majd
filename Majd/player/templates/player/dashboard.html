@@ -78,9 +78,15 @@
         <p class="text-muted">Here’s your latest progress and sessions overview.</p>
       </div>
       <div class="mb-3">
-      <a href="{% url 'parents:children' %}" class="btn btn-outline-success">
-        <i class="bi bi-arrow-left"></i> Back to Parent Dashboard
-      </a>
+      {% if opened_from == "trainer" %}
+        <a href="{% url 'trainers:students_view' %}" class="btn btn-outline-success">
+          <i class="bi bi-arrow-left"></i> Back to Trainer Dashboard
+        </a>
+      {% else %}
+        <a href="{% url 'parents:children' %}" class="btn btn-outline-success">
+          <i class="bi bi-arrow-left"></i> Back to Parent Dashboard
+        </a>
+      {% endif %}
 </div>
 
     </div>
@@ -103,8 +109,25 @@
         <div>
           <h5 class="mb-1 fw-bold">{{ child.first_name }} {{ child.last_name }}</h5>
           <p class="mb-1 small">{{ player.academy_name|default:"Academy" }}</p>
-          <p class="mb-0 small"><span class="badge bg-light text-dark">Player</span></p>
+          <p class="mb-0 small d-flex align-items-center flex-wrap gap-2">
+            <span class="badge bg-light text-dark">
+              Player
+              {% if player.position %}
+                – {{ player.position.name }}
+              {% else %}
+                – No Position
+              {% endif %}
+            </span>
+
+            {% if opened_from == "trainer" %}
+              <!-- زر تعديل المركز (يفتح المودال) -->
+              <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editPositionModal">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            {% endif %}
+          </p>
         </div>
+
       </div>
 
       <!-- Right: Main Stat -->
@@ -383,6 +406,39 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    {% if opened_from == "trainer" %}
+<!-- Modal: تعديل مركز اللاعب -->
+<div class="modal fade" id="editPositionModal" tabindex="-1" aria-labelledby="editPositionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'trainers:edit_player_position' player.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editPositionModalLabel">Edit Player Position</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="positionSelect" class="form-label">Select Position</label>
+            <select name="position_id" id="positionSelect" class="form-select" required>
+              {% for pos in positions %}
+              <option value="{{ pos.id }}" {% if player.position.id == pos.id %}selected{% endif %}>{{ pos.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 </body>
 
 </html>

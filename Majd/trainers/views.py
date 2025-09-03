@@ -8,12 +8,18 @@ from accounts.models import TrainerProfile
 from django.db.models import Avg, Max, Min, Q
 from academies.models import TrainingClass, Session, SessionSkill
 from player.models import PlayerProfile, PlayerSession, Achievement, Evaluation, PlayerClassAttendance
+from django.urls import reverse
 
 from django import forms
 from django.forms import formset_factory
 from django.contrib import messages
 
 from .forms import AttendanceForm, FocusSkillForm, EvaluationRowForm
+
+
+from django.views.decorators.http import require_POST
+from player.models import PlayerProfile
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 
 # Create your views here.
@@ -366,7 +372,7 @@ def students_view(request):
             "improvement_pct": improvement_percentage,
             "next_session": next_session_label,
             "grade": player_profile.current_grade or "",
-            "profile_url": "#",
+            "profile_url": reverse("player:player_dashboard_view", args=[player_profile.child.id]) + "?from=trainer",
             "evaluate_url": "#",
         })
 
@@ -1175,3 +1181,20 @@ def take_evaluations_view(request: HttpRequest, class_id: int):
 
     return render(request, "trainers/take_evaluations.html", context)
 
+
+
+def is_trainer(user):
+    return user.is_authenticated and user.groups.filter(name="trainer").exists()
+
+@login_required
+@user_passes_test(is_trainer)
+@require_POST
+def edit_player_position(request, player_id):
+    player = get_object_or_404(PlayerProfile, id=player_id)
+    new_position_id = request.POST.get("position_id")
+
+    if new_position_id:
+        player.position_id = new_position_id
+        player.save(update_fields=["position"])
+
+    return redirect(f"/player/dashboard/{player.child.id}/?from=trainer")
