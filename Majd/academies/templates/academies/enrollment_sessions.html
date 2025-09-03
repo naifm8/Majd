@@ -1,6 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
-
+{% load dict_extras %}
 {% block title %}Select Sessions{% endblock %}
 
 {% block fileStyle %}
@@ -107,147 +107,180 @@
       {% csrf_token %}
       <div class="row g-4">
         {% if sessions %}
-            {% for session in sessions %}
-                <div class="col-md-6">
-                <div class="card border rounded-3 shadow-sm p-4 h-100 session-card">
-                    
-                    <!-- Title + checkbox -->
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="fw-bold text-success">{{ session.title }}</h5>
-                    <div class="form-check">
-                        <input class="form-check-input session-checkbox" type="checkbox" 
-                            name="sessions" value="{{ session.id }}" id="session{{ session.id }}">
-                        <label class="form-check-label" for="session{{ session.id }}"></label>
-                    </div>
-                    </div>
+          {% for session in sessions %}
+            <div class="col-md-6">
+              <div class="card border rounded-3 shadow-sm p-4 h-100 session-card">
 
-                    <p class="text-muted small">{{ session.description }}</p>
+              <!-- Title + checkbox -->
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="fw-bold text-success">{{ session.title }}</h5>
+                <div class="form-check">
+                  {% if session.id in conflict_sessions %}
+                    <input class="form-check-input session-checkbox" type="checkbox"
+                          name="sessions" value="{{ session.id }}"
+                          id="session{{ session.id }}" disabled>
+                    <label class="form-check-label text-danger small" for="session{{ session.id }}">
+                      Conflict!
+                    </label>
+                  {% else %}
+                    <input class="form-check-input session-checkbox" type="checkbox"
+                          name="sessions" value="{{ session.id }}"
+                          id="session{{ session.id }}">
+                    <label class="form-check-label" for="session{{ session.id }}"></label>
+                  {% endif %}
+                </div>
+              </div>
 
-                    <!-- Trainer -->
-                    {% if session.trainer %}
-                    <div class="d-flex align-items-center border rounded p-2 mb-3 bg-light">
+                <p class="text-muted small">{{ session.description }}</p>
+
+                <!-- Trainer -->
+                {% if session.trainer %}
+                  <div class="d-flex align-items-center border rounded p-2 mb-3 bg-light">
                     {% if session.trainer.profile_image %}
-                        <img src="{{ session.trainer.profile_image.url }}" class="rounded-circle me-2" width="36" height="36" style="object-fit:cover;">
+                      <img src="{{ session.trainer.profile_image.url }}"
+                          class="rounded-circle me-2" width="36" height="36" style="object-fit:cover;">
                     {% else %}
-                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width:36px; height:36px;">
+                      <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width:36px; height:36px;">
                         {{ session.trainer.user.first_name|slice:":1"|upper }}
-                        </div>
+                      </div>
                     {% endif %}
                     <div>
-                        <span class="fw-semibold">{{ session.trainer.user.get_full_name }}</span><br>
-                        <small class="text-muted">{{ session.trainer.qualifications }}</small>
+                      <span class="fw-semibold">{{ session.trainer.user.get_full_name }}</span><br>
+                      <small class="text-muted">{{ session.trainer.qualifications }}</small>
                     </div>
-                    </div>
-                    {% endif %}
+                  </div>
+                {% endif %}
 
-                    <!-- Info -->
-                    <div class="row text-muted small mb-3">
-                    <div class="col-md-6 d-flex flex-column gap-2">
-                        <div><strong>Age Range:</strong> <span class="ms-1 text-dark">{{ session.age_min }} - {{ session.age_max }}</span></div>
-                        <div><strong>Gender:</strong> <span class="ms-1 text-dark">{{ session.get_gender_display }}</span></div>
-                        <div><strong>Level:</strong> 
-                        <span class="badge ms-1
-                            {% if session.level == 'beginner' %} bg-success
-                            {% elif session.level == 'advanced' %} bg-danger
-                            {% else %} bg-secondary
-                            {% endif %}">
-                            {{ session.get_level_display }}
-                        </span>
-                        </div>
+                <!-- Info -->
+                <div class="row text-muted small mb-3">
+                  <div class="col-md-6 d-flex flex-column gap-2">
+                    <div><strong>Age Range:</strong> <span class="ms-1 text-dark">{{ session.age_min }} - {{ session.age_max }}</span></div>
+                    <div><strong>Gender:</strong> <span class="ms-1 text-dark">{{ session.get_gender_display }}</span></div>
+                    <div><strong>Level:</strong> 
+                      <span class="badge ms-1
+                        {% if session.level == 'beginner' %} bg-success
+                        {% elif session.level == 'advanced' %} bg-danger
+                        {% else %} bg-secondary
+                        {% endif %}">
+                        {{ session.get_level_display }}
+                      </span>
                     </div>
-                    <div class="col-md-6 d-flex flex-column gap-2">
-                        <div><strong>Capacity:</strong> 
-                        <span class="ms-1 fw-semibold text-warning">{{ session.enrolled|default:"0" }}/{{ session.capacity }}</span>
-                        </div>
-                        <div><strong>Status:</strong> 
-                        {% if session.enrolled >= session.capacity %}
-                            <span class="badge bg-danger">Full</span>
-                        {% elif session.enrolled >= session.capacity|add:"-3" %}
-                            <span class="badge bg-warning text-dark">Filling Up</span>
-                        {% else %}
-                            <span class="badge bg-success">Available</span>
-                        {% endif %}
-                        </div>
-                        <div><strong>Duration:</strong> 
-                        <span class="ms-1 text-dark">
-                            {% if session.duration_weeks %}
-                            {{ session.duration_weeks }} week{% if session.duration_weeks > 1 %}s{% endif %}
-                            ({{ session.start_datetime|date:"M j, Y" }} – {{ session.end_datetime|date:"M j, Y" }})
-                            {% else %} N/A {% endif %}
-                        </span>
-                        </div>
+                  </div>
+                  <div class="col-md-6 d-flex flex-column gap-2">
+                    <div><strong>Capacity:</strong> 
+                      <span class="ms-1 fw-semibold text-warning">{{ session.enrolled|default:"0" }}/{{ session.capacity }}</span>
                     </div>
+                    <div><strong>Status:</strong> 
+                      {% if session.enrolled >= session.capacity %}
+                        <span class="badge bg-danger">Full</span>
+                      {% elif session.enrolled >= session.capacity|add:"-3" %}
+                        <span class="badge bg-warning text-dark">Filling Up</span>
+                      {% else %}
+                        <span class="badge bg-success">Available</span>
+                      {% endif %}
                     </div>
-
-                    <!-- Schedule -->
-                    <h6 class="mb-2"><i class="bi bi-clock me-1"></i> Training Schedule</h6>
-                    <div class="list-group list-group-flush">
-                    {% for slot in session.slots.all %}
-                        <div class="d-flex justify-content-between align-items-center px-3 py-2 mb-2 bg-light rounded small">
-                        <span class="fw-semibold">{{ slot.get_weekday_display }}</span>
-                        <span class="text-muted">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
-                        </div>
-                    {% empty %}
-                        <div class="px-3 py-2 text-muted small">No schedule assigned</div>
-                    {% endfor %}
+                    <div><strong>Duration:</strong> 
+                      <span class="ms-1 text-dark">
+                        {% if session.duration_weeks %}
+                          {{ session.duration_weeks }} week{% if session.duration_weeks > 1 %}s{% endif %} <br>
+                          ({{ session.start_datetime|date:"M j, Y" }} – {{ session.end_datetime|date:"M j, Y" }})
+                        {% else %} N/A {% endif %}
+                      </span>
                     </div>
-
-                    <!-- Skills Button -->
-                    <button type="button" class="btn btn-outline-success w-100 mt-3" 
-                            data-bs-toggle="modal" data-bs-target="#skillsModal{{ session.id }}">
-                    <i class="bi bi-bullseye me-1"></i> View Skills & Curriculum
-                    </button>
-
-                    <!-- Skills Modal -->
-                    <div class="modal fade" id="skillsModal{{ session.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title fw-bold text-success">Skills – {{ session.title }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            {% if session.required_skills.all %}
-                            {% regroup session.required_skills.all by skill.position.name as skills_by_position %}
-                            {% for group in skills_by_position %}
-                                <h6 class="fw-bold mb-3"><i class="bi bi-bullseye text-success me-1"></i> {{ group.grouper }}</h6>
-                                <div class="row g-3 mb-4">
-                                {% for ss in group.list %}
-                                    <div class="col-md-6">
-                                    <div class="border rounded p-3 h-100 bg-light">
-                                        <h6 class="fw-semibold">{{ ss.skill.name }}</h6>
-                                        <p class="text-muted small">{{ ss.skill.description|default:"No description" }}</p>
-                                    </div>
-                                    </div>
-                                {% endfor %}
-                                </div>
-                            {% endfor %}
-                            {% else %}
-                            <p class="text-muted">No skills defined for this session yet.</p>
-                            {% endif %}
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-
+                  </div>
                 </div>
+
+                <!-- Schedule -->
+                <h6 class="mb-2"><i class="bi bi-clock me-1"></i> Training Schedule</h6>
+                <div class="list-group list-group-flush">
+                  {% for slot in session.slots.all %}
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2 mb-2 bg-light rounded small">
+                      <span class="fw-semibold">{{ slot.get_weekday_display }}</span>
+                      <span class="text-muted">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</span>
+                    </div>
+                  {% empty %}
+                    <div class="px-3 py-2 text-muted small">No schedule assigned</div>
+                  {% endfor %}
                 </div>
-            {% endfor %}
-            <!-- Buttons -->
-            <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-outline-secondary">Back</a>
-                <button type="submit" class="btn btn-success">Confirm Sessions</button>
+
+                <!-- Conflicts Info -->
+                {% for child in children %}
+                  {% if conflicts|get_item:child.id|get_item:session.id %}
+                    <p class="text-danger small mt-2">
+                      ⚠ {{ child.first_name }} already has another class at this time.
+                    </p>
+                  {% endif %}
+                {% endfor %}
+                <!-- Skills & Curriculum -->
+                <button type="button" 
+                        class="btn btn-outline-success w-100 mt-3" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#skillsModal{{ session.id }}">
+                  <i class="bi bi-bullseye me-1"></i> View Skills & Curriculum
+                </button>
+              </div>
             </div>
+            <!-- Skills Modal -->
+            <div class="modal fade" id="skillsModal{{ session.id }}" tabindex="-1" aria-labelledby="skillsModalLabel{{ session.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                  
+                  <!-- Header -->
+                  <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-success" id="skillsModalLabel{{ session.id }}">
+                      Skills You'll Learn – {{ session.title }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+
+                  <!-- Body -->
+                  <div class="modal-body">
+                    {% if session.required_skills.all %}
+                      {% regroup session.required_skills.all by skill.position.name as skills_by_position %}
+
+                      {% for group in skills_by_position %}
+                        <h6 class="fw-bold mb-3">
+                          <i class="bi bi-bullseye text-success me-1"></i> {{ group.grouper }}
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                          {% for ss in group.list %}
+                            <div class="col-md-6">
+                              <div class="border rounded p-3 h-100 bg-light">
+                                <h6 class="fw-semibold mb-1">{{ ss.skill.name }}</h6>
+                                <p class="text-muted small mb-2">
+                                  {% if ss.skill.description %}{{ ss.skill.description }}{% else %}No description{% endif %}
+                                </p>
+                              </div>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      {% endfor %}
+
+                    {% else %}
+                      <p class="text-muted">No skills defined for this session yet.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+          <!-- Buttons -->
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-outline-secondary">Back</a>
+            <button type="submit" class="btn btn-success">Confirm Sessions</button>
+          </div>
+        {% else %}
+          <div class="alert alert-warning text-center w-100 mt-4">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            No sessions match your selected filters.
+          </div>
+        {% endif %}
       </div>
-      {% else %}
-        <div class="alert alert-warning text-center w-100 mt-4">
-        <i class="bi bi-exclamation-circle me-2"></i>
-        No sessions match your selected filters.
-        </div>
-    {% endif %}
-
-
     </form>
+
+
   </div>
 </div>
 
@@ -302,6 +335,11 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
       }
 
+      // 🔹 Prevent toggle if clicking on modal triggers or buttons
+      if (e.target.closest('[data-bs-toggle="modal"]') || e.target.tagName === "BUTTON") {
+        return;
+      }
+
       // Toggle checkbox programmatically
       checkbox.checked = !checkbox.checked;
 
@@ -319,5 +357,6 @@ document.addEventListener("DOMContentLoaded", function() {
     cb.closest(".session-card").classList.add("selected");
   });
 });
+
 </script>
 {% endblock %}

@@ -57,6 +57,9 @@ class Child(models.Model):
     blank=True,
     default='https://res.cloudinary.com/do1wotvij/image/upload/v1699999999/Majd/children/profile_images/default_profile.webp')
     objects = ChildQuerySet.as_manager()
+
+    
+
     
 
     def __str__(self):
@@ -73,13 +76,14 @@ class Enrollment(models.Model):
     
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="parent_enrollments")
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
-    sessions = models.ManyToManyField(Session, blank=True)
+    sessions = models.ManyToManyField(Session, blank=True, related_name="enrollments")
     enrolled_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     emergency_contact_name  = models.CharField(max_length=100, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, blank=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='not_paid')
     payment_date = models.DateTimeField(null=True, blank=True)
+
 
     class Meta:
         unique_together = ("child", "program")
@@ -113,6 +117,7 @@ class ParentSubscription(models.Model):
             from django.utils import timezone
             return timezone.now() > self.end_date
         return False
+
     
     @property
     def is_valid(self):

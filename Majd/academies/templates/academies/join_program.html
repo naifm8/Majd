@@ -94,7 +94,7 @@
     </div>
 
 
-    <!-- Children -->
+      <!-- Children -->
       <form method="post" id="enrollForm" action="{% url 'academies:join_program_view' academy.slug program.id %}">
       {% csrf_token %}
       <input type="hidden" name="program" value="{{ program.id }}">
@@ -137,9 +137,10 @@
 
                 </div>
               {% elif child.already_enrolled %}
-                <div class="status-bar not-eligible-bar rounded-2 text-center py-1 small fw-semibold mt-2">
-                  Already Enrolled
-                </div>
+              <div class="status-bar not-eligible-bar rounded-2 text-center py-1 small fw-semibold mt-2">
+                Already Enrolled in {{ child.enrolled_academy.name }}
+              </div>
+
               {% else %}
                 <div class="status-bar rounded-2 text-center py-1 small fw-semibold mt-2">Eligible</div>
               {% endif %}

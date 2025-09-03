@@ -106,7 +106,7 @@ class PlayerEnrollment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     notes = models.TextField(blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.child.first_name} - {self.subscription.title} ({self.status})"
 
     @property
