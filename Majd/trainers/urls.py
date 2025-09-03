@@ -13,6 +13,7 @@ urlpatterns = [
 
     path("dashboard/evaluations/", views.evaluations_view, name="evaluations_view"),
     path("dashboard/evaluations/class/<int:class_id>/", views.take_evaluations_view, name="take_evaluations"),
+    path("player/<int:player_id>/edit-position/", views.edit_player_position, name="edit_player_position"),
 
 
 ]
