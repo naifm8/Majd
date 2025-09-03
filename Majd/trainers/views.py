@@ -8,6 +8,7 @@ from accounts.models import TrainerProfile
 from django.db.models import Avg, Max, Min, Q
 from academies.models import TrainingClass, Session, SessionSkill
 from player.models import PlayerProfile, PlayerSession, Achievement, Evaluation, PlayerClassAttendance
+from django.urls import reverse
 
 from django import forms
 from django.forms import formset_factory
@@ -366,7 +367,7 @@ def students_view(request):
             "improvement_pct": improvement_percentage,
             "next_session": next_session_label,
             "grade": player_profile.current_grade or "",
-            "profile_url": "#",
+            "profile_url": reverse("player:player_dashboard_view", args=[player_profile.child.id]) + "?from=trainer",
             "evaluate_url": "#",
         })
 

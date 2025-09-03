@@ -60,6 +60,8 @@ def player_dashboard_view(request, child_id):
 
     # ✅ Achievements
     achievements = player.achievements.order_by("-date_awarded")[:5]
+    
+    opened_from = request.GET.get("from") or "parent"
 
     context = {
         "child": child,
@@ -73,5 +75,6 @@ def player_dashboard_view(request, child_id):
         "attendances": attendances,
         "achievements": achievements,
         "evaluations": evaluations,
+        "opened_from": opened_from,  # ✅ هذا هو السطر المطلوب
     }
     return render(request, "player/dashboard.html", context)
