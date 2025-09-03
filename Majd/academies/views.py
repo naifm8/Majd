@@ -551,6 +551,12 @@ def trainer_dashboard(request):
     total_players = PlayerProfile.objects.filter(academy=academy).count()
     total_sessions = Session.objects.filter(program__academy=academy).count()
 
+    # ✅ Pending recruitments
+    pending_recruitments = TrainerProfile.objects.filter(
+        academy=academy,
+        approval_status=TrainerProfile.ApprovalStatus.PENDING
+    ).count()
+
     trainer_data = []
     for trainer in trainers:
         player_count = PlayerProfile.objects.filter(academy=trainer.academy).distinct().count()
@@ -568,8 +574,10 @@ def trainer_dashboard(request):
         "total_trainers": total_trainers,
         "total_players": total_players,
         "total_sessions": total_sessions,
+        "pending_recruitments": pending_recruitments,  # ✅ add to context
     }
     return render(request, "academies/trainer_dashboard.html", context)
+
 
 
 @login_required

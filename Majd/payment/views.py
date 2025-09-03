@@ -37,36 +37,40 @@ class CheckoutView(FormView):
     template_name = "payment/checkout.html"
     form_class = CheckoutForm
 
+    def get_success_url(self):
+        plan_id = self.kwargs.get("plan_id")
+        return reverse_lazy("payment:checkout_success", kwargs={"plan_id": plan_id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        plan_id = self.kwargs.get("plan_id")
+        # ✅ this must match what you use in the template
+        context["plan"] = get_object_or_404(PlanType, id=plan_id)
+        return context
+
     def form_valid(self, form):
-        plan_id = self.kwargs.get('plan_id')
+        plan_id = self.kwargs.get("plan_id")
         plan_type = get_object_or_404(PlanType, id=plan_id)
 
         from django.utils import timezone
         from datetime import timedelta
-
-        # Create subscription
         subscription = Subscription.objects.create(
-            academy_name=form.cleaned_data['academy_name'],
+            academy_name=form.cleaned_data["academy_name"],
             plan_type=plan_type,
             price=plan_type.monthly_price,
-            duration_days=30,  # monthly by default
+            duration_days=30,
             start_date=timezone.now().date(),
             end_date=(timezone.now() + timedelta(days=30)).date(),
-            payment_method=form.cleaned_data['payment_method'],
-            contact_email=form.cleaned_data['contact_email'],
-            contact_phone=form.cleaned_data['contact_phone'],
-            billing_address=form.cleaned_data['address'],
+            payment_method=form.cleaned_data["payment_method"],
+            contact_email=form.cleaned_data["contact_email"],
+            contact_phone=form.cleaned_data["contact_phone"],
+            billing_address=form.cleaned_data["address"],
             status=Subscription.Status.SUCCESSFUL,
-            payment_date=timezone.now(),
-            transaction_id=f"DEMO_{plan_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}",
         )
+        subscription.save()
 
-        # Optional: send invoice
-        subscription.send_invoice()
+        return super().form_valid(form)
 
-        messages.success(self.request, "Subscription completed successfully 🎉 Please set up your academy.")
-        # ✅ Redirect directly to academy setup
-        return redirect("academies:setup")
 
 
 
