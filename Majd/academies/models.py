@@ -218,17 +218,4 @@ class PlanType(models.Model):
         return self.name
 
 
-# class SubscriptionPlan(models.Model):
-#     academy = models.ForeignKey(
-#         "academies.Academy",
-#         on_delete=models.CASCADE,
-#         related_name="plans"
-#     )
-#     name = models.CharField(max_length=100, default="Basic Plan")
-#     price = models.DecimalField(max_digits=8, decimal_places=2)
-#     duration_days = models.PositiveIntegerField(default=30)
-#     description = models.TextField(blank=True)
-#     is_active = models.BooleanField(default=True)
-
-#     def __str__(self):
-#         return f"{self.name} - {self.academy.name}"
+# SubscriptionPlan model moved to payment app to avoid conflicts
