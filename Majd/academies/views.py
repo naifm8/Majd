@@ -807,24 +807,25 @@ def join_program_view(request, academy_slug, program_id):
 
         # Check enrollments
         existing_enrollments = (
-            Enrollment.objects.filter(child=child)
+            Enrollment.objects.filter(child=child, is_active = True)
             .select_related("program__academy")
         )
 
-        # 🚫 Already in this program
+        # ✅ Already in this program (active)
         if existing_enrollments.filter(program=program).exists():
             child.already_enrolled = True
             child.enrolled_academy = academy
             child.enrolled_program = program
 
-        # 🚫 Enrolled in another academy
+        # 🚫 Enrolled in another academy (active)
         elif existing_enrollments.exclude(program__academy=academy).exists():
             child.already_enrolled = True
-            child.enrolled_academy = existing_enrollments.first().program.academy
+            active_enrollment = existing_enrollments.exclude(program__academy=academy).first()
+            child.enrolled_academy = active_enrollment.program.academy if active_enrollment else None
             child.enrolled_program = None
 
         else:
-            # ✅ Eligible (not in this program, same academy allowed)
+            # ✅ Eligible (not in this program, same academy allowed, or inactive enrollments ignored)
             child.already_enrolled = False
             child.enrolled_academy = None
             child.enrolled_program = None
@@ -837,7 +838,7 @@ def join_program_view(request, academy_slug, program_id):
 
         for child_id in selected_ids:
             child = get_object_or_404(Child, id=child_id, parent=parent_profile)
-            existing_enrollments = Enrollment.objects.filter(child=child).select_related("program__academy")
+            existing_enrollments = Enrollment.objects.filter(child=child, is_active = True).select_related("program__academy")
 
             # 🚫 Block if already in this program
             if existing_enrollments.filter(program=program).exists():
@@ -954,11 +955,9 @@ def enrollment_details_view(request, academy_slug, program_id):
         messages.error(request, "Only parents can join programs.")
         return redirect("academies:detail", slug=academy.slug)
 
-    # cast child IDs to int
     selected_child_ids = [int(cid) for cid in request.session.get("selected_children", [])]
     children = Child.objects.filter(id__in=selected_child_ids, parent=parent_profile)
 
-    # cast session IDs to int
     selected_session_ids = [int(sid) for sid in request.session.get("selected_sessions", [])]
     sessions = Session.objects.filter(id__in=selected_session_ids, program=program)
 
@@ -978,34 +977,68 @@ def enrollment_details_view(request, academy_slug, program_id):
             messages.error(request, "Emergency contact name and phone are required.")
             return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
 
-        # Check if parent is subscribed to this academy
+        # ✅ Subscription check
         is_subscribed = _is_parent_subscribed_to_academy(parent_profile, academy)
-        
         if not is_subscribed:
-            messages.warning(request, f"You need to subscribe to {academy.name} before enrolling your children.")
-            # Redirect to payments page with academy info
             from django.urls import reverse
             payments_url = reverse('parents:payments') + f'?academy={academy.slug}'
+            messages.warning(request, f"You need to subscribe to {academy.name} before enrolling your children.")
             return redirect(payments_url)
 
         for child in children:
+            # 🔎 Get existing sessions for this child
+            existing_sessions = Session.objects.filter(
+                enrollments__child=child,
+                enrollments__is_active=True
+            ).prefetch_related("slots")
+
+            for new_session in sessions.prefetch_related("slots"):
+                for existing in existing_sessions:
+                    # 1. Check if overall dates overlap
+                    if not (
+                        new_session.end_datetime.date() < existing.start_datetime.date()
+                        or new_session.start_datetime.date() > existing.end_datetime.date()
+                    ):
+                        # 2. Check slot conflicts (weekday + time overlap)
+                        for new_slot in new_session.slots.all():
+                            for exist_slot in existing.slots.all():
+                                if new_slot.weekday == exist_slot.weekday:
+                                    if not (
+                                        new_slot.end_time <= exist_slot.start_time
+                                        or new_slot.start_time >= exist_slot.end_time
+                                    ):
+                                        messages.error(
+                                            request,
+                                            f"{child.first_name} already has a session ({existing.title}) "
+                                            f"that overlaps with {new_session.title} on {new_slot.get_weekday_display()}.",
+                                            extra_tags='alert-danger'
+                                        )
+                                        return redirect("academies:enrollment_sessions",
+                                                        academy_slug=academy.slug,
+                                                        program_id=program.id)
+
+            # If no conflicts → create enrollment
             enrollment, created = Enrollment.objects.get_or_create(
                 child=child,
                 program=program,
                 defaults={
                     "emergency_contact_name": emergency_name,
                     "emergency_contact_phone": emergency_phone,
+                    "is_active": True,
                 },
             )
+            if not created:
+                enrollment.emergency_contact_name = emergency_name
+                enrollment.emergency_contact_phone = emergency_phone
+                enrollment.is_active = True
+                enrollment.save()
 
-            # Attach sessions
-            enrollment.sessions.set(sessions)
+            for session in sessions:
+                enrollment.sessions.add(session)
 
-            # Create PlayerSession
+            # Link to PlayerProfile
             if hasattr(child, "player_profile"):
                 player = child.player_profile
-
-                # Update academy if not already set or different
                 if player.academy != academy:
                     player.academy = academy
                     player.save()
@@ -1015,14 +1048,12 @@ def enrollment_details_view(request, academy_slug, program_id):
                         player=child.player_profile,
                         session=session,
                     )
-
+        
         request.session.pop("selected_children", None)
         request.session.pop("selected_sessions", None)
 
-
         messages.success(request, f"Enrollment completed for {len(children)} child(ren).", extra_tags='alert-success')
         return redirect("academies:detail", slug=academy.slug)
-
 
     return render(request, "academies/enrollment_details.html", {
         "academy": academy,

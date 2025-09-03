@@ -91,22 +91,18 @@
                         S
                     </div>
                     <div class="text-start">
-                        <strong>Sarah Demo</strong><br>
-                        <small class="text-muted">demo.manager@sport.com</small>
+                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong><br>
+                        <small class="text-muted">{{ request.user.email }}</small>
                     </div>
                 </button>
 
                 <ul class="dropdown-menu shadow" aria-labelledby="userMenuButton" style="min-width: 220px;">
                     <li>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:settings' %}">
                             <i class="bi bi-person me-2"></i> Profile Settings
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                            <i class="bi bi-bell me-2"></i> Notifications
-                        </a>
-                    </li>
+
                     <li>
                         <hr class="dropdown-divider">
                     </li>
@@ -143,6 +139,14 @@
                     </a>
                 </div>
             </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {{message.tags}} alert-dismissible fade show" role="alert">
+                        {{message}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
             <!-- Content -->
             <main>
@@ -203,14 +207,15 @@
                         S
                     </div>
                     <div class="text-start">
-                        <strong>Sarah Demo</strong><br>
-                        <small class="text-muted">demo.manager@sport.com</small>
+                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong><br>
+                        <small class="text-muted">{{ request.user.email }}</small>
                     </div>
+
                 </button>
 
                 <ul class="dropdown-menu shadow" aria-labelledby="userMenuButtonMobile" style="min-width: 220px;">
                     <li>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
+                        <a class="dropdown-item d-flex align-items-center" href="{% url 'parents:settings' %}">
                             <i class="bi bi-person me-2"></i> Profile Settings
                         </a>
                     </li>
