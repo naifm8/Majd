@@ -4,8 +4,8 @@
 {% block title %}Choose Your Academy Plan - MAJD{% endblock %}
 
 {% block content %}
-<section class="py-5 bg-light">
-  <div class="container text-center mb-5">
+<section class="hero-section text-center py-5 bg-light">
+  <div class="container">
     <!-- Progress -->
     <div class="progress-dashes mb-4">
       <div class="progress-dash completed"></div> <!-- Register -->
@@ -14,50 +14,53 @@
     </div>
 
     <!-- Hero -->
-    <h1 class="fw-bold mb-3" style="color:#138d68;">Grow Your Academy, Inspire More Players.</h1>
+    <h1 class="fw-bold mb-3" style="color:#155d4a;">Grow Your Academy, Inspire More Players.</h1>
     <p class="lead text-muted mx-auto" style="max-width:650px;">
       Join our platform to showcase your academy programs. We’ll help you reach parents, players,
       and communities by turning your offerings into beautiful, shareable academy cards.
     </p>
   </div>
+</section>
 
+<section class="pricing-section py-4 py-md-5">
   <div class="container">
     <form method="post">
       {% csrf_token %}
-      <div class="row justify-content-center g-4">
+      <div class="row g-4 justify-content-center">
 
         {% for plan in plans %}
-        <div class="col-md-4 d-flex">
-          <!-- Make card a flex column so button sticks to the bottom -->
-          <div class="card shadow-sm border-0 w-100 d-flex flex-column {% if plan.is_featured %}border-success{% endif %}" {% if plan.is_featured %}style="border-width:2px;"{% endif %}>
-            <div class="card-body text-center p-4 d-flex flex-column">
-              <div class="mb-3">
-                <i class="bi {{ plan.icon_class }} fs-1 {% if plan.is_featured %}text-success{% else %}text-primary{% endif %}"></i>
-              </div>
+        <div class="col-md-6 col-lg-4">
+          <div class="card-pricing h-100 d-flex flex-column {% if plan.is_featured %}featured{% endif %}">
+            
+            {% if plan.is_featured %}
+            <div class="most-popular">Most Popular</div>
+            {% endif %}
 
-              <h4 class="fw-bold">{{ plan.name }}</h4>
-              <p class="text-muted">{{ plan.description }}</p>
+            <div class="plan-icon bg-soft-success">
+              <i class="bi {{ plan.icon_class|default:'bi-star' }}"></i>
+            </div>
 
-              <h3 class="fw-bold mb-3" style="color:#138d68;">
-                SAR {{ plan.monthly_price }} <small class="fs-6 text-muted">/month</small>
-              </h3>
+            <h5 class="plan-title">{{ plan.name }}</h5>
+            <p class="plan-subtitle">{{ plan.description }}</p>
 
-              {% if plan.is_featured %}
-                <span class="badge bg-success mb-3 align-self-center">Most Popular</span>
-              {% endif %}
+            <div class="plan-price">
+              <span class="currency">SAR</span>
+              <span class="amount">{{ plan.monthly_price }}</span>
+              <span class="per">/month</span>
+            </div>
 
-              <!-- Features list; use “–” prefix and allow the list to grow -->
-              <ul class="list-unstyled text-start mb-4 flex-grow-1">
-                {% for feature in plan.features %}
-                  <li>– {{ feature }}</li>
-                {% empty %}
-                  <li class="text-muted">– No features listed</li>
-                {% endfor %}
-              </ul>
+            <ul class="plan-features flex-grow-1">
+              {% for feature in plan.features %}
+                <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
+              {% empty %}
+                <li class="muted"><i class="bi bi-dash-circle"></i> No features listed</li>
+              {% endfor %}
+            </ul>
 
-              <!-- Button pinned to bottom via mt-auto on a flex column -->
-              <button type="submit" name="plan_id" value="{{ plan.id }}"
-                      class="btn {% if plan.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100 mt-auto">
+            <!-- Button pinned at bottom -->
+            <div class="mt-auto">
+              <button type="submit" name="plan_id" value="{{ plan.id }}" 
+                      class="btn {% if plan.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100">
                 Get Started
               </button>
             </div>
@@ -69,4 +72,60 @@
     </form>
   </div>
 </section>
+
+<style>
+/* Hero */
+.hero-section h1 { color: #155d4a; font-weight: 600; }
+
+/* Pricing */
+.pricing-section { background: #fafafa; }
+
+/* Card */
+.card-pricing {
+  background: #fff;
+  border: 1px solid #d8efe4;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  position: relative;
+  transition: all .2s ease;
+}
+.card-pricing:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.08); }
+
+.card-pricing .plan-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  margin: 0 auto 10px;
+  font-size: 1.2rem;
+}
+.bg-soft-success { background: #e9fbf3; color: #198754; }
+
+.plan-title { text-align:center; font-weight: 600; color: #16a34a; margin-top: 8px; }
+.plan-subtitle { text-align:center; color:#6c757d; font-size:.9rem; }
+
+.plan-price { text-align:center; margin: 16px 0; }
+.plan-price .currency { margin-right: 6px; font-weight:700; color:#0f5132; }
+.plan-price .amount { font-size: 2rem; font-weight: 700; color:#0f5132; }
+.plan-price .per { color:#6c757d; margin-left: 6px; }
+
+/* Features */
+.plan-features { list-style:none; padding:0; margin:0 0 20px; text-align:left; }
+.plan-features li {
+  display:flex; gap:8px; align-items:start;
+  padding:4px 0; font-size:.9rem;
+}
+.plan-features li.muted { color: #98a2b3; }
+
+/* Featured Plan */
+.card-pricing.featured {
+  border: 2px solid #22c55e;
+  box-shadow: 0 10px 28px rgba(34,197,94,.25);
+}
+.card-pricing .most-popular {
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background:#0f5132; color:#fff; font-size:.75rem;
+  padding:4px 10px; border-radius:999px;
+}
+</style>
 {% endblock %}
