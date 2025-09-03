@@ -9,7 +9,8 @@ from .models import AcademyAdminProfile
 from django.db import transaction, IntegrityError
 from django.urls import reverse
 from academies.models import Academy
-
+from .forms import TrainerProfileForm, TrainerApplyForm
+from .models import TrainerProfile
 
 
 def ensure_role_groups():
@@ -183,3 +184,70 @@ def log_out(request: HttpRequest):
 
     return redirect(request.GET.get("next", "/"))
 
+
+from django.http import HttpRequest, HttpResponseForbidden
+
+
+
+def trainer_profile_view(request: HttpRequest):
+
+    trainer = getattr(request.user, "trainer_profile", None)
+    if not trainer:
+        return HttpResponseForbidden("Trainer access only.")
+
+
+    NOT_REGISTERED_VALUE = getattr(TrainerProfile.ApprovalStatus, "NOT_REGISTERED", "not_registered")
+
+    status = trainer.approval_status
+    if (getattr(TrainerProfile.ApprovalStatus, "NOT_REGISTERED", None) is None):
+        if (trainer.academy is None) and (status not in [
+            TrainerProfile.ApprovalStatus.PENDING,
+            TrainerProfile.ApprovalStatus.APPROVED,
+            TrainerProfile.ApprovalStatus.REJECTED,
+        ]):
+            status = NOT_REGISTERED_VALUE
+
+
+    if request.method == "POST":
+        action = request.POST.get("_action")
+
+
+        if action == "save_profile":
+            form = TrainerProfileForm(request.POST, request.FILES, instance=trainer)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Profile updated successfully.")
+                return redirect("accounts:trainer_profile_view")
+            else:
+                messages.error(request, "Please check the form fields.")
+
+
+        elif action == "apply_academy":
+            if status in [NOT_REGISTERED_VALUE, TrainerProfile.ApprovalStatus.REJECTED] or (trainer.academy is None):
+                apply_form = TrainerApplyForm(request.POST)
+                if apply_form.is_valid():
+                    academy = apply_form.cleaned_data["academy"]
+                    trainer.academy = academy
+                    trainer.approval_status = TrainerProfile.ApprovalStatus.PENDING
+                    trainer.save()
+                    messages.success(request, f"Application submitted to: {academy.name}. Awaiting approval.")
+                    return redirect("accounts:trainer_profile_view")
+                else:
+                    messages.error(request, "Please select a valid academy.")
+            else:
+                messages.warning(request, "You cannot apply at this stage.")
+                return redirect("accounts:trainer_profile_view")
+
+    form = TrainerProfileForm(instance=trainer)
+
+
+    apply_form = TrainerApplyForm()
+
+    context = {
+        "trainer": trainer,
+        "form": form,
+        "apply_form": apply_form,
+
+        "status": status,
+    }
+    return render(request, "accounts/profile.html", context)

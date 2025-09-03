@@ -103,3 +103,20 @@ class SubscriptionPlanForm(forms.ModelForm):
     def __init__(self, *args, academy=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.academy = academy
+
+
+
+# abdulaziz alkhateeb added this
+class AdminTrainerDecisionForm(forms.Form):
+    ACTION_CHOICES = (
+        ("approve", "Approve"),
+        ("reject", "Reject"),
+    )
+    trainer_id = forms.IntegerField(widget=forms.HiddenInput())
+    action = forms.ChoiceField(choices=ACTION_CHOICES, widget=forms.HiddenInput())
+
+    def clean_action(self):
+        action = self.cleaned_data["action"]
+        if action not in {"approve", "reject"}:
+            raise forms.ValidationError("Invalid action.")
+        return action

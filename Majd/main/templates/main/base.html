@@ -87,9 +87,12 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="#">
+                                    {% if request.user.groups.all.0.name == "trainer" %}
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'accounts:trainer_profile_view' %}">
                                         <i class="bi bi-person me-2"></i> Profile
                                     </a>
+                                    {% endif %}
+
                                 </li>
                                 <li>
                                     {% if request.user.groups.all.0.name == "parent" %}

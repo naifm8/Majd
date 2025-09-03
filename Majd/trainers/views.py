@@ -5,21 +5,23 @@ from datetime import date
 from django.utils import timezone
 from django.contrib.auth.models import User
 from accounts.models import TrainerProfile
-from django.db.models import Avg, Max, Min, Q
+from django.db.models import Avg, Max, Min, Q, Count
 from academies.models import TrainingClass, Session, SessionSkill
-from player.models import PlayerProfile, PlayerSession, Achievement, Evaluation, PlayerClassAttendance
+from player.models import PlayerProfile, PlayerSession, Achievement, Evaluation, PlayerClassAttendance, PlayerSkill
+from .decorators import trainer_approved_required
 from django.urls import reverse
 
 from django import forms
 from django.forms import formset_factory
 from django.contrib import messages
 
-from .forms import AttendanceForm, FocusSkillForm, EvaluationRowForm
+
 
 
 from django.views.decorators.http import require_POST
-from player.models import PlayerProfile
+
 from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import AttendanceForm, FocusSkillForm, GeneralEvaluationRowForm, SkillEvaluationRowForm
 
 
 # Create your views here.
@@ -28,6 +30,15 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 
 # utilty
+def compute_overall_score(technique_0_5, tactical_0_5, fitness_0_5, mental_0_5):
+    score_5 = (
+        (technique_0_5 or 0) * 0.40 +
+        (tactical_0_5 or 0)  * 0.30 +
+        (fitness_0_5 or 0)   * 0.20 +
+        (mental_0_5 or 0)    * 0.10
+    )
+    return int(round(score_5 * 20))
+
 def compute_weighted_score(tech, tac, fit, mental, scale=5):
 
     t = int(tech); q = int(tac); f = int(fit); m = int(mental)
@@ -123,7 +134,7 @@ def get_next_training_class_for_player(player_profile, trainer, today_date):
 
 
 # view
-
+@trainer_approved_required
 def overview_view(request:HttpRequest):
     user = request.user
     if not user.is_authenticated:
@@ -233,7 +244,7 @@ def overview_view(request:HttpRequest):
     }
     return render(request, "trainers/overview.html", context)
 
-
+@trainer_approved_required
 def students_view(request):
 
     user = request.user
@@ -392,7 +403,7 @@ def students_view(request):
     }
     return render(request, "trainers/students.html", context)
 
-
+@trainer_approved_required
 def training_sessions_view(request: HttpRequest):
 
     user = request.user
@@ -573,7 +584,7 @@ def training_sessions_view(request: HttpRequest):
     }
     return render(request, "trainers/training_sessions.html", context)
 
-
+@trainer_approved_required
 def attendance_view(request: HttpRequest):
     user = request.user
     if not user.is_authenticated:
@@ -760,9 +771,8 @@ def attendance_view(request: HttpRequest):
 
     return render(request, "trainers/attendance_dashboard.html", context)
 
-
+@trainer_approved_required
 def take_attendance_view(request, class_id: int):
-    # تأكيد صلاحية المدرّب
     user = request.user
     if not user.is_authenticated:
         return redirect("accounts:login_view")
@@ -774,18 +784,15 @@ def take_attendance_view(request, class_id: int):
         TrainingClass.objects.select_related("session"),
         pk=class_id
     )
-    # حظر الوصول على كلاس لمدرب آخر
     if training_class.session.trainer_id != trainer.id:
         return redirect("trainers:attendance_view")
 
-    # لاعبو هذا الكلاس (المسجّلون في Session)
     enrolled = (
         PlayerSession.objects
         .filter(session=training_class.session)
         .select_related("player__child")
     )
 
-    # سجلات الحضور الحالية
     existing_att = (
         PlayerClassAttendance.objects
         .filter(training_class=training_class)
@@ -793,7 +800,6 @@ def take_attendance_view(request, class_id: int):
     )
     existing_by_player = {a.player_id: a for a in existing_att}
 
-    # نبني initial لكل لاعب (اتحاد المسجلين + الموجودين في الحضور)
     player_items = {}
     for ps in enrolled:
         child = getattr(ps.player, "child", None)
@@ -803,7 +809,6 @@ def take_attendance_view(request, class_id: int):
             "player_name": name,
         }
     for a in existing_att:
-        # لو فيه لاعب بس في الحضور (نادر)، برضه نعرضه
         if a.player_id not in player_items:
             child = getattr(a.player, "child", None)
             name = f"{child.first_name} {child.last_name}".strip() if child else "—"
@@ -812,7 +817,6 @@ def take_attendance_view(request, class_id: int):
                 "player_name": name,
             }
 
-    # ترتيب أبجدي بالاسم
     initial_list = []
     for pid, item in sorted(player_items.items(), key=lambda kv: kv[1]["player_name"].lower()):
         existing = existing_by_player.get(pid)
@@ -845,16 +849,13 @@ def take_attendance_view(request, class_id: int):
                         obj.save()
                 saved += 1
             messages.success(request, "Attendance saved.")
-            # يرجّعك للوحة الحضور
             return redirect("trainers:attendance_view")
     else:
         formset = AttendanceFormSet(initial=initial_list)
 
-    # ملخّص صغير للكلاس
     today_date, now_dt = get_today_and_now()
     status_label, status_css = get_status_label_and_css(now_dt, training_class)
 
-    # أرقام سريعة
     present_like = [PlayerClassAttendance.Status.PRESENT, PlayerClassAttendance.Status.LATE]
     present_count = existing_att.filter(status__in=present_like).count()
     absent_count = existing_att.filter(status__in=[PlayerClassAttendance.Status.ABSENT,
@@ -878,7 +879,7 @@ def take_attendance_view(request, class_id: int):
     }
     return render(request, "trainers/take_attendance.html", context)
 
-
+@trainer_approved_required
 def evaluations_view(request: HttpRequest):
     user = request.user
     if not user.is_authenticated:
@@ -1019,150 +1020,186 @@ def evaluations_view(request: HttpRequest):
     }
     return render(request, "trainers/evaluations_dashboard.html", context)
 
-
+@trainer_approved_required
 def take_evaluations_view(request: HttpRequest, class_id: int):
-    user = request.user
-    if not user.is_authenticated:
+    u = request.user
+    if not u.is_authenticated:
         return redirect("accounts:login_view")
-
-    trainer = getattr(user, "trainer_profile", None)
+    trainer = getattr(u, "trainer_profile", None)
     if not trainer:
         return redirect("accounts:login_view")
 
     training_class = get_object_or_404(
-        TrainingClass.objects.select_related("session"), pk=class_id
+        TrainingClass.objects.select_related("session"),
+        pk=class_id
     )
     if training_class.session.trainer_id != trainer.id:
         return redirect("trainers:evaluations_view")
 
-    # الطلاب المسجلين في الجلسة
-    enrolled = PlayerSession.objects.filter(
-        session=training_class.session
-    ).select_related("player__child")
-
-    # المهارات المناسبة لكل طالب حسب مركزه
-    player_skill_map = {}
-    for ps in enrolled:
-        player = ps.player
-        position = player.position
-
-        if not position:
-            player_skill_map[player.id] = []
-            continue
-
-        session_skills = SessionSkill.objects.filter(
-            session=training_class.session,
-            skill__position=position
-        ).select_related("skill")
-        player_skill_map[player.id] = list(session_skills)
-
-    # التقييمات السابقة للكلاس
-    existing_qs = Evaluation.objects.filter(training_class=training_class).select_related("player__child")
-    existing_by_player = {e.player_id: e for e in existing_qs}
-
-    # جميع أسماء المهارات (لـ Focus Skill)
-    session_skill_names = list(
-        SessionSkill.objects.filter(session=training_class.session)
-        .select_related("skill", "skill__position")
-        .values_list("skill__name", flat=True)
-        .distinct()
+    enrolled = (
+        PlayerSession.objects
+        .filter(session=training_class.session)
+        .select_related("player__child", "player__position")
     )
-
-    # إعداد الفورم والديناميكية
-    from django.forms import ChoiceField, Select
-    SCALE_CHOICES = [(i, str(i)) for i in range(0, 6)]
-
-    # 🔁 نحسب عدد المهارات الأعلى بين الطلاب
-    max_skills_count = max(len(skills) for skills in player_skill_map.values())
-
-    # 🔧 نضيف الحقول إلى EvaluationRowForm (مرة واحدة فقط)
-    for i in range(max_skills_count):
-        field_name = f"skill_{i}"
-        EvaluationRowForm.base_fields[field_name] = ChoiceField(
-            choices=SCALE_CHOICES,
-            required=False,
-            widget=Select(attrs={"class": "form-select form-select-sm"})
+    player_ids = [ps.player_id for ps in enrolled]
+    name_by_player = {
+        ps.player_id: (
+            f"{ps.player.child.first_name} {ps.player.child.last_name}".strip()
+            if ps.player.child else "—"
         )
+        for ps in enrolled
+    }
 
-
-    FocusForm = FocusSkillForm
-    EvaluationFormSet = formset_factory(EvaluationRowForm, extra=0)
-
-    # إعداد البيانات الابتدائية
-    initial_rows = []
-    name_by_player = {}
+    GeneralFormSet = formset_factory(GeneralEvaluationRowForm, extra=0)
+    existing_general = {
+        e.player_id: e
+        for e in Evaluation.objects.filter(training_class=training_class, skill__isnull=True)
+    }
+    general_initial = []
     for ps in enrolled:
-        child = ps.player.child
-        name = f"{child.first_name} {child.last_name}".strip() if child else "—"
-        name_by_player[ps.player_id] = name
-
-    for e in existing_qs:
-        if e.player_id not in name_by_player:
-            child = e.player.child
-            name_by_player[e.player_id] = f"{child.first_name} {child.last_name}".strip() if child else "—"
-
-    for pid, pname in sorted(name_by_player.items(), key=lambda kv: kv[1].lower()):
-        skills = player_skill_map.get(pid, [])
-        skill_fields = {f"skill_{i}": "" for i in range(len(skills))}
-        initial_rows.append({
-            "player_id": pid,
-            "notes": (existing_by_player.get(pid).feedback or existing_by_player.get(pid).notes)
-            if existing_by_player.get(pid) else "",
-            **skill_fields
+        ev = existing_general.get(ps.player_id)
+        general_initial.append({
+            "player_id": ps.player_id,
+            "technique": None, "tactical": None, "fitness": None, "mental": None,
+            "notes": (ev.feedback if ev else "")
         })
 
-    # POST: معالجة التقييمات
+
+    session_skills_qs = (
+        SessionSkill.objects.filter(session=training_class.session)
+        .select_related("skill", "skill__position")
+    )
+    player_skills = {}
+    for ps in enrolled:
+        pos = ps.player.position
+        if not pos:
+            player_skills[ps.player_id] = []
+            continue
+        skills = list(
+            session_skills_qs.filter(skill__position=pos)
+            .values_list("skill__name", flat=True)
+            .distinct()
+        )
+        player_skills[ps.player_id] = skills
+
+    max_skills_count = max((len(v) for v in player_skills.values()), default=0)
+
+    def build_skill_row_form_class(max_cols: int):
+        CHOICES_0_5 = [(i, str(i)) for i in range(0, 6)]
+        attrs = {
+            "player_id": forms.IntegerField(widget=forms.HiddenInput()),
+            "notes": forms.CharField(
+                required=False,
+                widget=forms.TextInput(attrs={
+                    "class": "form-control form-control-sm",
+                    "placeholder": "Notes (optional)"
+                })
+            ),
+        }
+        for i in range(max_cols):
+            attrs[f"skill_{i}"] = forms.ChoiceField(
+                choices=CHOICES_0_5,
+                required=False,
+                widget=forms.Select(attrs={"class": "form-select form-select-sm"})
+            )
+        return type("SkillRowForm", (forms.Form,), attrs)
+
+    SkillRowForm = build_skill_row_form_class(max_skills_count)
+    SkillFormSet = formset_factory(SkillRowForm, extra=0)
+
+    existing_skill_evals = Evaluation.objects.filter(
+        training_class=training_class, skill__isnull=False
+    ).select_related("skill")
+
+    existing_skill_map = {
+        (ev.player_id, ev.skill.name): int(round((ev.skill_score or ev.score or 0) / 20))
+        for ev in existing_skill_evals if ev.skill
+    }
+
+    skill_initial = []
+    for pid in player_ids:
+        row = {"player_id": pid, "notes": ""}
+        for idx, sname in enumerate(player_skills.get(pid, [])):
+            row[f"skill_{idx}"] = existing_skill_map.get((pid, sname), "")
+        skill_initial.append(row)
+
+
+    player_skill_fields = {
+    pid: [{"label": sname, "field": f"skill_{idx}"} for idx, sname in enumerate(player_skills.get(pid, []))]
+    for pid in player_ids}
+
+    active_tab = (request.GET.get("tab") or request.POST.get("tab") or "general").lower()
+    if active_tab not in {"general", "skills"}:
+        active_tab = "general"
+
+    # --- POST ---
     if request.method == "POST":
-        focus_form = FocusForm(request.POST)
-        focus_form.fields["skill_name"].choices = [("", "— No focus skill —")] + [(n, n) for n in session_skill_names]
-        formset = EvaluationFormSet(request.POST)
-
-        if focus_form.is_valid() and formset.is_valid():
-            saved = 0
-            for f in formset:
-                cd = f.cleaned_data
-                pid = cd["player_id"]
-                notes = cd.get("notes") or ""
-                skills = player_skill_map.get(pid, [])
-
-                for i, session_skill in enumerate(skills):
-                    score_field = f"skill_{i}"
-                    raw_score = cd.get(score_field)
-                    if raw_score in ("", None):
-                        continue
-
-                    # نحاول نربط بـ PlayerSkill
-                    pskill = PlayerSkill.objects.filter(player_id=pid, name=session_skill.skill.name).first()
-                    if not pskill:
-                        continue
-
+        action = request.POST.get("action", "")
+        if action == "save_general":
+            general_formset = GeneralFormSet(request.POST, prefix="gen")
+            if general_formset.is_valid():
+                for f in general_formset:
+                    cd = f.cleaned_data
+                    pid = cd["player_id"]
+                    score_100 = compute_overall_score(
+                        int(cd.get("technique") or 0),
+                        int(cd.get("tactical") or 0),
+                        int(cd.get("fitness") or 0),
+                        int(cd.get("mental") or 0),
+                    )
+                    notes = cd.get("notes") or ""
                     Evaluation.objects.update_or_create(
                         player_id=pid,
                         training_class=training_class,
-                        skill=pskill,
-                        defaults={
-                            "coach": trainer,
-                            "score": int(raw_score),
-                            "skill_score": int(raw_score),
-                            "feedback": notes,
-                        }
+                        skill__isnull=True,
+                        defaults={"coach": trainer, "score": score_100, "feedback": notes}
                     )
+                messages.success(request, "✅ General evaluations saved.")
+                return redirect(f"{request.path}?tab=general")
 
-                saved += 1
+        elif action == "save_skills":
+            skill_formset = SkillFormSet(request.POST, prefix="sf")
+            if skill_formset.is_valid():
+                for f in skill_formset:
+                    cd = f.cleaned_data
+                    pid = cd["player_id"]
+                    notes = cd.get("notes") or ""
+                    for i, sname in enumerate(player_skills.get(pid, [])):
+                        raw = cd.get(f"skill_{i}")
+                        if raw not in (None, ""):
+                            val_100 = int(raw) * 20
+                            pskill, _ = PlayerSkill.objects.get_or_create(
+                                player_id=pid,
+                                name=sname,
+                                defaults={"target_level": 100, "current_level": 0}
+                            )
+                            Evaluation.objects.update_or_create(
+                                player_id=pid,
+                                training_class=training_class,
+                                skill=pskill,
+                                defaults={
+                                    "coach": trainer,
+                                    "score": val_100,
+                                    "skill_score": val_100,
+                                    "feedback": notes,
+                                }
+                            )
+                messages.success(request, "✅ Skill evaluations saved.")
+                return redirect(f"{request.path}?tab=skills")
 
-            messages.success(request, f"✅ Evaluations saved for {saved} students.")
-            return redirect("trainers:evaluations_view")
     else:
-        focus_form = FocusForm()
-        focus_form.fields["skill_name"].choices = [("", "— No focus skill —")] + [(n, n) for n in session_skill_names]
-        formset = EvaluationFormSet(initial=initial_rows)
+        general_formset = GeneralFormSet(prefix="gen", initial=general_initial)
+        skill_formset = SkillFormSet(prefix="sf", initial=skill_initial)
 
+    # --- إحصائيات ---
     today_date, now_dt = get_today_and_now()
     status_label, status_css = get_status_label_and_css(now_dt, training_class)
-    enrolled_count = enrolled.values("player").distinct().count()
     stats = class_eval_stats(training_class)
+    has_skills = any(len(v) > 0 for v in player_skills.values())
 
     context = {
+        "active_tab": active_tab if has_skills or active_tab == "general" else "general",
+        "has_skills": has_skills,
         "class_info": {
             "id": training_class.id,
             "title": training_class.session.title,
@@ -1170,17 +1207,16 @@ def take_evaluations_view(request: HttpRequest, class_id: int):
             "time_label": format_time_range(training_class),
             "status_label": status_label,
             "status_css": status_css,
-            "enrolled": enrolled_count,
+            "enrolled": len(player_ids),
             "coverage_pct": stats["coverage_pct"],
         },
-        "focus_form": focus_form,
-        "formset": formset,
-        "row_names": [(row["player_id"], name_by_player[row["player_id"]]) for row in initial_rows],
-        "player_skills": {pid: [s.skill.name for s in skills] for pid, skills in player_skill_map.items()},
+        "general_formset": general_formset,
+        "skill_formset": skill_formset,
+        "name_by_player": name_by_player,
+        "player_skills": player_skills,
+        "player_skill_fields": player_skill_fields
     }
-
     return render(request, "trainers/take_evaluations.html", context)
-
 
 
 def is_trainer(user):
