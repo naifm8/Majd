@@ -32,47 +32,50 @@
     </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center">
-      <div>
-        <h6 class="text-muted mb-1">Children</h6>
-        <h4 class="fw-bold mb-0">{{children_count}}</h4>
+    <div class="row g-3 mb-4 align-items-stretch">
+    <div class="col-md-3">
+      <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center h-100">
+        <div>
+          <h6 class="text-muted mb-1">Children</h6>
+          <h4 class="fw-bold mb-0">{{children_count}}</h4>
+        </div>
+        <i class="bi bi-people fs-3 text-success"></i>
       </div>
-      <i class="bi bi-people fs-3 text-success"></i>
+    </div>
+
+    <div class="col-md-3">
+      <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center h-100">
+        <div>
+          <h6 class="text-muted mb-1">This Week</h6>
+          <h4 class="fw-bold mb-0">{{ sessions_this_week }}</h4>
+          <small class="text-muted">Sessions</small>
+        </div>
+        <i class="bi bi-calendar-event fs-3 text-success"></i>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center h-100">
+        <div>
+          <h6 class="text-muted mb-1">Avg Attendance</h6>
+          <h4 class="fw-bold mb-0">{{ avg_attendance }}%</h4>
+        </div>
+        <i class="bi bi-graph-up fs-3 text-success"></i>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center h-100">
+        <div>
+          <h6 class="text-muted mb-1">This Month</h6>
+          <h4 class="fw-bold mb-0">${{ total_payments }}</h4>
+          <small class="text-muted">Payments</small>
+        </div>
+        <i class="bi bi-currency-dollar fs-3 text-success"></i>
+      </div>
     </div>
   </div>
 
-  <div class="col-md-3">
-    <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center">
-      <div>
-        <h6 class="text-muted mb-1">This Week</h6>
-        <h4 class="fw-bold mb-0">{{ sessions_this_week }}</h4>
-        <small class="text-muted">Sessions</small>
-      </div>
-      <i class="bi bi-calendar-event fs-3 text-success"></i>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center">
-      <div>
-        <h6 class="text-muted mb-1">Avg Attendance</h6>
-        <h4 class="fw-bold mb-0">{{ avg_attendance }}%</h4>
-      </div>
-      <i class="bi bi-graph-up fs-3 text-success"></i>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="stat-card card p-3 shadow-sm d-flex flex-row justify-content-between align-items-center">
-      <div>
-        <h6 class="text-muted mb-1">This Month</h6>
-        <h4 class="fw-bold mb-0">${{ total_payments }}</h4>
-        <small class="text-muted">Payments</small>
-      </div>
-      <i class="bi bi-currency-dollar fs-3 text-success"></i>
-    </div>
-  </div>
 
 
 
@@ -83,67 +86,63 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0">Your Children</h5>
-                        <a href="#" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Add Child</a>
+                        <a href="{% url 'parents:children' %}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Add Child</a>
                     </div>
-                    <!-- later we will put for loop and dynamic data instaed of child1, child2, ... -->
-                    <!-- Child 1 -->
 
-                        {% if children %}
-                            {% for child in children %}
-                            <div class="card p-3 mb-3 border rounded">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">{{ child.first_name|slice:":1"|upper }}</div>
-                                    <div>
-                                        <strong>{{ child.first_name }} {{ child.last_name }}</strong><br>
-                                        <small class="text-muted">{% if child.age %} Age {{ child.age }} {% endif %} {% if child.gender == "M" %} • Male {% elif child.gender == "F" %} • Female {% endif %}  • Soccer • Elite Soccer Academy</small>
-                                    </div>
-                                    <span class="badge bg-success ms-auto">A+</span>
-                                </div>
-                                <div class="mb-2">
-                                    <small>Attendance</small>
-                                    <div class="progress mb-2" style="height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: {{ child.player_profile.attendance_rate|default:0 }}%;"></div>
-                                    </div>
-                                    <small>Progress</small>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 88%;"></div>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                <!-- Next Session Info -->
-                                <div class="mb-2">
-                                  <small class="text-muted">Next Session:</small>
-                                  {% with next_session=child.parent_enrollments.first.sessions.all.0 %}
-                                    {% if next_session %}
-                                      <strong class="text-dark">
-                                        {{ next_session.start_datetime|date:"M d, H:i A" }}
-                                      </strong>
-                                    {% else %}
-                                      <strong class="text-muted">No upcoming session</strong>
-                                    {% endif %}
-                                  {% endwith %}
-                                </div>
-
-
-                                <!-- Action Buttons -->
-                                <div class="d-flex">
-                                    <button class="btn btn-outline-success flex-fill me-2">
-                                    <i class="bi bi-eye me-1"></i> View Details
-                                    </button>
-                                    <button class="btn btn-outline-success flex-fill">
-                                    <i class="bi bi-calendar-event me-1"></i> Schedule
-                                    </button>
-                                </div>
-                                </div>
+                {% if children %}
+                    {% for child in children %}
+                    <div class="card p-3 mb-3 border rounded">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="rounded-circle bg-success text-white fw-bold d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">{{ child.first_name|slice:":1"|upper }}</div>
+                            <div>
+                                <strong>{{ child.first_name }} {{ child.last_name }}</strong><br>
+                                <small class="text-muted">{% if child.age %} Age {{ child.age }} {% endif %} {% if child.gender == "M" %} • Male {% elif child.gender == "F" %} • Female {% endif %}  • Soccer • Elite Soccer Academy</small>
                             </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted">No children registered yet.</p>
-                        {% endif %}
+                            <span class="badge bg-success ms-auto">
+                              {{ child.player_profile.current_grade|default:"-" }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <small>Attendance</small>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ child.player_profile.attendance_rate|default:0 }}%;"></div>
+                            </div>
+                            <small>Progress</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 88%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                        <!-- Next Session Info -->
+                        <div class="mb-2">
+                          <small class="text-muted">Next Session:</small>
+                          {% with next_session=child.parent_enrollments.first.sessions.all.0 %}
+                            {% if next_session %}
+                              <strong class="text-dark">
+                                {{ next_session.start_datetime|date:"M d, H:i A" }}
+                              </strong>
+                            {% else %}
+                              <strong class="text-muted">No upcoming session</strong>
+                            {% endif %}
+                          {% endwith %}
+                        </div>
 
 
-
-      
+                        <!-- Action Buttons -->
+                        <div class="d-flex">
+                            <button class="btn btn-outline-success flex-fill me-2">
+                            <i class="bi bi-eye me-1"></i> View Details
+                            </button>
+                            <button class="btn btn-outline-success flex-fill">
+                            <i class="bi bi-calendar-event me-1"></i> Schedule
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No children registered yet.</p>
+                {% endif %}      
                 </div>
             </div>
         </div>
@@ -174,23 +173,21 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">Quick Actions</h6>
-                    <button class="btn btn-outline-success w-100 mb-2"><i class="bi bi-people me-2"></i> Manage Children</button>
-                    <button class="btn btn-outline-success w-100 mb-2"><i class="bi bi-calendar-check me-2"></i> Book Trial Session</button>
-                    <button class="btn btn-outline-success w-100 mb-2"><i class="bi bi-credit-card me-2"></i> Make Payment</button>
-                    <button class="btn btn-outline-success w-100"><i class="bi bi-star me-2"></i> View Achievements</button>
+                    <a href="{% url 'parents:children' %}" class="btn btn-outline-success w-100 mb-2"><i class="bi bi-people me-2"></i> Manage Children</a>
+                    <a href="{% url 'parents:payments' %}" class="btn btn-outline-success w-100 mb-2"><i class="bi bi-credit-card me-2"></i> Make Payment</a>
                 </div>
             </div>
 
             <!-- Payment Due -->
-<div class="card shadow-sm payment-due-card">
-  <div class="card-body">
-    <h6 class="fw-bold text-warning mb-2">
-      <i class="bi bi-exclamation-circle me-2"></i> Payment Due
-    </h6>
-    <p class="mb-3 text-muted">Equipment fee for Alex Johnson is due in 3 days.</p>
-    <button class="btn btn-success text-white px-4">Pay Now</button>
-  </div>
-</div>
+            <div class="card shadow-sm payment-due-card">
+              <div class="card-body">
+                <h6 class="fw-bold text-warning mb-2">
+                  <i class="bi bi-exclamation-circle me-2"></i> Payment Due
+                </h6>
+                <p class="mb-3 text-muted">Equipment fee for Alex Johnson is due in 3 days.</p>
+                <button class="btn btn-success text-white px-4">Pay Now</button>
+              </div>
+            </div>
 
         </div>
     </div>
