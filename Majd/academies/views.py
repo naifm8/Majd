@@ -277,7 +277,7 @@ def delete_subscription_plan(request, plan_id):
     subscription_plan = get_object_or_404(SubscriptionPlan, id=plan_id, academy=academy)
     
     if request.method == 'POST':
-        plan_name = subscription_plan.plan_type.name
+        plan_name = subscription_plan.plan_type.name if subscription_plan.plan_type else subscription_plan.title
         subscription_plan.delete()
         messages.success(request, f'Subscription plan "{plan_name}" has been deleted successfully!')
         return redirect('academies:subscription_dashboard')
