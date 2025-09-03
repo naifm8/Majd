@@ -864,12 +864,12 @@ def enrollment_details_view(request, academy_slug, program_id):
         # Check if parent is subscribed to this academy
         is_subscribed = _is_parent_subscribed_to_academy(parent_profile, academy)
         
-        # Debug information (remove this in production)
-        messages.info(request, f"Debug: Parent {parent_profile.user.username} subscription status for {academy.name}: {is_subscribed}")
-        
         if not is_subscribed:
-            messages.warning(request, "You need to subscribe to this academy before enrolling your children.")
-            return redirect("parents:payments")
+            messages.warning(request, f"You need to subscribe to {academy.name} before enrolling your children.")
+            # Redirect to payments page with academy info
+            from django.urls import reverse
+            payments_url = reverse('parents:payments') + f'?academy={academy.slug}'
+            return redirect(payments_url)
 
         for child in children:
             enrollment, created = Enrollment.objects.get_or_create(
@@ -903,7 +903,7 @@ def enrollment_details_view(request, academy_slug, program_id):
         request.session.pop("selected_sessions", None)
 
         messages.success(request, f"Enrollment completed for {len(children)} child(ren).")
-        return redirect("academies:detail", slug=academy.slug)
+        return redirect("parents:dashboard")
 
     return render(request, "academies/enrollment_details.html", {
         "academy": academy,

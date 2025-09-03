@@ -65,6 +65,12 @@ class Child(models.Model):
     
 
 class Enrollment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('not_paid', 'Not Paid'),
+        ('paid', 'Paid'),
+        ('pending', 'Pending'),
+    ]
+    
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="parent_enrollments")
     program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name="enrollments")
     sessions = models.ManyToManyField(Session, blank=True)
@@ -72,6 +78,8 @@ class Enrollment(models.Model):
     is_active = models.BooleanField(default=True)
     emergency_contact_name  = models.CharField(max_length=100, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='not_paid')
+    payment_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ("child", "program")
