@@ -54,6 +54,17 @@
     </div>
 </section>
 
+<!-- Success Message for Subscribed Users -->
+{% if is_subscribed %}
+<section class="container py-3">
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>
+    <strong>Great!</strong> You are subscribed to {{ academy.name }}. You can now enroll your children in any of the programs below.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+</section>
+{% endif %}
+
 <!-- 🌍 Mission Section -->
 <section class="py-5 bg-success text-white text-center">
   <div class="container">

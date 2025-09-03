@@ -92,6 +92,16 @@ def AcademyDetailView(request, slug):
         is_active=True
     ).values("child").distinct().count()
 
+    # Check if user is subscribed to this academy
+    is_subscribed = False
+    if request.user.is_authenticated and hasattr(request.user, 'parent_profile'):
+        from parents.models import ParentSubscription
+        is_subscribed = ParentSubscription.objects.filter(
+            parent=request.user.parent_profile,
+            academy=academy,
+            is_active=True
+        ).exists()
+    
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
@@ -99,6 +109,7 @@ def AcademyDetailView(request, slug):
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
+        "is_subscribed": is_subscribed,
     }
     return render(request, "academies/academy_detail.html", context)
  
