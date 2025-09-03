@@ -23,7 +23,6 @@ class SubscriptionPlan(models.Model):
     BILLING_TYPE_CHOICES = [
         ('3m', '3-Month'),
         ('6m', '6-Month'),
-        ('12m', '12-Month'),
         ('monthly', 'Monthly'),
         ('yearly', 'Yearly'),
     ]
