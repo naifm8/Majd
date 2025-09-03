@@ -1,6 +1,7 @@
 # academies/forms.py
 from django import forms
 from .models import Academy, Program, Session, SessionSlot
+from payment.models import SubscriptionPlan
 from accounts.models import TrainerProfile
 from django.contrib.auth.models import User
 
@@ -85,3 +86,20 @@ class TrainerProfileForm(forms.ModelForm):
             "position": forms.TextInput(attrs={"class": "form-control"}),
             "profile_image": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
+
+
+class SubscriptionPlanForm(forms.ModelForm):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ["title", "price", "billing_type", "description", "is_active"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "billing_type": forms.Select(attrs={"class": "form-select"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def __init__(self, *args, academy=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.academy = academy

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from networkx import reverse
 from .models import Academy, Program, Session
+from payment.models import SubscriptionPlan
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
@@ -20,6 +21,21 @@ from payment.models import PlanType, SubscriptionPlan, Subscription
 
 def _academy(user):
     return user.academy_admin_profile.academy
+
+def _is_parent_subscribed_to_academy(parent_profile, academy):
+    """
+    Check if a parent is subscribed to an academy.
+    """
+    from parents.models import ParentSubscription
+    
+    try:
+        subscription = ParentSubscription.objects.get(
+            parent=parent_profile,
+            academy=academy
+        )
+        return subscription.is_valid
+    except ParentSubscription.DoesNotExist:
+        return False
 
 def academy_list_view(request):
     academies = Academy.objects.prefetch_related(
@@ -831,6 +847,16 @@ def enrollment_details_view(request, academy_slug, program_id):
         if not emergency_name or not emergency_phone:
             messages.error(request, "Emergency contact name and phone are required.")
             return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
+
+        # Check if parent is subscribed to this academy
+        is_subscribed = _is_parent_subscribed_to_academy(parent_profile, academy)
+        
+        # Debug information (remove this in production)
+        messages.info(request, f"Debug: Parent {parent_profile.user.username} subscription status for {academy.name}: {is_subscribed}")
+        
+        if not is_subscribed:
+            messages.warning(request, "You need to subscribe to this academy before enrolling your children.")
+            return redirect("parents:payments")
 
         for child in children:
             enrollment, created = Enrollment.objects.get_or_create(
