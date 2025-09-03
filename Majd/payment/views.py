@@ -37,44 +37,39 @@ class CheckoutView(FormView):
     template_name = "payment/checkout.html"
     form_class = CheckoutForm
 
-    def get_success_url(self):
-        plan_id = self.kwargs.get("plan_id")
-        return reverse_lazy("payment:checkout_success", kwargs={"plan_id": plan_id})
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        plan_id = self.kwargs.get("plan_id")
-        context["plan"] = get_object_or_404(PlanType, id=plan_id)
-        context["step"] = 2  # Step 2: checkout
-        return context
-
     def form_valid(self, form):
-        plan_id = self.kwargs.get("plan_id")
+        plan_id = self.kwargs.get('plan_id')
         plan_type = get_object_or_404(PlanType, id=plan_id)
 
-        # Create subscription record
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Create subscription
         subscription = Subscription.objects.create(
-            academy_name=form.cleaned_data["academy_name"],
+            academy_name=form.cleaned_data['academy_name'],
             plan_type=plan_type,
             price=plan_type.monthly_price,
-            duration_days=30,  # Default monthly
+            duration_days=30,  # monthly by default
             start_date=timezone.now().date(),
             end_date=(timezone.now() + timedelta(days=30)).date(),
-            payment_method=form.cleaned_data["payment_method"],
-            contact_email=form.cleaned_data["contact_email"],
-            contact_phone=form.cleaned_data["contact_phone"],
-            billing_address=form.cleaned_data["address"],
-            status=Subscription.Status.PENDING,
+            payment_method=form.cleaned_data['payment_method'],
+            contact_email=form.cleaned_data['contact_email'],
+            contact_phone=form.cleaned_data['contact_phone'],
+            billing_address=form.cleaned_data['address'],
+            status=Subscription.Status.SUCCESSFUL,
+            payment_date=timezone.now(),
+            transaction_id=f"DEMO_{plan_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}",
         )
 
-        # Demo: mark immediately successful
-        subscription.status = Subscription.Status.SUCCESSFUL
-        subscription.payment_date = timezone.now()
-        subscription.transaction_id = f"DEMO_{subscription.id}"
-        subscription.save()
-
+        # Optional: send invoice
         subscription.send_invoice()
-        return super().form_valid(form)
+
+        messages.success(self.request, "Subscription completed successfully 🎉 Please set up your academy.")
+        # ✅ Redirect directly to academy setup
+        return redirect("academies:setup")
+
+
+
 
 
 class CheckoutSuccessView(DetailView):
@@ -83,13 +78,15 @@ class CheckoutSuccessView(DetailView):
     context_object_name = "plan"
 
     def get_object(self):
-        plan_id = self.kwargs.get("plan_id")
+        plan_id = self.kwargs.get('plan_id')
         return get_object_or_404(PlanType, id=plan_id)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["step"] = 3  # Step 3: success
+        # Add academy setup link
+        context["academy_setup_url"] = reverse_lazy("academies:setup")
         return context
+
 
 
 class SubscriptionPlanListView(ListView):
