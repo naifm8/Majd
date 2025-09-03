@@ -68,7 +68,7 @@ pip install -r requirements.txt
 Run migrations and load initial fixtures:
 ```bash
 python manage.py migrate
-python manage.py loaddata <fixture-file.json>
+python manage.py loaddata groups.json>
 ```
 
 Start the development server:
