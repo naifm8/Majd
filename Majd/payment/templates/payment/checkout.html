@@ -6,6 +6,19 @@
 {% block fileStyle %}
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
 <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+<style>
+/* Ensure button stays at bottom */
+.card {
+  display: flex;
+  flex-direction: column;
+}
+.card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -39,26 +52,20 @@
                         <ul class="list-unstyled">
                             {% for feature in plan.features|slice:":3" %}
                             <li class="mb-2">
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <i class="bi bi-dash-circle text-muted me-2"></i>
                                 {{ feature }}
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
 
-                    <!-- Billing Cycle -->
+                    <!-- Billing Cycle (only monthly now) -->
                     <div class="billing-cycle mb-4">
                         <h6 class="mb-3">Billing Cycle</h6>
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="billing" id="monthly" checked>
                             <label class="form-check-label" for="monthly">
                                 Monthly - SAR {{ plan.monthly_price }}/month
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="billing" id="yearly">
-                            <label class="form-check-label" for="yearly">
-                                Yearly - Save 17% - <span id="yearly-price">SAR {{ plan.monthly_price|add:"-102" }}/month (billed yearly)</span>
                             </label>
                         </div>
                     </div>
@@ -251,7 +258,7 @@
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="d-grid">
+                        <div class="d-grid mt-auto">
                             <button type="submit" class="btn btn-success btn-lg" id="submit-button">
                                 Complete Subscription - SAR {% widthratio plan.monthly_price 100 115 %}
                             </button>
@@ -267,11 +274,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
     const cardDetails = document.getElementById('card-details');
-    const billingRadios = document.querySelectorAll('input[name="billing"]');
-    
-    // Get plan price from the page
-    const planPrice = {{ plan.monthly_price }};
-    const yearlyDiscount = 0.17; // 17% discount
     
     function toggleCardDetails() {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
@@ -283,47 +285,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updatePricing() {
-        const selectedBilling = document.querySelector('input[name="billing"]:checked');
-        let currentPrice, vat, total;
+        const currentPrice = {{ plan.monthly_price }};
+        const vat = Math.round(currentPrice * 0.15);
+        const total = currentPrice + vat;
         
-        if (selectedBilling && selectedBilling.id === 'yearly') {
-            // Yearly pricing with 17% discount
-            currentPrice = planPrice * (1 - yearlyDiscount);
-            vat = Math.round(currentPrice * 0.15);
-            total = currentPrice + vat;
-            
-            // Update billing badge
-            document.getElementById('billing-badge').textContent = 'Yearly billing';
-        } else {
-            // Monthly pricing
-            currentPrice = planPrice;
-            vat = Math.round(currentPrice * 0.15);
-            total = currentPrice + vat;
-            
-            // Update billing badge
-            document.getElementById('billing-badge').textContent = 'Monthly billing';
-        }
-        
-        // Update cost breakdown
-        document.getElementById('subtotal').textContent = `SAR ${Math.round(currentPrice)}`;
+        document.getElementById('subtotal').textContent = `SAR ${currentPrice}`;
         document.getElementById('vat-amount').textContent = `SAR ${vat}`;
-        document.getElementById('total-amount').textContent = `SAR ${Math.round(total)}/month`;
-        
-        // Update submit button
-        document.getElementById('submit-button').textContent = `Complete Subscription - SAR ${Math.round(total)}`;
+        document.getElementById('total-amount').textContent = `SAR ${total}/month`;
+        document.getElementById('submit-button').textContent = `Complete Subscription - SAR ${total}`;
     }
     
-    // Payment method toggle
     paymentMethodRadios.forEach(radio => {
         radio.addEventListener('change', toggleCardDetails);
     });
     
-    // Billing cycle toggle
-    billingRadios.forEach(radio => {
-        radio.addEventListener('change', updatePricing);
-    });
-    
-    // Initial states
     toggleCardDetails();
     updatePricing();
 });

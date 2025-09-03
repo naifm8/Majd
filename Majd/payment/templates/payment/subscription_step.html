@@ -16,21 +16,9 @@
     <!-- Hero -->
     <h1 class="fw-bold mb-3" style="color:#138d68;">Grow Your Academy, Inspire More Players.</h1>
     <p class="lead text-muted mx-auto" style="max-width:650px;">
-      Join our platform to showcase your academy programs. We’ll help you reach parents, players, 
+      Join our platform to showcase your academy programs. We’ll help you reach parents, players,
       and communities by turning your offerings into beautiful, shareable academy cards.
     </p>
-
-    <!-- Billing Toggle -->
-    <div class="btn-group mt-4 mb-5" role="group">
-      <a href="?billing=monthly" 
-         class="btn {% if billing_type == 'monthly' %}btn-success{% else %}btn-outline-success{% endif %}">
-        Monthly
-      </a>
-      <a href="?billing=yearly" 
-         class="btn {% if billing_type == 'yearly' %}btn-success{% else %}btn-outline-success{% endif %}">
-        Yearly <span class="badge bg-success ms-1">Save 17%</span>
-      </a>
-    </div>
   </div>
 
   <div class="container">
@@ -39,31 +27,37 @@
       <div class="row justify-content-center g-4">
 
         {% for plan in plans %}
-        <div class="col-md-4">
-          <div class="card shadow-sm border-0 h-100 {% if plan.is_featured %}border-success{% endif %}" {% if plan.is_featured %}style="border-width:2px;"{% endif %}>
-            <div class="card-body text-center p-4">
+        <div class="col-md-4 d-flex">
+          <!-- Make card a flex column so button sticks to the bottom -->
+          <div class="card shadow-sm border-0 w-100 d-flex flex-column {% if plan.is_featured %}border-success{% endif %}" {% if plan.is_featured %}style="border-width:2px;"{% endif %}>
+            <div class="card-body text-center p-4 d-flex flex-column">
               <div class="mb-3">
                 <i class="bi {{ plan.icon_class }} fs-1 {% if plan.is_featured %}text-success{% else %}text-primary{% endif %}"></i>
               </div>
+
               <h4 class="fw-bold">{{ plan.name }}</h4>
               <p class="text-muted">{{ plan.description }}</p>
+
               <h3 class="fw-bold mb-3" style="color:#138d68;">
-                SAR {% if billing_type == "yearly" %}{{ plan.yearly_price }}{% else %}{{ plan.monthly_price }}{% endif %}
-                <small class="fs-6 text-muted">/{{ billing_type }}</small>
+                SAR {{ plan.monthly_price }} <small class="fs-6 text-muted">/month</small>
               </h3>
-              
+
               {% if plan.is_featured %}
-                <span class="badge bg-success mb-3">Most Popular</span>
+                <span class="badge bg-success mb-3 align-self-center">Most Popular</span>
               {% endif %}
 
-              <ul class="list-unstyled text-start mb-4">
+              <!-- Features list; use “–” prefix and allow the list to grow -->
+              <ul class="list-unstyled text-start mb-4 flex-grow-1">
                 {% for feature in plan.features %}
-                  <li>✅ {{ feature }}</li>
+                  <li>– {{ feature }}</li>
+                {% empty %}
+                  <li class="text-muted">– No features listed</li>
                 {% endfor %}
               </ul>
 
-              <button type="submit" name="plan_id" value="{{ plan.id }}" 
-                      class="btn {% if plan.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100">
+              <!-- Button pinned to bottom via mt-auto on a flex column -->
+              <button type="submit" name="plan_id" value="{{ plan.id }}"
+                      class="btn {% if plan.is_featured %}btn-success{% else %}btn-dark{% endif %} w-100 mt-auto">
                 Get Started
               </button>
             </div>

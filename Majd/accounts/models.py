@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from cloudinary.models import CloudinaryField
 
+
+
 class AcademyAdminProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='academy_admin_profile'
