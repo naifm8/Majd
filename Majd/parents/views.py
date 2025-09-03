@@ -250,8 +250,14 @@ def payments_view(request):
     
     # Get available subscription plans for parents to subscribe to
     available_subscription_plans = []
-    all_academies = Academy.objects.all()
-    print(f"DEBUG: Processing {all_academies.count()} academies for subscription plans")
+    
+    # If a specific academy is required, only show that academy
+    if required_academy:
+        all_academies = [required_academy]
+        print(f"DEBUG: Showing only required academy: {required_academy.name}")
+    else:
+        all_academies = Academy.objects.all()
+        print(f"DEBUG: Processing {all_academies.count()} academies for subscription plans")
     
     for academy in all_academies:
         print(f"DEBUG: Processing academy: {academy.name} (slug: {academy.slug})")
@@ -638,11 +644,11 @@ def process_payment(request):
             
             if is_new_subscription:
                 logger.info(f"Academy subscription processed for {academy.name}. Email sent: {email_sent}. Parent email: {request.user.email}")
-                success_message = f"Academy subscription of SAR {amount} processed successfully for {academy.name}"
+                success_message = f"Academy subscription of SAR {amount} processed successfully for {academy.name}. You can now enroll your children in their programs."
                 if email_sent:
-                    success_message += ". An invoice has been sent to your email."
+                    success_message += " An invoice has been sent to your email."
                 else:
-                    success_message += ". Note: Invoice email could not be sent."
+                    success_message += " Note: Invoice email could not be sent."
                 
                 # Return success with redirect information
                 return JsonResponse({

@@ -92,6 +92,26 @@ def AcademyDetailView(request, slug):
         is_active=True
     ).values("child").distinct().count()
 
+    # Get active subscription plans for this academy
+    from payment.models import SubscriptionPlan
+    subscription_plans = SubscriptionPlan.objects.filter(
+        academy=academy,
+        is_active=True
+    ).order_by('price')
+    
+    # Check if user is subscribed to this academy (general subscription)
+    is_subscribed = False
+    if request.user.is_authenticated and hasattr(request.user, 'parent_profile'):
+        from parents.models import ParentSubscription
+        # Check for valid (active and not expired) subscriptions
+        valid_subscriptions = ParentSubscription.objects.filter(
+            parent=request.user.parent_profile,
+            academy=academy,
+            is_active=True
+        )
+        # Check if any subscription is valid (not expired)
+        is_subscribed = any(sub.is_valid for sub in valid_subscriptions)
+    
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
@@ -99,6 +119,8 @@ def AcademyDetailView(request, slug):
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
+        "is_subscribed": is_subscribed,
+        "subscription_plans": subscription_plans,
     }
     return render(request, "academies/academy_detail.html", context)
  
