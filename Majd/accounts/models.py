@@ -19,6 +19,7 @@ class TrainerProfile(models.Model):
         PENDING  = "pending",  "Pending"
         APPROVED = "approved", "Approved"
         REJECTED = "rejected", "Rejected"
+        NotRegistered = "NotRegistered", "Not Registered"
 
     user = models.OneToOneField( User, on_delete=models.SET_NULL, null=True, blank=True, related_name='trainer_profile')
     certifications = models.TextField(blank=True)
@@ -31,7 +32,7 @@ class TrainerProfile(models.Model):
     blank=True,
     default='https://res.cloudinary.com/do1wotvij/image/upload/v1699999999/Majd/trainers/profile_images/profileImage.webp')
     
-    approval_status = models.CharField(max_length=10,choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING, help_text="Academy approval status required for dashboard access.")
+    approval_status = models.CharField(max_length=50,choices=ApprovalStatus.choices, default=ApprovalStatus.NotRegistered, help_text="Academy approval status required for dashboard access.")
     academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
      
     def __str__(self):

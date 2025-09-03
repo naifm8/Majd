@@ -1,9 +1,8 @@
 {% extends "trainers/base_dashboard.html" %}
 {% load static %}
-{% load custom_filters %}
+{% load custom_filters %} 
 
-{% block title %}Evaluate – {{ class_info.title }}{% endblock %}
-{% block page_title %}Evaluate Class{% endblock %}
+{% block title %}Evaluate - {{ class_info.title }}{% endblock %}
 
 {% block content %}
 <div class="container mt-3">
@@ -16,83 +15,145 @@
         <h5 class="mb-0">{{ class_info.title }}</h5>
       </div>
       <div class="text-end">
-        <span class="badge {{ class_info.status_label|default:'' }} {{ class_info.status_css }}">{{ class_info.status_label }}</span>
-        <div class="small text-secondary mt-1">Enrolled {{ class_info.enrolled }} • Coverage {{ class_info.coverage_pct }}%</div>
+        <span class="badge {{ class_info.status_css }}">{{ class_info.status_label }}</span>
+        <div class="small text-secondary mt-1">
+          Enrolled {{ class_info.enrolled }} • Coverage {{ class_info.coverage_pct }}%
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Focus Skill (optional) -->
+  <!-- Tabs -->
+  <ul class="nav nav-pills rounded-3 mb-3">
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'general' or not active_tab %}active{% endif %}" href="?tab=general">General</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active_tab == 'skills' %}active{% endif %} {% if not has_skills %}disabled{% endif %}"
+         {% if has_skills %}href="?tab=skills"{% else %}href="#" aria-disabled="true" tabindex="-1"{% endif %}>
+        Skills {% if not has_skills %}<span class="ms-1 badge bg-light text-secondary">No skills</span>{% endif %}
+      </a>
+    </li>
+  </ul>
+
+  {# ============ TAB: GENERAL ============ #}
+  {% if active_tab == 'general' or not active_tab %}
   <form method="post" class="card shadow-sm">
     {% csrf_token %}
+    <input type="hidden" name="tab" value="general">
+    <input type="hidden" name="action" value="save_general">
+
     <div class="card-body">
-      <div class="row g-3 align-items-end mb-2">
-        <div class="col-md-4">
-          <label class="form-label">Focus Skill (optional)</label>
-          {{ focus_form.skill_name }}
-          <div class="form-text">If selected, you can fill “Skill Score (0–5)” column.</div>
-        </div>
-        <div class="col-md-8 text-end">
-          <button class="btn btn-success"><i class="bi bi-save me-1"></i>Save Evaluations</button>
-          <a href="{% url 'trainers:evaluations_view' %}" class="btn btn-outline-secondary">Back</a>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">General Rubric (0-5 → 0-100)</h6>
+        <div>
+          <a href="{% url 'trainers:evaluations_view' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+          <button class="btn btn-success btn-sm"><i class="bi bi-save me-1"></i>Save</button>
         </div>
       </div>
 
-      <!-- Table -->
       <div class="table-responsive">
         <table class="table align-middle table-bordered">
-          <thead class="table-light">
-            <tr class="text-center">
+          <thead class="table-light text-center">
+            <tr>
               <th style="min-width:220px;">Student</th>
-              <th colspan="99">Skills (0–100)</th>
-              <th style="min-width:200px;">Notes</th>
+              <th>Technique<br><small>0-5</small></th>
+              <th>Tactical<br><small>0-5</small></th>
+              <th>Fitness<br><small>0-5</small></th>
+              <th>Mental<br><small>0-5</small></th>
+              <th style="min-width:220px;">Notes</th>
             </tr>
           </thead>
-
           <tbody>
-            {% for form in formset.forms %}
+            {% for form in general_formset.forms %}
               {% with pid=form.initial.player_id %}
-                <tr>
-                  <td>
-                    <div class="fw-semibold">
-                      {% for pair in row_names %}
-                        {% if pair.0 == pid %}{{ pair.1 }}{% endif %}
-                      {% endfor %}
-                    </div>
-                    {{ form.player_id }}
-                  </td>
-
-                  {% with skills=player_skills|get_item:pid %}
-                    {% for skill in skills %}
-                      {% with field_name="skill_"|add:forloop.counter0|stringformat:"d" %}
-                        <td class="text-center">
-                          <label class="d-block small">{{ skill }}</label>
-                          {% if form.fields|get_item:field_name %}
-                            {{ form|get_field:field_name }}
-                          {% else %}
-                            <span class="text-danger">Missing field: {{ field_name }}</span>
-                          {% endif %}
-                        </td>
-                      {% endwith %}
-                    {% endfor %}
-                  {% endwith %}
-
-                  <td>{{ form.notes }}</td>
-                </tr>
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ name_by_player|get_item:pid }}</div>
+                  {{ form.player_id }}
+                </td>
+                <td class="text-center">{{ form.technique }}</td>
+                <td class="text-center">{{ form.tactical }}</td>
+                <td class="text-center">{{ form.fitness }}</td>
+                <td class="text-center">{{ form.mental }}</td>
+                <td>{{ form.notes }}</td>
+              </tr>
               {% endwith %}
             {% endfor %}
           </tbody>
-
         </table>
       </div>
 
-      {{ formset.management_form }}
+      {{ general_formset.management_form }}
 
       <div class="text-end">
-        <button class="btn btn-success"><i class="bi bi-save me-1"></i>Save Evaluations</button>
+        <button class="btn btn-success btn-sm"><i class="bi bi-save me-1"></i>Save</button>
       </div>
     </div>
   </form>
+
+
+{% elif active_tab == 'skills' %}
+<form method="post" class="card shadow-sm">
+  {% csrf_token %}
+  <input type="hidden" name="tab" value="skills">
+  <input type="hidden" name="action" value="save_skills">
+
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0">Position-specific Skills (0-5)</h6>
+      <div>
+        <a href="{% url 'trainers:evaluations_view' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+        <button class="btn btn-success btn-sm"><i class="bi bi-save me-1"></i>Save</button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table align-middle table-bordered">
+        <thead class="table-light text-center">
+          <tr>
+            <th style="min-width:220px;">Student</th>
+            <th>Skill</th>
+            <th style="min-width:120px;">Score (0-5)</th>
+            <th style="min-width:220px;">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for form in skill_formset.forms %}
+            {% with pid=form.initial.player_id %}
+              {% with rows=player_skill_fields|get_item:pid %}
+                {% for r in rows %}
+                  <tr>
+                    {% if forloop.first %}
+                      <td rowspan="{{ rows|length }}">
+                        <div class="fw-semibold">{{ name_by_player|get_item:pid }}</div>
+                        {{ form.player_id }}
+                      </td>
+                    {% endif %}
+                    <td>{{ r.label }}</td>
+                    <td class="text-center">
+                      {{ form|get_field:r.field }}
+                    </td>
+                    {% if forloop.first %}
+                      <td rowspan="{{ rows|length }}">{{ form.notes }}</td>
+                    {% endif %}
+                  </tr>
+                {% endfor %}
+              {% endwith %}
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {{ skill_formset.management_form }}
+
+    <div class="text-end">
+      <button class="btn btn-success btn-sm"><i class="bi bi-save me-1"></i>Save</button>
+    </div>
+  </div>
+</form>
+{% endif %}
 
 
 </div>

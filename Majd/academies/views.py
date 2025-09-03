@@ -9,6 +9,8 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ProgramForm, SessionForm, AcademyForm, SubscriptionPlanForm
 from accounts.models import TrainerProfile
+from .forms import ProgramForm, SessionForm, AcademyForm
+from accounts.models import TrainerProfile, AcademyAdminProfile
 from parents.models import Child, Enrollment
 from player.models import PlayerProfile, PlayerSession
 from .forms import TrainerProfileForm
@@ -16,7 +18,7 @@ from datetime import date
 from django.db.models import Q
 import csv
 import openpyxl
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from payment.models import PlanType, SubscriptionPlan, Subscription
 
 def _academy(user):
@@ -596,6 +598,60 @@ def add_trainer(request):
 def calculate_age(born):
     today = date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+
+# abdulaziz alkhateeb edit for adding trainer
+@login_required
+def academy_pending_trainers_view(request: HttpRequest):
+    academy_admin = getattr(request.user, "academy_admin_profile", None)
+    if not academy_admin:
+        messages.error(request, "You must be an Academy Admin to review trainer applications.")
+        return redirect("main:main_home_view")
+
+    academy = getattr(academy_admin, "academy", None)
+    if academy is None:
+        messages.error(request, "Your admin profile is not linked to any academy.")
+        return redirect("main:main_home_view")
+
+    if request.method == "POST":
+        trainer_id = request.POST.get("trainer_id")
+        action = request.POST.get("action")
+
+        trainer = get_object_or_404(TrainerProfile, id=trainer_id)
+
+        if trainer.academy_id != academy.id:
+            messages.error(request, "You cannot modify a trainer outside your academy.")
+            return redirect("trainers:academy_pending_trainers_view")
+
+        if action == "approve":
+            trainer.approval_status = TrainerProfile.ApprovalStatus.APPROVED
+            trainer.save()
+            messages.success(request, f"Approved: {trainer}")
+        elif action == "reject":
+            trainer.approval_status = TrainerProfile.ApprovalStatus.REJECTED
+
+            # trainer.academy = None
+            trainer.save()
+            messages.info(request, f"Rejected: {trainer}")
+        else:
+            messages.error(request, "Unknown action.")
+
+        return redirect("academies:academy_pending_trainers_view")
+
+    # GET: list only trainers who applied (PENDING) to THIS academy
+    pending_trainers = (
+        TrainerProfile.objects
+        .filter(academy_id=academy.id, approval_status=TrainerProfile.ApprovalStatus.PENDING)
+        .select_related("user", "academy")
+    )
+
+    context = {
+        "academy": academy,
+        "pending_trainers": pending_trainers,
+    }
+    return render(request, "academies/test_add_trainers.html", context)
+
+
 
 
 @login_required
