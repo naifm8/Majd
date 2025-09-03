@@ -9,6 +9,7 @@ class PlanType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     monthly_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    yearly_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     features = models.JSONField(default=list, blank=True)
     icon_class = models.CharField(max_length=50, default="bi-app")
     is_featured = models.BooleanField(default=False)

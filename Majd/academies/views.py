@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from networkx import reverse
 from .models import Academy, Program, Session
+from payment.models import SubscriptionPlan
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
@@ -8,23 +9,42 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from .forms import ProgramForm, SessionForm, AcademyForm, SubscriptionPlanForm
 from accounts.models import TrainerProfile
+from .forms import ProgramForm, SessionForm, AcademyForm
+from accounts.models import TrainerProfile, AcademyAdminProfile
 from parents.models import Child, Enrollment
 from player.models import PlayerProfile, PlayerSession
 from .forms import TrainerProfileForm
 from datetime import date
 from django.db.models import Q
 import csv
-# import openpyxl  # Temporarily commented out
-from django.http import HttpResponse
+import openpyxl
+from django.http import HttpResponse, HttpRequest
 from payment.models import PlanType, SubscriptionPlan, Subscription
 
 def _academy(user):
     return user.academy_admin_profile.academy
 
-def academy_list_view(request):
-    academies = Academy.objects.prefetch_related("programs").all()
+def _is_parent_subscribed_to_academy(parent_profile, academy):
+    """
+    Check if a parent is subscribed to an academy.
+    """
+    from parents.models import ParentSubscription
+    
+    try:
+        subscription = ParentSubscription.objects.get(
+            parent=parent_profile,
+            academy=academy
+        )
+        return subscription.is_valid
+    except ParentSubscription.DoesNotExist:
+        return False
 
-    #  Filters 
+def academy_list_view(request):
+    academies = Academy.objects.prefetch_related(
+        "programs__enrollments__child"
+    ).all()
+
+    # Filters
     search = request.GET.get("search")
     sport = request.GET.get("sport")
     city = request.GET.get("city")
@@ -36,22 +56,29 @@ def academy_list_view(request):
     if city:
         academies = academies.filter(city=city)
 
-    #  Stats 
+    # Stats
     total_academies = Academy.objects.count()
-    total_players = Child.objects.distinct().count()
-    satisfaction_rate = 95  # static for now
-    sport_choices = Program.SportType.choices
-    cities = Academy.objects.values_list("city", flat=True).distinct()
+    total_children = Child.objects.count()  # all players in system
+    total_enrolled = (
+        Enrollment.objects.filter(is_active=True)
+        .values("child")
+        .distinct()
+        .count()
+    )
 
     context = {
         "academies": academies,
         "total_academies": total_academies,
-        "total_players": total_players,
-        "satisfaction_rate": satisfaction_rate,
-        "sport_choices": sport_choices,
-        "cities": cities,
+        "total_children": total_children,   # all players
+        "total_enrolled": total_enrolled,   # active enrolled players
+        "satisfaction_rate": 95,
+        "sport_choices": Program.SportType.choices,
+        "cities": Academy.objects.exclude(city="")
+                    .values_list("city", flat=True)
+                    .distinct(),
     }
     return render(request, "academies/academy_list.html", context)
+
 
 
 def AcademyDetailView(request, slug):
@@ -67,6 +94,26 @@ def AcademyDetailView(request, slug):
         is_active=True
     ).values("child").distinct().count()
 
+    # Get active subscription plans for this academy
+    from payment.models import SubscriptionPlan
+    subscription_plans = SubscriptionPlan.objects.filter(
+        academy=academy,
+        is_active=True
+    ).order_by('price')
+    
+    # Check if user is subscribed to this academy (general subscription)
+    is_subscribed = False
+    if request.user.is_authenticated and hasattr(request.user, 'parent_profile'):
+        from parents.models import ParentSubscription
+        # Check for valid (active and not expired) subscriptions
+        valid_subscriptions = ParentSubscription.objects.filter(
+            parent=request.user.parent_profile,
+            academy=academy,
+            is_active=True
+        )
+        # Check if any subscription is valid (not expired)
+        is_subscribed = any(sub.is_valid for sub in valid_subscriptions)
+    
     context = {
         "academy": academy,
         "programs": academy.programs.all(),
@@ -74,6 +121,8 @@ def AcademyDetailView(request, slug):
         "active_students": active_students,
         "fake_rating": 4.8,
         "years_experience": years_experience,
+        "is_subscribed": is_subscribed,
+        "subscription_plans": subscription_plans,
     }
     return render(request, "academies/academy_detail.html", context)
  
@@ -85,19 +134,32 @@ def academy_setup_view(request):
         messages.error(request, "You must be an academy admin to access this page.")
         return redirect("main:main_home_view")
 
+    # ✅ ensure subscription exists and is successful
+    from payment.models import Subscription
+    has_subscription = Subscription.objects.filter(
+        contact_email=request.user.email, status="successful"
+    ).exists()
+
+    if not has_subscription:
+        messages.error(request, "You must subscribe before setting up your academy.")
+        return redirect("payment:subscription_step")
+
     profile = request.user.academy_admin_profile
     academy = getattr(profile, "academy", None)
 
     if request.method == "POST":
         form = AcademyForm(request.POST, request.FILES, instance=academy)
         if form.is_valid():
-            form.save()
+            academy = form.save(commit=False)
+            academy.owner = profile  # ensure link
+            academy.save()
             messages.success(request, "Academy profile updated successfully!")
             return redirect("academies:detail", slug=academy.slug)
     else:
         form = AcademyForm(instance=academy)
 
     return render(request, "academies/academy_setup.html", {"form": form})
+
 
 
 @login_required
@@ -248,34 +310,52 @@ def subscription_enroll_redirect(request, academy_slug, plan_id):
 
 
 # ✅ Programs Dashboard
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from django.shortcuts import render
+
+from academies.models import Program, Session
+from parents.models import Enrollment  # <-- use Enrollment to count players
+
+def _academy(user):
+    return user.academy_admin_profile.academy
+
 @login_required
 def program_dashboard(request):
+    # Which programs to show
     if request.user.is_superuser:
         programs = Program.objects.all().prefetch_related("sessions")
         academy = None
     else:
         academy = _academy(request.user)
-        programs = Program.objects.filter(academy=academy).prefetch_related("sessions")
+        programs = (
+            Program.objects
+            .filter(academy=academy)
+            .prefetch_related("sessions")
+        )
 
-    sessions = Session.objects.filter(program__in=programs)
+    # Sessions under those programs
+    sessions = (
+        Session.objects
+        .filter(program__in=programs)
+        .select_related("program")
+    )
 
-    # Global stats
+    # Stats
     total_programs = programs.count()
     total_sessions = sessions.count()
-    total_enrollment = Child.objects.filter(programs__in=programs).distinct().count()
 
-    total_capacity = sum(s.capacity for s in sessions)
+    # ✅ Use Enrollment instead of Child.programs
+    total_enrollment = (
+        Enrollment.objects
+        .filter(program__in=programs, is_active=True)
+        .values("child")
+        .distinct()
+        .count()
+    )
+
+    total_capacity = sessions.aggregate(total=Sum("capacity"))["total"] or 0
     utilization = round((total_enrollment / total_capacity) * 100, 1) if total_capacity else 0
-
-    # ✅ Per-session enrollment + utilization
-    session_data = {}
-    for s in sessions:
-        # adjust this if you have a different enrollment relation
-        enrolled = s.enrollment_set.count() if hasattr(s, "enrollment_set") else 0  
-        session_data[s.id] = {
-            "enrolled": enrolled,
-            "utilization": round((enrolled / s.capacity) * 100, 1) if s.capacity else 0,
-        }
 
     context = {
         "academy": academy,
@@ -285,9 +365,10 @@ def program_dashboard(request):
         "total_enrollment": total_enrollment,
         "utilization_pct": utilization,
         "revenue": 60450,  # placeholder
-        "session_data": session_data,
+        "total_capacity": total_capacity,  # if your template uses it
     }
     return render(request, "academies/dashboard_programs.html", context)
+
 
 
 
@@ -359,6 +440,9 @@ def session_create(request, program_id):
         "form": form,
         "program": program,
     })
+
+
+
 
 @login_required
 def session_edit(request, pk):
@@ -515,6 +599,57 @@ def calculate_age(born):
     today = date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
+
+# abdulaziz alkhateeb edit for adding trainer
+@login_required
+def academy_pending_trainers_view(request: HttpRequest):
+    academy_admin = getattr(request.user, "academy_admin_profile", None)
+    if not academy_admin:
+        messages.error(request, "You must be an Academy Admin to review trainer applications.")
+        return redirect("main:main_home_view")
+
+    academy = getattr(academy_admin, "academy", None)
+    if academy is None:
+        messages.error(request, "Your admin profile is not linked to any academy.")
+        return redirect("main:main_home_view")
+
+    if request.method == "POST":
+        trainer_id = request.POST.get("trainer_id")
+        action = request.POST.get("action")
+
+        trainer = get_object_or_404(TrainerProfile, id=trainer_id)
+
+        if trainer.academy_id != academy.id:
+            messages.error(request, "You cannot modify a trainer outside your academy.")
+            return redirect("trainers:academy_pending_trainers_view")
+
+        if action == "approve":
+            trainer.approval_status = TrainerProfile.ApprovalStatus.APPROVED
+            trainer.save()
+            messages.success(request, f"Approved: {trainer}")
+        elif action == "reject":
+            trainer.approval_status = TrainerProfile.ApprovalStatus.REJECTED
+
+            # trainer.academy = None
+            trainer.save()
+            messages.info(request, f"Rejected: {trainer}")
+        else:
+            messages.error(request, "Unknown action.")
+
+        return redirect("academies:academy_pending_trainers_view")
+
+    # GET: list only trainers who applied (PENDING) to THIS academy
+    pending_trainers = (
+        TrainerProfile.objects
+        .filter(academy_id=academy.id, approval_status=TrainerProfile.ApprovalStatus.PENDING)
+        .select_related("user", "academy")
+    )
+
+    context = {
+        "academy": academy,
+        "pending_trainers": pending_trainers,
+    }
+    return render(request, "academies/test_add_trainers.html", context)
 
 
 
@@ -843,6 +978,16 @@ def enrollment_details_view(request, academy_slug, program_id):
             messages.error(request, "Emergency contact name and phone are required.")
             return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
 
+        # Check if parent is subscribed to this academy
+        is_subscribed = _is_parent_subscribed_to_academy(parent_profile, academy)
+        
+        if not is_subscribed:
+            messages.warning(request, f"You need to subscribe to {academy.name} before enrolling your children.")
+            # Redirect to payments page with academy info
+            from django.urls import reverse
+            payments_url = reverse('parents:payments') + f'?academy={academy.slug}'
+            return redirect(payments_url)
+
         for child in children:
             enrollment, created = Enrollment.objects.get_or_create(
                 child=child,
@@ -874,8 +1019,10 @@ def enrollment_details_view(request, academy_slug, program_id):
         request.session.pop("selected_children", None)
         request.session.pop("selected_sessions", None)
 
+
         messages.success(request, f"Enrollment completed for {len(children)} child(ren).", extra_tags='alert-success')
         return redirect("academies:detail", slug=academy.slug)
+
 
     return render(request, "academies/enrollment_details.html", {
         "academy": academy,

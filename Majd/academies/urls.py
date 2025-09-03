@@ -1,8 +1,6 @@
 from django.urls import path
 from . import views
 
-from . import views
-
 app_name = "academies"
 
 urlpatterns = [
@@ -20,6 +18,8 @@ urlpatterns = [
     # Trainer 
     path("trainers/", views.trainer_dashboard, name="trainer_dashboard"),
     path("trainers/add/", views.add_trainer, name="add_trainer"),
+    path("trainers/pending/", views.academy_pending_trainers_view, name="academy_pending_trainers_view"),
+
 
     # Academy detail
     path("<slug:slug>/", views.AcademyDetailView, name="detail"),

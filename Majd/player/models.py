@@ -26,7 +26,7 @@ class PlayerProfile(models.Model):
         return round(total / skills.count(), 1)
 
     def recompute_progress_and_grade(self):
-        avg = self.evaluations.aggregate(avg=Avg("score"))["avg"] or 0.0
+        avg = self.evaluations.filter(skill__isnull=True).aggregate(avg=Avg("score"))["avg"] or 0.0
         self.avg_progress = round(avg, 2)
 
         if self.avg_progress >= 95:

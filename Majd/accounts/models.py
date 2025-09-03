@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from cloudinary.models import CloudinaryField
 
+
+
 class AcademyAdminProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='academy_admin_profile'
@@ -12,8 +14,13 @@ class AcademyAdminProfile(models.Model):
         return f"AcademyAdmin<{self.user}>"
 
 
-
 class TrainerProfile(models.Model):
+    class ApprovalStatus(models.TextChoices):
+        PENDING  = "pending",  "Pending"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+        NotRegistered = "NotRegistered", "Not Registered"
+
     user = models.OneToOneField( User, on_delete=models.SET_NULL, null=True, blank=True, related_name='trainer_profile')
     certifications = models.TextField(blank=True)
     specialty = models.CharField(max_length=100, blank=True)
@@ -25,7 +32,7 @@ class TrainerProfile(models.Model):
     blank=True,
     default='https://res.cloudinary.com/do1wotvij/image/upload/v1699999999/Majd/trainers/profile_images/profileImage.webp')
     
-    
+    approval_status = models.CharField(max_length=50,choices=ApprovalStatus.choices, default=ApprovalStatus.NotRegistered, help_text="Academy approval status required for dashboard access.")
     academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
      
     def __str__(self):
@@ -47,8 +54,6 @@ class TrainerProfile(models.Model):
             academy_name = "❌ أكاديمية محذوفة"
 
         return f"{full_name} ({academy_name})"
-
-
 
 
 class ParentProfile(models.Model):

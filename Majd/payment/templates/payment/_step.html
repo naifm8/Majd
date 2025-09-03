@@ -1,0 +1,22 @@
+<div class="progress-dashes d-flex justify-content-center mb-4">
+    <div class="progress-dash {% if step >= 1 %}completed{% endif %}"></div>
+    <div class="progress-dash {% if step >= 2 %}{% if step == 2 %}active{% else %}completed{% endif %}{% endif %}"></div>
+    <div class="progress-dash {% if step >= 3 %}{% if step == 3 %}active{% else %}completed{% endif %}{% endif %}"></div>
+  </div>
+  
+  <style>
+  .progress-dash {
+    width: 40px;
+    height: 6px;
+    margin: 0 6px;
+    border-radius: 4px;
+    background-color: #dee2e6;
+  }
+  .progress-dash.completed {
+    background-color: #138d68;
+  }
+  .progress-dash.active {
+    background-color: #20c997;
+  }
+  </style>
+  

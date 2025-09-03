@@ -59,6 +59,9 @@
       <a class="nav-link" data-bs-toggle="pill" href="#upcoming">Upcoming</a>
     </li>
     <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="pill" href="#subscriptions">Available Plans</a>
+    </li>
+    <li class="nav-item">
       <a class="nav-link" data-bs-toggle="pill" href="#methods">Payment Methods</a>
     </li>
   </ul>
@@ -140,6 +143,63 @@
             </div>
           {% empty %}
             <p class="text-muted">No upcoming payments.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Subscription Plans -->
+    <div class="tab-pane fade" id="subscriptions">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          {% if required_academy %}
+            <h5 class="fw-bold">Required Academy Subscription</h5>
+            <div class="alert alert-warning mb-3">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <strong>Subscription Required:</strong> You need to subscribe to <strong>{{ required_academy.name }}</strong> before enrolling your children in their programs.
+            </div>
+          {% else %}
+            <h5 class="fw-bold">Available Academy Subscription Plans</h5>
+            <p class="text-muted">Subscribe to an academy to enroll your children in their programs.</p>
+          {% endif %}
+          
+          {% for plan_data in available_subscription_plans %}
+          <div class="d-flex justify-content-between align-items-center border-bottom py-3 {% if plan_data.is_required %}bg-warning bg-opacity-10 border-warning{% endif %}">
+            <div class="d-flex align-items-center gap-3">
+              <!-- Academy Logo Initial -->
+              <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
+                   style="width: 45px; height: 45px;">
+                {{ plan_data.academy.name|slice:":3"|upper }}
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold">{{ plan_data.academy.name }}
+                  {% if plan_data.is_required %}
+                    <span class="badge bg-warning text-dark ms-2">Required</span>
+                  {% endif %}
+                </h6>
+                <small class="text-muted">{{ plan_data.academy.city }}</small><br>
+                <small class="text-muted">{{ plan_data.plan_type }}</small>
+                {% if plan_data.subscription_plan and plan_data.subscription_plan.description %}
+                <br><small class="text-muted">{{ plan_data.subscription_plan.description|truncatewords:15 }}</small>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Right Side -->
+            <div class="text-end">
+              <h6 class="fw-bold mb-1">SAR {{ plan_data.price }}/month</h6>
+              <small class="text-muted">{% if plan_data.subscription_plan %}{{ plan_data.subscription_plan.billing_type|title }}{% else %}Monthly{% endif %}</small><br>
+              <button class="btn btn-success btn-sm mt-1" onclick="subscribeToAcademy('{{ plan_data.academy.name|escapejs }}', {{ plan_data.price }}, '{{ plan_data.academy.slug|escapejs }}')">
+                Subscribe Now
+              </button>
+            </div>
+          </div>
+          {% empty %}
+            <div class="text-center py-5">
+              <i class="bi bi-building display-1 text-muted"></i>
+              <h5 class="text-muted mt-3">No Subscription Plans Available</h5>
+              <p class="text-muted">Contact academy administrators to set up subscription plans.</p>
+            </div>
           {% endfor %}
         </div>
       </div>
@@ -368,12 +428,13 @@
 <script>
 let currentPaymentData = {};
 
-function makePayment(academy, program, amount, enrollmentId = null) {
+function makePayment(academy, program, amount, enrollmentId = null, academySlug = null) {
     currentPaymentData = {
         academy: academy,
         program: program,
         amount: amount,
-        enrollmentId: enrollmentId
+        enrollmentId: enrollmentId,
+        academySlug: academySlug
     };
     
     // Update summary
@@ -403,6 +464,20 @@ function makePayment(academy, program, amount, enrollmentId = null) {
     // Send the total amount (including VAT) to the backend
     document.getElementById('paymentAmount').value = total;
     
+    // Add academy slug if it's a new subscription
+    if (academySlug) {
+        // Create or update academy slug hidden field
+        let academySlugField = document.getElementById('academySlug');
+        if (!academySlugField) {
+            academySlugField = document.createElement('input');
+            academySlugField.type = 'hidden';
+            academySlugField.name = 'academy_slug';
+            academySlugField.id = 'academySlug';
+            document.getElementById('paymentForm').appendChild(academySlugField);
+        }
+        academySlugField.value = academySlug;
+    }
+    
     // Reset form
     document.getElementById('paymentForm').reset();
     document.querySelector('input[name="payment_method"][value="card"]').checked = true;
@@ -417,6 +492,20 @@ function makePayment(academy, program, amount, enrollmentId = null) {
 function selectPaymentMethod(methodName) {
     // You can implement payment method selection logic here
     alert(`Selected payment method: ${methodName}`);
+}
+
+function subscribeToAcademy(academyName, price, academySlug) {
+    // Create a mock enrollment for subscription payment
+    const mockEnrollment = {
+        academy: academyName,
+        program: `${academyName} Subscription`,
+        amount: price,
+        enrollmentId: null, // No enrollment ID for new subscriptions
+        academySlug: academySlug // Pass the academy slug
+    };
+    
+    // Use the existing makePayment function
+    makePayment(mockEnrollment.academy, mockEnrollment.program, mockEnrollment.amount, mockEnrollment.enrollmentId, mockEnrollment.academySlug);
 }
 
 function togglePaymentMethodDisplay() {
@@ -446,6 +535,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial state
     togglePaymentMethodDisplay();
+    
+    // Auto-switch to subscriptions tab if there's a required academy
+    {% if required_academy %}
+    const subscriptionsTab = document.querySelector('a[href="#subscriptions"]');
+    if (subscriptionsTab) {
+        subscriptionsTab.click();
+    }
+    {% endif %}
 });
 
 // Handle form submission
@@ -471,13 +568,19 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     .then(data => {
         if (data.success) {
             // Show success message
-            alert('Payment processed successfully!' + (data.email_sent ? ' An invoice has been sent to your email.' : ' Note: Invoice email could not be sent.'));
+            alert(data.message || 'Payment processed successfully!' + (data.email_sent ? ' An invoice has been sent to your email.' : ' Note: Invoice email could not be sent.'));
             
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
             
-            // Reload page to show updated payment data
-            location.reload();
+            // Handle redirect for academy subscriptions
+            if (data.subscription_created && data.redirect_url) {
+                // Redirect to academy programs page
+                window.location.href = data.redirect_url;
+            } else {
+                // Reload page to show updated payment data for regular payments
+                location.reload();
+            }
         } else {
             // Show error message
             alert('Payment failed: ' + (data.error || 'Unknown error occurred'));

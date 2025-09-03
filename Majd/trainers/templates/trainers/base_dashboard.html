@@ -41,14 +41,22 @@
                     </div>
                 </div>
 
+                {% url 'trainers:overview_view' as overview_view_url %}
+                {% url 'trainers:students_view' as students_view_url %}
+                {% url 'trainers:training_sessions_view' as training_sessions_view_url %}
+                {% url 'trainers:attendance_view'  as attendance_view_url %}
+                {% url 'trainers:evaluations_view' as evaluations_view_url %}
+                {% url 'communication:trainer_conversations_view' as trainer_conversations_view_url %}
+
+
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a href="{% url 'trainers:overview_view' %}" class="nav-link"><i class="bi bi-speedometer2 me-2"></i>Overview</a></li>
-                    <li class="nav-item"><a href="{% url 'trainers:students_view' %}" class="nav-link"><i class="bi bi-journal-text me-2"></i>My Students</a></li>
-                    <li class="nav-item"><a href="{% url 'trainers:training_sessions_view' %}" class="nav-link"><i class="bi bi-people me-2"></i>Sessions</a></li>
-                    <li class="nav-item"><a href="{% url 'trainers:attendance_view' %}" class="nav-link"><i class="bi bi-calendar-check me-2"></i>Attendance</a></li>
-                    <li class="nav-item"><a href="{% url 'trainers:evaluations_view' %}" class="nav-link"><i class="bi bi-person-badge me-2"></i>Evaluations</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:overview_view' %}" class="nav-link {% if request.path == overview_view_url %} active{% endif %}"><i class="bi bi-speedometer2 me-2"></i>Overview</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:students_view' %}" class="nav-link {% if request.path == students_view_url %} active{% endif %}"><i class="bi bi-journal-text me-2"></i>My Students</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:training_sessions_view' %}" class="nav-link {% if request.path == training_sessions_view_url %} active{% endif %}"><i class="bi bi-people me-2"></i>Sessions</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:attendance_view' %}" class="nav-link {% if request.path == 'attendance_view_url' %} active{% endif %}"><i class="bi bi-calendar-check me-2"></i>Attendance</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:evaluations_view' %}" class="nav-link {% if request.path == evaluations_view_url %} active{% endif %}"><i class="bi bi-person-badge me-2"></i>Evaluations</a></li>
                     <li class="nav-item">
-                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link">
+                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link {% if request.path == trainer_conversations_view_url %} active{% endif %}">
                         <i class="bi bi-chat-dots me-2"></i>Messages
                     </a>
                     </li>
@@ -139,15 +147,13 @@
         <div class="offcanvas-body d-flex flex-column justify-content-between">
             <div>
                 <ul class="nav flex-column">
-                    <li class="nav-item"><a href="{% url 'trainers:overview_view' %}" class="nav-link"><i
-                                class="bi bi-speedometer2 me-2"></i>Overview</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-journal-text me-2"></i>My
-                            Students</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link"><i class="bi bi-people me-2"></i>Sessions</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link"><i
-                                class="bi bi-person-badge me-2"></i>Evaluations</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:overview_view' %}" class="nav-link {% if request.path == overview_view_url %} active{% endif %}"><i class="bi bi-speedometer2 me-2"></i>Overview</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:students_view' %}" class="nav-link {% if request.path == students_view_url %} active{% endif %}"><i class="bi bi-journal-text me-2"></i>My Students</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:training_sessions_view' %}" class="nav-link {% if request.path == training_sessions_view_url %} active{% endif %}"><i class="bi bi-people me-2"></i>Sessions</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:attendance_view' %}" class="nav-link {% if request.path == attendance_view_url %} active{% endif %}"><i class="bi bi-calendar-check me-2"></i>Attendance</a></li>
+                    <li class="nav-item"><a href="{% url 'trainers:evaluations_view' %}" class="nav-link {% if request.path == evaluations_view_url %} active{% endif %}"><i class="bi bi-person-badge me-2"></i>Evaluations</a></li>
                     <li class="nav-item">
-                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link">
+                    <a href="{% url 'communication:trainer_conversations_view' %}" class="nav-link {% if request.path == trainer_conversations_view_url %} active{% endif %}">
                         <i class="bi bi-chat-dots me-2"></i>Messages
                     </a>
                     </li>
@@ -173,7 +179,7 @@
                 </button>
 
                 <ul class="dropdown-menu shadow" aria-labelledby="userMenuButtonMobile" style="min-width:220px;">
-                    <li><a class="dropdown-item d-flex align-items-center" href="#"><i class="bi bi-person me-2"></i>
+                    <li><a class="dropdown-item d-flex align-items-center" href="{% url 'accounts:trainer_profile_view' %}"><i class="bi bi-person me-2"></i>
                             Profile Settings</a></li>
                     <li><a class="dropdown-item d-flex align-items-center" href="#"><i class="bi bi-bell me-2"></i>
                             Notifications</a></li>
