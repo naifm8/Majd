@@ -8,12 +8,12 @@ urlpatterns = [
     path("", views.academy_list_view, name="list"),
     path("setup/", views.academy_setup_view, name="setup"),
     path("dashboard/", views.AcademyDashboardView, name="dashboard"),
-    path("dashboard/subscriptions/", views.subscription_dashboard, name="subscription_dashboard"),
-    path("dashboard/subscriptions/add/", views.add_subscription_plan, name="add_subscription_plan"),
-    path("dashboard/subscriptions/<int:plan_id>/edit/", views.edit_subscription_plan, name="edit_subscription_plan"),
-    path("dashboard/subscriptions/<int:plan_id>/delete/", views.delete_subscription_plan, name="delete_subscription_plan"),
+    #path("dashboard/subscriptions/", views.subscription_dashboard, name="subscription_dashboard"),
+    #path("dashboard/subscriptions/add/", views.add_subscription_plan, name="add_subscription_plan"),
+    #path("dashboard/subscriptions/<int:plan_id>/edit/", views.edit_subscription_plan, name="edit_subscription_plan"),
+    #path("dashboard/subscriptions/<int:plan_id>/delete/", views.delete_subscription_plan, name="delete_subscription_plan"),
     # Subscription Enrollment
-    path("<slug:academy_slug>/subscription/<int:plan_id>/enroll/", views.subscription_enroll_redirect, name="subscription_enroll_redirect"),
+    #path("<slug:academy_slug>/subscription/<int:plan_id>/enroll/", views.subscription_enroll_redirect, name="subscription_enroll_redirect"),
 
     # Trainer 
     path("trainers/", views.trainer_dashboard, name="trainer_dashboard"),

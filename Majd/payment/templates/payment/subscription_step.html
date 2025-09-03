@@ -19,6 +19,18 @@
       Join our platform to showcase your academy programs. We’ll help you reach parents, players, 
       and communities by turning your offerings into beautiful, shareable academy cards.
     </p>
+
+    <!-- Billing Toggle -->
+    <div class="btn-group mt-4 mb-5" role="group">
+      <a href="?billing=monthly" 
+         class="btn {% if billing_type == 'monthly' %}btn-success{% else %}btn-outline-success{% endif %}">
+        Monthly
+      </a>
+      <a href="?billing=yearly" 
+         class="btn {% if billing_type == 'yearly' %}btn-success{% else %}btn-outline-success{% endif %}">
+        Yearly <span class="badge bg-success ms-1">Save 17%</span>
+      </a>
+    </div>
   </div>
 
   <div class="container">
@@ -36,7 +48,8 @@
               <h4 class="fw-bold">{{ plan.name }}</h4>
               <p class="text-muted">{{ plan.description }}</p>
               <h3 class="fw-bold mb-3" style="color:#138d68;">
-                SAR {{ plan.monthly_price }} <small class="fs-6 text-muted">/month</small>
+                SAR {% if billing_type == "yearly" %}{{ plan.yearly_price }}{% else %}{{ plan.monthly_price }}{% endif %}
+                <small class="fs-6 text-muted">/{{ billing_type }}</small>
               </h3>
               
               {% if plan.is_featured %}

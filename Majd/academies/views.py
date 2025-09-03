@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from networkx import reverse
+#from networkx import reverse
 from .models import Academy, Program, Session
 from payment.models import SubscriptionPlan
 from django.utils import timezone
@@ -153,136 +153,136 @@ def AcademyDashboardView(request):
     return render(request, "academies/dashboard_overview.html", context)
 
 
-# ✅ Subscription Dashboard
-@login_required
-def subscription_dashboard(request):
-    # Ensure logged in user is academy admin
-    if not hasattr(request.user, "academy_admin_profile"):
-        messages.error(request, "You must be an Academy Admin to access the dashboard.")
-        return redirect("main:main_home_view")
+# # ✅ Subscription Dashboard
+# @login_required
+# def subscription_dashboard(request):
+#     # Ensure logged in user is academy admin
+#     if not hasattr(request.user, "academy_admin_profile"):
+#         messages.error(request, "You must be an Academy Admin to access the dashboard.")
+#         return redirect("main:main_home_view")
 
-    academy = request.user.academy_admin_profile.academy
+#     academy = request.user.academy_admin_profile.academy
     
-    # Get all available plan types
-    plan_types = PlanType.objects.all().order_by('display_order')
+#     # Get all available plan types
+#     plan_types = PlanType.objects.all().order_by('display_order')
     
-    # Get academy's subscription plans (this is the main focus)
-    academy_subscription_plans = SubscriptionPlan.objects.filter(academy=academy).order_by('-created_at')
+#     # Get academy's subscription plans (this is the main focus)
+#     academy_subscription_plans = SubscriptionPlan.objects.filter(academy=academy).order_by('-created_at')
     
-    # Get academy's subscription history (for reference)
-    subscriptions = Subscription.objects.filter(academy_name=academy.name).order_by('-created_at')
+#     # Get academy's subscription history (for reference)
+#     subscriptions = Subscription.objects.filter(academy_name=academy.name).order_by('-created_at')
     
-    # Get current active subscription
-    active_subscription = subscriptions.filter(status=Subscription.Status.SUCCESSFUL).first()
+#     # Get current active subscription
+#     active_subscription = subscriptions.filter(status=Subscription.Status.SUCCESSFUL).first()
     
-    context = {
-        "academy": academy,
-        "plan_types": plan_types,
-        "academy_subscription_plans": academy_subscription_plans,
-        "subscriptions": subscriptions,
-        "active_subscription": active_subscription,
-    }
-    return render(request, "academies/subscription_dashboard.html", context)
+#     context = {
+#         "academy": academy,
+#         "plan_types": plan_types,
+#         "academy_subscription_plans": academy_subscription_plans,
+#         "subscriptions": subscriptions,
+#         "active_subscription": active_subscription,
+#     }
+#     return render(request, "academies/subscription_dashboard.html", context)
 
 
-# ✅ Add Subscription Plan
-@login_required
-def add_subscription_plan(request):
-    # Ensure logged in user is academy admin
-    if not hasattr(request.user, "academy_admin_profile"):
-        messages.error(request, "You must be an Academy Admin to access this page.")
-        return redirect("main:main_home_view")
+# # ✅ Add Subscription Plan
+# @login_required
+# def add_subscription_plan(request):
+#     # Ensure logged in user is academy admin
+#     if not hasattr(request.user, "academy_admin_profile"):
+#         messages.error(request, "You must be an Academy Admin to access this page.")
+#         return redirect("main:main_home_view")
 
-    academy = request.user.academy_admin_profile.academy
+#     academy = request.user.academy_admin_profile.academy
     
-    if request.method == 'POST':
-        form = SubscriptionPlanForm(request.POST, academy=academy)
-        if form.is_valid():
-            subscription_plan = form.save(commit=False)
-            subscription_plan.academy = academy
-            subscription_plan.save()
-            messages.success(request, f'Subscription plan "{subscription_plan.title}" has been created successfully!')
-            return redirect('academies:subscription_dashboard')
-    else:
-        form = SubscriptionPlanForm(academy=academy)
+#     if request.method == 'POST':
+#         form = SubscriptionPlanForm(request.POST, academy=academy)
+#         if form.is_valid():
+#             subscription_plan = form.save(commit=False)
+#             subscription_plan.academy = academy
+#             subscription_plan.save()
+#             messages.success(request, f'Subscription plan "{subscription_plan.title}" has been created successfully!')
+#             return redirect('academies:subscription_dashboard')
+#     else:
+#         form = SubscriptionPlanForm(academy=academy)
     
-    context = {
-        'form': form,
-        'academy': academy,
-    }
-    return render(request, 'academies/add_subscription_plan.html', context)
+#     context = {
+#         'form': form,
+#         'academy': academy,
+#     }
+#     return render(request, 'academies/add_subscription_plan.html', context)
 
 
-# ✅ Edit Subscription Plan
-@login_required
-def edit_subscription_plan(request, plan_id):
-    # Ensure logged in user is academy admin
-    if not hasattr(request.user, "academy_admin_profile"):
-        messages.error(request, "You must be an Academy Admin to access this page.")
-        return redirect("main:main_home_view")
+# # ✅ Edit Subscription Plan
+# @login_required
+# def edit_subscription_plan(request, plan_id):
+#     # Ensure logged in user is academy admin
+#     if not hasattr(request.user, "academy_admin_profile"):
+#         messages.error(request, "You must be an Academy Admin to access this page.")
+#         return redirect("main:main_home_view")
 
-    academy = request.user.academy_admin_profile.academy
-    subscription_plan = get_object_or_404(SubscriptionPlan, id=plan_id, academy=academy)
+#     academy = request.user.academy_admin_profile.academy
+#     subscription_plan = get_object_or_404(SubscriptionPlan, id=plan_id, academy=academy)
     
-    if request.method == 'POST':
-        form = SubscriptionPlanForm(request.POST, instance=subscription_plan, academy=academy)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Subscription plan "{subscription_plan.title}" has been updated successfully!')
-            return redirect('academies:subscription_dashboard')
-    else:
-        form = SubscriptionPlanForm(instance=subscription_plan, academy=academy)
+#     if request.method == 'POST':
+#         form = SubscriptionPlanForm(request.POST, instance=subscription_plan, academy=academy)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, f'Subscription plan "{subscription_plan.title}" has been updated successfully!')
+#             return redirect('academies:subscription_dashboard')
+#     else:
+#         form = SubscriptionPlanForm(instance=subscription_plan, academy=academy)
     
-    context = {
-        'form': form,
-        'subscription_plan': subscription_plan,
-        'academy': academy,
-    }
-    return render(request, 'academies/edit_subscription_plan.html', context)
+#     context = {
+#         'form': form,
+#         'subscription_plan': subscription_plan,
+#         'academy': academy,
+#     }
+#     return render(request, 'academies/edit_subscription_plan.html', context)
 
 
-# ✅ Delete Subscription Plan
-@login_required
-def delete_subscription_plan(request, plan_id):
-    # Ensure logged in user is academy admin
-    if not hasattr(request.user, "academy_admin_profile"):
-        messages.error(request, "You must be an Academy Admin to access this page.")
-        return redirect("main:main_home_view")
+# # ✅ Delete Subscription Plan
+# @login_required
+# def delete_subscription_plan(request, plan_id):
+#     # Ensure logged in user is academy admin
+#     if not hasattr(request.user, "academy_admin_profile"):
+#         messages.error(request, "You must be an Academy Admin to access this page.")
+#         return redirect("main:main_home_view")
 
-    academy = request.user.academy_admin_profile.academy
-    subscription_plan = get_object_or_404(SubscriptionPlan, id=plan_id, academy=academy)
+#     academy = request.user.academy_admin_profile.academy
+#     subscription_plan = get_object_or_404(SubscriptionPlan, id=plan_id, academy=academy)
     
-    if request.method == 'POST':
-        plan_name = subscription_plan.plan_type.name
-        subscription_plan.delete()
-        messages.success(request, f'Subscription plan "{plan_name}" has been deleted successfully!')
-        return redirect('academies:subscription_dashboard')
+#     if request.method == 'POST':
+#         plan_name = subscription_plan.plan_type.name
+#         subscription_plan.delete()
+#         messages.success(request, f'Subscription plan "{plan_name}" has been deleted successfully!')
+#         return redirect('academies:subscription_dashboard')
     
-    context = {
-        'subscription_plan': subscription_plan,
-        'academy': academy,
-    }
-    return render(request, 'academies/delete_subscription_plan.html', context)
+#     context = {
+#         'subscription_plan': subscription_plan,
+#         'academy': academy,
+#     }
+#     return render(request, 'academies/delete_subscription_plan.html', context)
 
 
-# ✅ Subscription Enrollment Redirect
-def subscription_enroll_redirect(request, academy_slug, plan_id):
-    """
-    Redirect users based on their authentication status and profile type:
-    - If authenticated parent: redirect to parent dashboard
-    - If not authenticated: redirect to get started page
-    """
-    if request.user.is_authenticated:
-        # Check if user has a parent profile
-        if hasattr(request.user, 'parent_profile'):
-            # Redirect to parent subscriptions page
-            return redirect('parents:subscriptions')
-        else:
-            # User is authenticated but not a parent, redirect to get started
-            return redirect('accounts:selection_view')
-    else:
-        # Not authenticated, redirect to get started
-        return redirect('accounts:selection_view')
+# # ✅ Subscription Enrollment Redirect
+# def subscription_enroll_redirect(request, academy_slug, plan_id):
+#     """
+#     Redirect users based on their authentication status and profile type:
+#     - If authenticated parent: redirect to parent dashboard
+#     - If not authenticated: redirect to get started page
+#     """
+#     if request.user.is_authenticated:
+#         # Check if user has a parent profile
+#         if hasattr(request.user, 'parent_profile'):
+#             # Redirect to parent subscriptions page
+#             return redirect('parents:subscriptions')
+#         else:
+#             # User is authenticated but not a parent, redirect to get started
+#             return redirect('accounts:selection_view')
+#     else:
+#         # Not authenticated, redirect to get started
+#         return redirect('accounts:selection_view')
 
 
 # ✅ Programs Dashboard

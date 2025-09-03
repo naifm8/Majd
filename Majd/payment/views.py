@@ -111,26 +111,33 @@ def plan_type_get_started_redirect(request, plan_id):
 
 @login_required
 def subscription_step(request):
+    billing_type = request.GET.get("billing", "monthly")
     plans = PlanType.objects.all().order_by("display_order")
 
     if request.method == "POST":
         plan_id = request.POST.get("plan_id")
         plan = get_object_or_404(PlanType, id=plan_id)
 
-        # Create a subscription (fake success for now)
+        price = plan.yearly_price if billing_type == "yearly" else plan.monthly_price
+        duration_days = 365 if billing_type == "yearly" else 30
+
         Subscription.objects.create(
             academy_name=request.user.username,
             plan_type=plan,
-            price=plan.monthly_price,
-            duration_days=30,  # could extend per plan logic
+            price=price,
+            duration_days=duration_days,
             start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timezone.timedelta(days=30),
+            end_date=timezone.now().date() + timezone.timedelta(days=duration_days),
             contact_email=request.user.email,
             status="successful",
         )
 
-        messages.success(request, f"You subscribed to {plan.name} ✅")
+        messages.success(request, f"You subscribed to {plan.name} ({billing_type}) ✅")
         return redirect("academies:setup")
 
-    return render(request, "payment/subscription_step.html", {"plans": plans})
+    return render(request, "payment/subscription_step.html", {
+        "plans": plans,
+        "billing_type": billing_type,
+    })
+
 
