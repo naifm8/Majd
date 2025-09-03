@@ -5,26 +5,76 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from datetime import date, datetime, timedelta
 from django.utils import timezone
-
+from django.db.models import Sum
+from player_payments.models import PaymentTransaction
 from player.models import PlayerProfile
-from .models import Child, Enrollment, ParentSubscription
+from .models import Child, Enrollment
 from .forms import EnrollmentForm, ParentPaymentForm
-from academies.models import Academy, TrainingClass, Program
+from academies.models import Academy, Session, TrainingClass, Program
 from accounts.models import ParentProfile
 from payment.models import SubscriptionPlan
 from django.db import transaction
 # Create your views here.
 
 @login_required
-def dashboard_view(request):
-    parent = get_object_or_404(ParentProfile, user=request.user)
-    children = parent.children.with_age()
+def parent_dashboard_view(request):
+    parent_profile = getattr(request.user, "parent_profile", None)
+    if not parent_profile:
+        messages.error(request, "Only parents can access this dashboard.")
+        return redirect("home")
 
-    return render(request, "main/overview.html", {
-        'parent': parent,
-        'children': children,
-        'children_count': children.count(),
-    })
+    children = parent_profile.children.all()
+
+    # --- Stats ---
+    children_count = children.count()
+
+    today = timezone.localdate()
+    week_start = today - timedelta(days=today.weekday())   # Monday
+    week_end = week_start + timedelta(days=6)
+
+    # Sessions this week for all enrolled children
+    sessions_this_week = Session.objects.filter(
+        enrollments__child__in=children,
+        start_datetime__date__gte=week_start,
+        start_datetime__date__lte=week_end,
+        enrollments__is_active=True
+    ).distinct()
+
+    # Attendance avg (stub: replace with actual Attendance model if you have it)
+    avg_attendance = 0
+    if hasattr(children.first(), "player_profile"):
+        # Example if you store attendance_rate on player_profile
+        rates = [c.player_profile.attendance_rate for c in children if hasattr(c, "player_profile")]
+        if rates:
+            avg_attendance = round(sum(rates) / len(rates), 1)
+
+    # Payments this month
+    month_start = today.replace(day=1)
+    
+    total_payments = PaymentTransaction.objects.filter(
+    enrollment__child__in=children,
+    status="completed",
+    created_at__date__gte=month_start
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    # Recent Activity (stub — adjust for your models)
+    recent_activities = []
+    for child in children:
+        # Example: last 3 enrollments
+        recent_activities += list(
+            Enrollment.objects.filter(child=child).order_by("-enrolled_at")[:3]
+        )
+
+    context = {
+        "children": children,
+        "children_count": children_count,
+        "sessions_this_week": sessions_this_week.count(),
+        "avg_attendance": avg_attendance,
+        "total_payments": total_payments,
+        "recent_activities": recent_activities,
+    }
+    return render(request, "main/overview.html", context)
+
 
 
 @login_required
@@ -131,22 +181,26 @@ def schedule_view(request):
     today = timezone.localdate()
     tomorrow = today + timedelta(days=1)
 
+    selected_child_id = request.GET.get("child_id")  # 🔎 filter param
+
     if hasattr(request.user, "parent_profile"):
         children = request.user.parent_profile.children.all()
+
+        if selected_child_id:
+            children = children.filter(id=selected_child_id)
 
         for child in children:
             for enrollment in child.parent_enrollments.filter(
                 is_active=True
             ).prefetch_related("sessions__program__academy", "sessions__slots"):
                 for session in enrollment.sessions.all():
-                    # compute next slot occurrence
                     next_occurrence = None
                     if session.start_datetime and session.end_datetime:
                         current_date = max(today, session.start_datetime.date())
                         end_date = session.end_datetime.date()
 
                         while current_date <= end_date:
-                            weekday = current_date.strftime("%a").lower()[:3]  # mon/tue/...
+                            weekday = current_date.strftime("%a").lower()[:3]
                             slot = session.slots.filter(weekday=weekday).first()
                             if slot:
                                 next_occurrence = {
@@ -168,7 +222,7 @@ def schedule_view(request):
 
     # Deduplicate child-session pairs
     schedule_items = list({(i["child"].id, i["session"].id): i for i in schedule_items}.values())
-    print(schedule_items)
+
     # Sort by next occurrence date + time
     schedule_items.sort(key=lambda i: (i["next_occurrence"]["date"], i["next_occurrence"]["start_time"]))
 
@@ -179,28 +233,39 @@ def schedule_view(request):
             "schedule_items": schedule_items,
             "today": today,
             "tomorrow": tomorrow,
+            "children": request.user.parent_profile.children.all(),
+            "selected_child_id": int(selected_child_id) if selected_child_id else None,
         },
     )
 
 
+@login_required
+def unenroll_view(request, session_id, child_id):
+    child = get_object_or_404(Child, id=child_id, parent=request.user.parent_profile)
+    session = get_object_or_404(Session, id=session_id)
+
+    # find the enrollment linking child+program
+    enrollment = Enrollment.objects.filter(child=child, program=session.program).first()
+    if not enrollment:
+        messages.error(request, "Enrollment not found.", extra_tags="alert-danger")
+        return redirect("academies:schedule_view")
+
+    # remove session from enrollment
+    enrollment.sessions.remove(session)
+
+    # if no sessions left, deactivate enrollment
+    if enrollment.sessions.count() == 0:
+        enrollment.is_active = False
+        enrollment.save()
+        messages.success(request, f"{child.first_name} was unenrolled from {session.title}.", extra_tags="alert-success")
+    else:
+        messages.success(request, f"{child.first_name} was unenrolled from {session.title}.", extra_tags="alert-success")
+
+    return redirect("parents:schedule")
+
 
 @login_required
 def payments_view(request):
-    # Debug: Check what data we have
-    academies_count = Academy.objects.count()
-    subscription_plans_count = SubscriptionPlan.objects.count()
-    print(f"DEBUG: Found {academies_count} academies and {subscription_plans_count} subscription plans")
-    
-    # Check if we're redirecting from enrollment (specific academy needed)
-    required_academy_slug = request.GET.get('academy')
-    required_academy = None
-    if required_academy_slug:
-        try:
-            required_academy = Academy.objects.get(slug=required_academy_slug)
-            print(f"DEBUG: Parent needs to subscribe to: {required_academy.name}")
-        except Academy.DoesNotExist:
-            print(f"DEBUG: Academy with slug '{required_academy_slug}' not found")
-    
     # Get user's parent profile
     try:
         parent_profile = request.user.parent_profile
@@ -228,6 +293,7 @@ def payments_view(request):
         for enrollment in child.parent_enrollments.all():
             if enrollment.is_active:
                 # Get subscription plan price
+                from payment.models import SubscriptionPlan
                 subscription_plan = SubscriptionPlan.objects.filter(
                     academy=enrollment.program.academy,
                     is_active=True
@@ -235,13 +301,9 @@ def payments_view(request):
                 
                 price = subscription_plan.price if subscription_plan else 0
                 
-                # Get payment status from enrollment model
-                payment_status = enrollment.payment_status
+                # Calculate payment status
+                payment_status = "not_paid"  # Default to not paid
                 payment_date = enrollment.enrolled_at.strftime("%Y-%m-%d")
-                
-                # Use payment_date if available
-                if enrollment.payment_date:
-                    payment_date = enrollment.payment_date.strftime("%Y-%m-%d")
                 
                 payments.append({
                     "child": {"first_name": child.first_name, "last_name": child.last_name},
@@ -284,59 +346,6 @@ def payments_view(request):
     # Create payment form
     payment_form = ParentPaymentForm()
     
-    # Get available subscription plans for parents to subscribe to
-    available_subscription_plans = []
-    
-    # If a specific academy is required, only show that academy
-    if required_academy:
-        all_academies = [required_academy]
-        print(f"DEBUG: Showing only required academy: {required_academy.name}")
-    else:
-        all_academies = Academy.objects.all()
-        print(f"DEBUG: Processing {all_academies.count()} academies for subscription plans")
-    
-    for academy in all_academies:
-        print(f"DEBUG: Processing academy: {academy.name} (slug: {academy.slug})")
-        
-        subscription_plan = SubscriptionPlan.objects.filter(
-            academy=academy,
-            is_active=True
-        ).first()
-        
-        if not subscription_plan:
-            subscription_plan = SubscriptionPlan.objects.filter(
-                academy=academy
-            ).first()
-        
-        print(f"DEBUG: Found subscription plan: {subscription_plan}")
-        
-        # Check if this is the required academy
-        is_required = required_academy and academy.id == required_academy.id
-        
-        if subscription_plan:
-            available_subscription_plans.append({
-                "academy": academy,
-                "subscription_plan": subscription_plan,
-                "price": subscription_plan.price,
-                "plan_type": subscription_plan.plan_type.name if subscription_plan.plan_type else "Basic Plan",
-                "is_required": is_required
-            })
-        else:
-            # Add academy even without subscription plan for debugging
-            available_subscription_plans.append({
-                "academy": academy,
-                "subscription_plan": None,
-                "price": 100.00,  # Default price
-                "plan_type": "No Plan Available",
-                "is_required": is_required
-            })
-    
-    # Sort to put required academy first
-    if required_academy:
-        available_subscription_plans.sort(key=lambda x: not x.get('is_required', False))
-    
-    print(f"DEBUG: Created {len(available_subscription_plans)} subscription plan entries")
-
     context = {
         "payments": payments,
         "total_paid": total_paid,
@@ -346,8 +355,6 @@ def payments_view(request):
         "methods": payment_methods,
         "parent_profile": parent_profile,
         "payment_form": payment_form,
-        "available_subscription_plans": available_subscription_plans,
-        "required_academy": required_academy,
     }
     
     return render(request, "main/payments.html", context)
@@ -396,16 +403,10 @@ def subscriptions_view(request):
             is_active=True
         ).first()
         
-        # If no active subscription plan, try to get any subscription plan
-        if not subscription_plan:
-            subscription_plan = SubscriptionPlan.objects.filter(
-                academy=academy
-            ).first()
-        
         academies.append({
             "academy": academy,
-            "price": subscription_plan.price if subscription_plan else 100.00,  # Default price
-            "plan_type": subscription_plan.plan_type.name if subscription_plan and subscription_plan.plan_type else "Basic Plan"
+            "price": subscription_plan.price if subscription_plan else 0,
+            "plan_type": subscription_plan.plan_type.name if subscription_plan else "No Plan"
         })
     
     programs = Program.objects.filter(academy__isnull=False)
@@ -519,57 +520,25 @@ def process_payment(request):
             payment_method = request.POST.get('payment_method', 'card')
             amount = request.POST.get('amount')
             
-            if not amount:
+            if not all([enrollment_id, amount]):
                 return JsonResponse({"success": False, "error": "Missing required payment information"})
             
-            # Check if this is a new subscription (no enrollment_id) or existing enrollment payment
-            is_new_subscription = not enrollment_id
+            # Get the enrollment
+            enrollment = get_object_or_404(Enrollment, id=enrollment_id)
             
-            if is_new_subscription:
-                # This is a new academy subscription payment
-                # We need to get the academy from the payment form or session
-                academy_slug = request.POST.get('academy_slug')
-                if not academy_slug:
-                    return JsonResponse({"success": False, "error": "Academy information missing"})
-                
-                try:
-                    academy = Academy.objects.get(slug=academy_slug)
-                except Academy.DoesNotExist:
-                    return JsonResponse({"success": False, "error": "Academy not found"})
-                
-                # Get subscription plan for this academy
-                subscription_plan = SubscriptionPlan.objects.filter(
-                    academy=academy,
-                    is_active=True
-                ).first()
-                
-                if not subscription_plan:
-                    subscription_plan = SubscriptionPlan.objects.filter(
-                        academy=academy
-                    ).first()
-                
-                if not subscription_plan:
-                    return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
-                
-                # For new subscriptions, we don't have an enrollment yet
-                enrollment = None
-                
-            else:
-                # This is a payment for an existing enrollment
-                enrollment = get_object_or_404(Enrollment, id=enrollment_id)
-                
-                # Verify the enrollment belongs to the user's child
-                if enrollment.child.parent != request.user.parent_profile:
-                    return JsonResponse({"success": False, "error": "Unauthorized"})
-                
-                # Get subscription plan for pricing verification
-                subscription_plan = SubscriptionPlan.objects.filter(
-                    academy=enrollment.program.academy,
-                    is_active=True
-                ).first()
-                
-                if not subscription_plan:
-                    return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
+            # Verify the enrollment belongs to the user's child
+            if enrollment.child.parent != request.user.parent_profile:
+                return JsonResponse({"success": False, "error": "Unauthorized"})
+            
+            # Get subscription plan for pricing verification
+            from payment.models import SubscriptionPlan
+            subscription_plan = SubscriptionPlan.objects.filter(
+                academy=enrollment.program.academy,
+                is_active=True
+            ).first()
+            
+            if not subscription_plan:
+                return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
             
             # Calculate expected total with VAT (15%) - using same rounding as frontend
             base_price = float(subscription_plan.price)
@@ -588,120 +557,71 @@ def process_payment(request):
             # Create payment record (you can extend this with your payment gateway)
             from player_payments.models import PaymentTransaction, PlayerEnrollment
             
-            if is_new_subscription:
-                # This is a new academy subscription - create ParentSubscription
-                parent_subscription, created = ParentSubscription.objects.get_or_create(
-                    parent=request.user.parent_profile,
-                    academy=academy,
-                    defaults={
-                        'is_active': True,
-                        'start_date': timezone.now(),
-                        'end_date': timezone.now() + timedelta(days=30),
-                        'subscription_type': 'monthly',
-                        'amount_paid': amount,
-                    }
-                )
-                
-                # Update existing subscription if it already exists
-                if not created:
-                    parent_subscription.is_active = True
-                    parent_subscription.end_date = timezone.now() + timedelta(days=30)
-                    parent_subscription.amount_paid = amount
-                    parent_subscription.save()
-                
-                # For academy subscriptions, we don't need PlayerEnrollment or PaymentTransaction
-                # The ParentSubscription record is sufficient for tracking the subscription
-                player_enrollment = None
-                transaction = None
-                
-            else:
-                # This is a payment for an existing enrollment
-                # Create or get player enrollment
-                # First, we need to find or create a PlayerSubscription for this academy
-                from player_payments.models import PlayerSubscription
-                player_subscription, created = PlayerSubscription.objects.get_or_create(
-                    academy=enrollment.program.academy,
-                    defaults={
-                        'title': f"{enrollment.program.academy.name} Subscription",
-                        'price': subscription_plan.price,
-                        'billing_type': '3m',  # Default to 3 months
-                        'description': f"Subscription for {enrollment.program.academy.name}",
-                    }
-                )
-                
-                # Log the subscription creation/retrieval
-                logger.info(f"PlayerSubscription {'created' if created else 'found'}: {player_subscription.id} for academy {enrollment.program.academy.name}")
-                
-                # Now create the PlayerEnrollment with the subscription
-                player_enrollment, created = PlayerEnrollment.objects.get_or_create(
-                    subscription=player_subscription,
-                    child=enrollment.child,
-                    parent=request.user,
-                    start_date=date.today(),
-                    defaults={
-                        'status': 'active',
-                        'payment_method': payment_method,
-                        'end_date': date.today() + timedelta(days=30),
-                        'amount_paid': amount,  # This is the total amount including VAT
-                        'payment_date': timezone.now(),
-                    }
-                )
-                
-                # Log the enrollment creation/retrieval
-                logger.info(f"PlayerEnrollment {'created' if created else 'found'}: {player_enrollment.id} for child {enrollment.child.first_name}")
-                
-                # Create payment transaction
-                transaction = PaymentTransaction.objects.create(
-                    enrollment=player_enrollment,
-                    transaction_type='initial',
-                    status='completed',
-                    amount=amount,
-                    currency='SAR',
-                    processed_at=timezone.now(),
-                    notes=f'Payment for {enrollment.program.title} at {enrollment.program.academy.name}'
-                )
+            # Create or get player enrollment
+            # First, we need to find or create a PlayerSubscription for this academy
+            from player_payments.models import PlayerSubscription
+            player_subscription, created = PlayerSubscription.objects.get_or_create(
+                academy=enrollment.program.academy,
+                defaults={
+                    'title': f"{enrollment.program.academy.name} Subscription",
+                    'price': subscription_plan.price,
+                    'billing_type': '3m',  # Default to 3 months
+                    'description': f"Subscription for {enrollment.program.academy.name}",
+                }
+            )
             
-            # Update enrollment status to paid (only for existing enrollments)
-            if not is_new_subscription:
-                enrollment.is_active = True  # Keep enrollment active after payment
-                enrollment.payment_status = 'paid'  # Mark as paid
-                enrollment.payment_date = timezone.now()  # Set payment date
-                enrollment.save()
+            # Log the subscription creation/retrieval
+            logger.info(f"PlayerSubscription {'created' if created else 'found'}: {player_subscription.id} for academy {enrollment.program.academy.name}")
             
-            # Send invoice email to parent (only for existing enrollments with transactions)
-            email_sent = False
-            if transaction and player_enrollment:
-                from .utils import send_payment_invoice_email
-                email_sent = send_payment_invoice_email(transaction, player_enrollment, request.user)
+            # Now create the PlayerEnrollment with the subscription
+            player_enrollment, created = PlayerEnrollment.objects.get_or_create(
+                subscription=player_subscription,
+                child=enrollment.child,
+                parent=request.user,
+                start_date=date.today(),
+                defaults={
+                    'status': 'active',
+                    'payment_method': payment_method,
+                    'end_date': date.today() + timedelta(days=30),
+                    'amount_paid': amount,  # This is the total amount including VAT
+                    'payment_date': timezone.now(),
+                }
+            )
+            
+            # Log the enrollment creation/retrieval
+            logger.info(f"PlayerEnrollment {'created' if created else 'found'}: {player_enrollment.id} for child {enrollment.child.first_name}")
+            
+            # Create payment transaction
+            transaction = PaymentTransaction.objects.create(
+                enrollment=player_enrollment,
+                transaction_type='initial',
+                status='completed',
+                amount=amount,
+                currency='SAR',
+                processed_at=timezone.now(),
+                notes=f'Payment for {enrollment.program.title} at {enrollment.program.academy.name}'
+            )
+            
+            # Update enrollment status to paid
+            enrollment.is_active = True  # Keep enrollment active after payment
+            
+            # Send invoice email to parent
+            from .utils import send_payment_invoice_email
+            email_sent = send_payment_invoice_email(transaction, player_enrollment, request.user)
             
             # Log the email sending result for debugging
             import logging
             logger = logging.getLogger(__name__)
+            logger.info(f"Payment processed for {enrollment.child.first_name}. Email sent: {email_sent}. Parent email: {request.user.email}")
             
-            if is_new_subscription:
-                logger.info(f"Academy subscription processed for {academy.name}. Email sent: {email_sent}. Parent email: {request.user.email}")
-                success_message = f"Academy subscription of SAR {amount} processed successfully for {academy.name}. You can now enroll your children in their programs."
-                if email_sent:
-                    success_message += " An invoice has been sent to your email."
-                else:
-                    success_message += " Note: Invoice email could not be sent."
-                
-                # Return success with redirect information
-                return JsonResponse({
-                    "success": True, 
-                    "subscription_created": True, 
-                    "email_sent": email_sent,
-                    "redirect_url": f"/academies/{academy.slug}/",
-                    "message": success_message
-                })
+            success_message = f"Payment of SAR {amount} processed successfully for {enrollment.child.first_name}"
+            if email_sent:
+                success_message += ". An invoice has been sent to your email."
             else:
-                logger.info(f"Payment processed for {enrollment.child.first_name}. Email sent: {email_sent}. Parent email: {request.user.email}")
-                success_message = f"Payment of SAR {amount} processed successfully for {enrollment.child.first_name}"
-                if email_sent:
-                    success_message += ". An invoice has been sent to your email."
-                else:
-                    success_message += ". Note: Invoice email could not be sent."
-                return JsonResponse({"success": True, "transaction_id": transaction.id, "email_sent": email_sent})
+                success_message += ". Note: Invoice email could not be sent."
+            
+            messages.success(request, success_message)
+            return JsonResponse({"success": True, "transaction_id": transaction.id, "email_sent": email_sent})
             
         except Exception as e:
             # Log the error for debugging
@@ -765,5 +685,28 @@ def settings_view(request):
         "user": request.user,
     }
     return render(request, "main/settings.html", context)
+
+@login_required
+def edit_profile_view(request):
+    if request.method == "POST":
+        user = request.user
+        parent_profile = getattr(user, "parent_profile", None)
+
+        # Update User fields
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
+        user.save()
+
+        # Update ParentProfile fields
+        if parent_profile:
+            parent_profile.phone = request.POST.get("phone", parent_profile.phone)
+            parent_profile.location = request.POST.get("location", parent_profile.location)
+            parent_profile.save()
+
+        messages.success(request, "Profile updated successfully.", extra_tags="alert-success")
+        return redirect("parents:settings")  # adjust to your settings URL
+
+    return redirect("parents:settings")
 
 

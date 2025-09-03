@@ -59,8 +59,8 @@ class TrainerProfile(models.Model):
 class ParentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='parent_profile')
     phone = models.CharField(max_length=12, blank=True,)
-    latitude  = models.DecimalField(null=True, blank=True, decimal_places=15, max_digits=18)
-    longitude = models.DecimalField(null=True, blank=True, decimal_places=15, max_digits=18)
+    location  = models.CharField(max_length=64,null=True, blank=True)
+    
 
     def __str__(self):
         return f"ParentProfile<{self.user}>"
