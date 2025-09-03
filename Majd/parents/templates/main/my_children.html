@@ -224,74 +224,62 @@
                   <i class="bi bi-calendar-event text-success me-2"></i>
                   {{ child.first_name }}'s Sessions
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
-                {% with child.programs.all as child_programs %}
-                  {% for program in child_programs %}
-                    {% for session in program.sessions.all %}
-                      <div class="card mb-3 shadow-sm border-0 rounded-3">
-                        <div class="card-body">
-                          <!-- Title + Status -->
-                          <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                              <h6 class="fw-bold mb-0">{{ session.title }}</h6>
-                              <small class="text-muted">{{ program.academy.name }}</small>
-                            </div>
-                            <span class="badge 
-                              {% if session.status == 'upcoming' %} bg-success-subtle text-success 
-                              {% elif session.status == 'scheduled' %} bg-primary-subtle text-primary 
-                              {% else %} bg-secondary-subtle text-dark {% endif %}">
-                              {{ session.status|default:"scheduled" }}
-                            </span>
-                          </div>
+                
+                {% with child.parent_enrollments.all as enrollments %}
+                  {% if enrollments %}
+                    {% for enrollment in enrollments %}
+                      <h6 class="fw-bold text-success mb-2">{{ enrollment.program.title }} ({{ enrollment.program.academy.name }})</h6>
+                      
+                      {% if enrollment.sessions.all %}
+                        {% for session in enrollment.sessions.all %}
+                          <div class="card mb-3 shadow-sm border-0 rounded-3">
+                            <div class="card-body">
+                              <!-- Title + Status -->
+                              <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                  <h6 class="fw-bold mb-0">{{ session.title }}</h6>
+                                  <small class="text-muted">{{ session.get_level_display }}</small>
+                                </div>
+                                <span class="badge bg-success">Enrolled</span>
+                              </div>
 
-                          <!-- Date / Time / Location -->
-                          <div class="d-flex flex-wrap text-muted small mb-2 mt-2">
-                            <span class="me-3"><i class="bi bi-calendar3 me-1"></i> 
-                              {{ session.start_date|date:"M j, Y" }}
-                            </span>
-                            <span class="me-3"><i class="bi bi-clock me-1"></i> 
-                              {{ session.slots.first.start_time|time:"g:i A" }} - {{ session.slots.first.end_time|time:"g:i A" }}
-                            </span>
-                            <span class="me-3"><i class="bi bi-geo-alt me-1"></i> {{ session.location|default:"TBD" }}</span>
-                          </div>
+                              <!-- Date / Time -->
+                              <div class="d-flex flex-wrap text-muted small mb-2 mt-2">
+                                <span class="me-3">
+                                  <i class="bi bi-calendar3 me-1"></i> 
+                                  {{ session.start_datetime|date:"M j, Y" }}
+                                </span>
+                                <span class="me-3">
+                                  <i class="bi bi-clock me-1"></i> 
+                                  {{ session.slots.first.start_time|time:"g:i A" }} – {{ session.slots.first.end_time|time:"g:i A" }}
+                                </span>
+                              </div>
 
-                          <!-- Coach / Type -->
-                          <div class="row small mb-2">
-                            <div class="col-md-6">
-                              <p class="mb-1"><strong>Coach:</strong> {{ session.trainer.user.get_full_name|default:"Unassigned" }}</p>
-                            </div>
-                            <div class="col-md-6">
-                              <p class="mb-1"><strong>Session Type:</strong> {{ session.get_level_display }}</p>
+                              <!-- Coach -->
+                              <p class="small mb-0"><strong>Coach:</strong> {{ session.trainer.user.get_full_name|default:"Unassigned" }}</p>
                             </div>
                           </div>
-
-                          <!-- Focus Area -->
-                          <p class="mb-2 small"><strong>Focus Area:</strong> {{ session.focus_area|default:"-" }}</p>
-
-                          <!-- Buttons -->
-                          <div class="d-flex gap-2">
-                            <a href="#" class="btn btn-outline-success btn-sm flex-fill">
-                              <i class="bi bi-eye me-1"></i> View Details
-                            </a>
-                            <a href="#" class="btn btn-outline-success btn-sm flex-fill">
-                              <i class="bi bi-chat-dots me-1"></i> Contact Coach
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    {% empty %}
-                      <p class="text-muted">No sessions scheduled for {{ program.title }}.</p>
+                        {% empty %}
+                          <p class="text-muted small">No sessions selected for this program.</p>
+                        {% endfor %}
+                      {% else %}
+                        <p class="text-muted">No sessions linked to {{ enrollment.program.title }} yet.</p>
+                      {% endif %}
+                      <hr>
                     {% endfor %}
-                  {% empty %}
+                  {% else %}
                     <p class="text-muted">This child is not enrolled in any programs.</p>
-                  {% endfor %}
+                  {% endif %}
                 {% endwith %}
+
               </div>
             </div>
           </div>
         </div>
+
 
         <!-- Contact Coach Modal -->
         <div class="modal fade" id="chatModal{{ session.id }}" tabindex="-1" aria-labelledby="chatModalLabel{{ session.id }}" aria-hidden="true">

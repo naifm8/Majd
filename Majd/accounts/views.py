@@ -153,7 +153,7 @@ def register_view(request):
                     from django.contrib.auth import login
                     login(request, user)
                     messages.success(request, "Registered successfully. Welcome to your dashboard!", "alert-success")
-                    return redirect("academies:setup")
+                    return redirect("payment:subscription_step")
 
                 from django.contrib.auth import login
                 login(request, user)

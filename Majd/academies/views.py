@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from .forms import ProgramForm, SessionForm, AcademyForm, SubscriptionPlanForm
+from .forms import ProgramForm, SessionForm, AcademyForm
 from accounts.models import TrainerProfile
 from parents.models import Child, Enrollment
 from player.models import PlayerProfile, PlayerSession
@@ -110,19 +110,32 @@ def academy_setup_view(request):
         messages.error(request, "You must be an academy admin to access this page.")
         return redirect("main:main_home_view")
 
+    # ✅ ensure subscription exists and is successful
+    from payment.models import Subscription
+    has_subscription = Subscription.objects.filter(
+        contact_email=request.user.email, status="successful"
+    ).exists()
+
+    if not has_subscription:
+        messages.error(request, "You must subscribe before setting up your academy.")
+        return redirect("payment:subscription_step")
+
     profile = request.user.academy_admin_profile
     academy = getattr(profile, "academy", None)
 
     if request.method == "POST":
         form = AcademyForm(request.POST, request.FILES, instance=academy)
         if form.is_valid():
-            form.save()
+            academy = form.save(commit=False)
+            academy.owner = profile  # ensure link
+            academy.save()
             messages.success(request, "Academy profile updated successfully!")
             return redirect("academies:detail", slug=academy.slug)
     else:
         form = AcademyForm(instance=academy)
 
     return render(request, "academies/academy_setup.html", {"form": form})
+
 
 
 @login_required

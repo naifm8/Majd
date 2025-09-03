@@ -1,9 +1,13 @@
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from .models import PlanType, SubscriptionPlan, Subscription
 from .forms import CheckoutForm
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.contrib import messages
+
 
 class PlanTypeListView(ListView):
     model = PlanType
@@ -103,3 +107,30 @@ def plan_type_get_started_redirect(request, plan_id):
     else:
         # Not authenticated, redirect to get started
         return redirect('accounts:selection_view')
+
+
+@login_required
+def subscription_step(request):
+    plans = PlanType.objects.all().order_by("display_order")
+
+    if request.method == "POST":
+        plan_id = request.POST.get("plan_id")
+        plan = get_object_or_404(PlanType, id=plan_id)
+
+        # Create a subscription (fake success for now)
+        Subscription.objects.create(
+            academy_name=request.user.username,
+            plan_type=plan,
+            price=plan.monthly_price,
+            duration_days=30,  # could extend per plan logic
+            start_date=timezone.now().date(),
+            end_date=timezone.now().date() + timezone.timedelta(days=30),
+            contact_email=request.user.email,
+            status="successful",
+        )
+
+        messages.success(request, f"You subscribed to {plan.name} ✅")
+        return redirect("academies:setup")
+
+    return render(request, "payment/subscription_step.html", {"plans": plans})
+
