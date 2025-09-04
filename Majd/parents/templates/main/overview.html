@@ -171,13 +171,30 @@
             <!-- Payment Due -->
             <div class="card shadow-sm payment-due-card">
               <div class="card-body">
-                <h6 class="fw-bold text-warning mb-2">
-                  <i class="bi bi-exclamation-circle me-2"></i> Payment Due
-                </h6>
-                <p class="mb-3 text-muted">Equipment fee for Alex Johnson is due in 3 days.</p>
-                <button class="btn btn-success text-white px-4">Pay Now</button>
+                {% if payment_due %}
+                  <h6 class="fw-bold text-warning mb-2">
+                    <i class="bi bi-exclamation-circle me-2"></i> Payment Due
+                  </h6>
+                  <p class="mb-3 text-muted">
+                    {{ payment_due.child.first_name }}’s subscription ({{ payment_due.subscription.title }})
+                    {% if due_days > 0 %}
+                      is due in {{ due_days }} day{{ due_days|pluralize }}.
+                    {% elif due_days == 0 %}
+                      is due <strong>today</strong>.
+                    {% else %}
+                      expired {{ due_days_abs }} day{{ due_days_abs|pluralize }} ago.
+                    {% endif %}
+                  </p>
+                  <a href="#" class="btn btn-success text-white px-4">Pay Now</a>
+                {% else %}
+                  <h6 class="fw-bold text-success mb-2">
+                    <i class="bi bi-check-circle me-2"></i> No Payments Due
+                  </h6>
+                  <p class="mb-3 text-muted">All subscriptions are up to date.</p>
+                {% endif %}
               </div>
             </div>
+
 
         </div>
     </div>

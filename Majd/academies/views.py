@@ -24,18 +24,24 @@ from payment.models import PlanType, SubscriptionPlan, Subscription
 def _academy(user):
     return user.academy_admin_profile.academy
 
+
 def _is_parent_subscribed_to_academy(parent_profile, academy):
     """
-    Check if a parent is subscribed to an academy.
+    Check if a parent has an active, valid subscription to the academy.
     """
     from parents.models import ParentSubscription
-    
+
+    today = timezone.now().date()
     try:
         subscription = ParentSubscription.objects.get(
             parent=parent_profile,
-            academy=academy
+            academy=academy,
         )
-        return subscription.is_valid
+        # Check if still valid
+        if hasattr(subscription, "start_date") and hasattr(subscription, "end_date"):
+            return subscription.start_date <= today <= subscription.end_date
+        # Otherwise just check is_active field
+        return getattr(subscription, "is_active", True)
     except ParentSubscription.DoesNotExist:
         return False
 
@@ -134,7 +140,7 @@ def academy_setup_view(request):
         messages.error(request, "You must be an academy admin to access this page.")
         return redirect("main:main_home_view")
 
-    # ✅ ensure subscription exists and is successful
+    # ensure subscription exists and is successful
     from payment.models import Subscription
     has_subscription = Subscription.objects.filter(
         contact_email=request.user.email, status="successful"
@@ -985,13 +991,7 @@ def enrollment_details_view(request, academy_slug, program_id):
             messages.error(request, "Emergency contact name and phone are required.")
             return redirect("academies:enrollment_details", academy_slug=academy.slug, program_id=program.id)
 
-        # ✅ Subscription check
-        is_subscribed = _is_parent_subscribed_to_academy(parent_profile, academy)
-        if not is_subscribed:
-            from django.urls import reverse
-            payments_url = reverse('parents:payments') + f'?academy={academy.slug}'
-            messages.warning(request, f"You need to subscribe to {academy.name} before enrolling your children.")
-            return redirect(payments_url)
+        
 
         for child in children:
             # 🔎 Get existing sessions for this child

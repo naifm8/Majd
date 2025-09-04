@@ -6,7 +6,7 @@ from django.views.decorators.http import require_POST
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.db.models import Sum
-from player_payments.models import PaymentTransaction
+from player_payments.models import PaymentTransaction, PlayerEnrollment
 from player.models import PlayerProfile
 from .models import Child, Enrollment
 from .forms import EnrollmentForm, ParentPaymentForm
@@ -40,27 +40,40 @@ def parent_dashboard_view(request):
         enrollments__is_active=True
     ).distinct()
 
-    # Attendance avg (stub: replace with actual Attendance model if you have it)
+    # Attendance avg (if PlayerProfile has attendance_rate)
     avg_attendance = 0
-    if hasattr(children.first(), "player_profile"):
-        # Example if you store attendance_rate on player_profile
-        rates = [c.player_profile.attendance_rate for c in children if hasattr(c, "player_profile")]
+    if children.exists():
+        rates = [
+            c.player_profile.attendance_rate
+            for c in children
+            if hasattr(c, "player_profile")
+        ]
         if rates:
             avg_attendance = round(sum(rates) / len(rates), 1)
 
     # Payments this month
     month_start = today.replace(day=1)
-    
     total_payments = PaymentTransaction.objects.filter(
-    enrollment__child__in=children,
-    status="completed",
-    created_at__date__gte=month_start
+        enrollment__child__in=children,
+        status="completed",
+        created_at__date__gte=month_start
     ).aggregate(total=Sum("amount"))["total"] or 0
 
-    # Recent Activity (stub — adjust for your models)
+    # --- Payment Due ---
+    payment_due = PlayerEnrollment.objects.filter(
+        child__in=children,
+        status="active"
+    ).order_by("end_date").first()  # soonest expiring plan
+
+    due_days, due_days_abs = None, None
+    if payment_due:
+        due_days = (payment_due.end_date - today).days
+        due_days_abs = abs(due_days)
+
+    # --- Recent Activity ---
     recent_activities = []
     for child in children:
-        # Example: last 3 enrollments
+        # last 3 enrollments (adjust if you track activity elsewhere)
         recent_activities += list(
             Enrollment.objects.filter(child=child).order_by("-enrolled_at")[:3]
         )
@@ -71,9 +84,12 @@ def parent_dashboard_view(request):
         "sessions_this_week": sessions_this_week.count(),
         "avg_attendance": avg_attendance,
         "total_payments": total_payments,
+        "payment_due": payment_due,
+        "due_days": due_days,
+        "due_days_abs": due_days_abs,
         "recent_activities": recent_activities,
     }
-    return render(request, "main/overview.html", context)
+    return render(request, "main/overview.html", context)   
 
 
 
@@ -394,10 +410,9 @@ def reports_view(request):
 
 @login_required
 def subscriptions_view(request):
-    # Get real academies and programs from database with pricing
+    # Get academies with subscription plan info
     academies = []
     for academy in Academy.objects.all():
-        # Get the subscription plan for this academy
         subscription_plan = SubscriptionPlan.objects.filter(
             academy=academy,
             is_active=True
@@ -406,27 +421,27 @@ def subscriptions_view(request):
         academies.append({
             "academy": academy,
             "price": subscription_plan.price if subscription_plan else 0,
-            "plan_type": subscription_plan.plan_type.name if subscription_plan else "No Plan"
+            "plan_type": (
+                subscription_plan.plan_type.name
+                if subscription_plan and subscription_plan.plan_type
+                else "No Plan"
+            ),
         })
     
     programs = Program.objects.filter(academy__isnull=False)
     
     # Get user's parent profile
-    try:
-        parent_profile = request.user.parent_profile
-    except:
-        parent_profile = None
+    parent_profile = getattr(request.user, "parent_profile", None)
     
     # Create enrollment form
     enrollment_form = EnrollmentForm(parent=parent_profile) if parent_profile else None
     
-    # Get real enrollments if parent profile exists
+    # Build enrollments list
+    enrollments = []
     if parent_profile:
-        enrollments = []
         for child in parent_profile.children.all():
             for enrollment in child.parent_enrollments.all():
                 if enrollment.is_active:
-                    # Get the subscription plan price for this program
                     subscription_plan = SubscriptionPlan.objects.filter(
                         academy=enrollment.program.academy,
                         is_active=True
@@ -438,7 +453,7 @@ def subscriptions_view(request):
                         "id": enrollment.id,
                         "academy": enrollment.program.academy,
                         "program": enrollment.program.title,
-                        "location": enrollment.program.academy.city,
+                        "location": getattr(enrollment.program.academy, "city", "-"),
                         "children": f"{child.first_name} {child.last_name}".strip(),
                         "features": [enrollment.program.sport_type.title()],
                         "status": "Active" if enrollment.is_active else "Inactive",
@@ -447,8 +462,6 @@ def subscriptions_view(request):
                         "enrollment": enrollment,
                         "child": child,
                     })
-    else:
-        enrollments = []
     
     # Calculate totals
     total_subscriptions = len(enrollments)
@@ -463,7 +476,7 @@ def subscriptions_view(request):
         "active_subscriptions": active_subscriptions,
         "monthly_spend": monthly_spend,
         "parent_profile": parent_profile,
-        "form": enrollment_form,  # Add the form to context
+        "form": enrollment_form,
     }
     return render(request, "main/subscriptions.html", context)
 
