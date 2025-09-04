@@ -9,7 +9,7 @@ from .models import (
 )
 
 
-# ✅ PlayerProfile مع عرض التقدّم والدرجة
+
 @admin.register(PlayerProfile)
 class PlayerProfileAdmin(admin.ModelAdmin):
     list_display = ("child", "academy", "attendance_rate", "avg_progress", "current_grade")
@@ -19,7 +19,7 @@ class PlayerProfileAdmin(admin.ModelAdmin):
 
 
 
-# ✅ Evaluation (مربوط بالـ TrainingClass)
+
 @admin.register(Evaluation)
 class EvaluationAdmin(admin.ModelAdmin):
     list_display = ("player", "score", "coach", "training_class", "created_at")
@@ -27,7 +27,7 @@ class EvaluationAdmin(admin.ModelAdmin):
     search_fields = ("player__child__first_name", "player__child__last_name", "feedback")
 
 
-# ✅ PlayerClassAttendance (الجديد)
+
 @admin.register(PlayerClassAttendance)
 class PlayerClassAttendanceAdmin(admin.ModelAdmin):
     list_display = ("player", "training_class", "status")
@@ -35,7 +35,7 @@ class PlayerClassAttendanceAdmin(admin.ModelAdmin):
     search_fields = ("player__child__first_name", "player__child__last_name")
 
 
-# باقي الموديلات
+
 admin.site.register(PlayerSkill)
 admin.site.register(PlayerSession)
 admin.site.register(Achievement)

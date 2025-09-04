@@ -89,7 +89,7 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('enrollment__child', 'enrollment__subscription')
 
 
-# Additional admin configurations
+
 admin.site.site_header = "Majd Player Payments Administration"
 admin.site.site_title = "Majd Player Payments Admin"
 admin.site.index_title = "Welcome to Majd Player Payments Administration"

@@ -22,7 +22,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # Get all parent profiles
+ 
         parents = ParentProfile.objects.all()
         
         if not parents.exists():
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             )
             return
 
-        # Get academies to create subscriptions for
+
         if options['academy_slug']:
             try:
                 academies = [Academy.objects.get(slug=options['academy_slug'])]
@@ -43,7 +43,7 @@ class Command(BaseCommand):
         elif options['all_academies']:
             academies = Academy.objects.all()
         else:
-            # Default: create subscriptions for Falcon Academy
+
             try:
                 academies = [Academy.objects.get(slug='Falcon-Academy')]
             except Academy.DoesNotExist:
@@ -65,7 +65,7 @@ class Command(BaseCommand):
             self.stdout.write(f'Creating subscriptions for academy: {academy.name}')
             
             for parent in parents:
-                # Create or update subscription
+
                 subscription, created = ParentSubscription.objects.get_or_create(
                     parent=parent,
                     academy=academy,
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                         'start_date': timezone.now(),
                         'end_date': timezone.now() + timedelta(days=30),
                         'subscription_type': 'monthly',
-                        'amount_paid': 100.00,  # Test amount
+                        'amount_paid': 100.00,  
                     }
                 )
                 
@@ -84,7 +84,7 @@ class Command(BaseCommand):
                         f'  ✓ Created subscription for {parent.user.username}'
                     )
                 else:
-                    # Update existing subscription to be active
+
                     subscription.is_active = True
                     subscription.end_date = timezone.now() + timedelta(days=30)
                     subscription.save()

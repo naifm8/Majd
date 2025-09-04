@@ -184,7 +184,7 @@
                                 {% endfor %}
                             </div>
 
-                            <!-- Card Details (shown when card is selected) -->
+                       
                             <div id="card-details" class="card-details">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -269,9 +269,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const cardDetails = document.getElementById('card-details');
     const billingRadios = document.querySelectorAll('input[name="billing"]');
     
-    // Get plan price from the page
+ 
     const planPrice = {{ plan.monthly_price }};
-    const yearlyDiscount = 0.17; // 17% discount
+    const yearlyDiscount = 0.17; // 
     
     function toggleCardDetails() {
         const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
@@ -287,43 +287,43 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentPrice, vat, total;
         
         if (selectedBilling && selectedBilling.id === 'yearly') {
-            // Yearly pricing with 17% discount
+          
             currentPrice = planPrice * (1 - yearlyDiscount);
             vat = Math.round(currentPrice * 0.15);
             total = currentPrice + vat;
             
-            // Update billing badge
+           
             document.getElementById('billing-badge').textContent = 'Yearly billing';
         } else {
-            // Monthly pricing
+         
             currentPrice = planPrice;
             vat = Math.round(currentPrice * 0.15);
             total = currentPrice + vat;
             
-            // Update billing badge
+          
             document.getElementById('billing-badge').textContent = 'Monthly billing';
         }
         
-        // Update cost breakdown
+       
         document.getElementById('subtotal').textContent = `SAR ${Math.round(currentPrice)}`;
         document.getElementById('vat-amount').textContent = `SAR ${vat}`;
         document.getElementById('total-amount').textContent = `SAR ${Math.round(total)}/month`;
         
-        // Update submit button
+      
         document.getElementById('submit-button').textContent = `Complete Subscription - SAR ${Math.round(total)}`;
     }
     
-    // Payment method toggle
+  
     paymentMethodRadios.forEach(radio => {
         radio.addEventListener('change', toggleCardDetails);
     });
     
-    // Billing cycle toggle
+  
     billingRadios.forEach(radio => {
         radio.addEventListener('change', updatePricing);
     });
     
-    // Initial states
+   
     toggleCardDetails();
     updatePricing();
 });

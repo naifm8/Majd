@@ -1,4 +1,4 @@
-/* Pricing Page Styles */
+
 .pricing-hero {
   margin-bottom: 2rem;
 }
@@ -21,13 +21,13 @@
   font-size: 1.1rem;
 }
 
-/* Main Title */
+
 .fw-semibold {
   font-weight: 600 !important;
   color: #343a40;
 }
 
-/* Pricing Toggle */
+
 .pricing-toggle {
   margin-bottom: 2rem;
 }
@@ -49,7 +49,7 @@
   border: 1px solid #dee2e6 !important;
 }
 
-/* Pricing Cards */
+
 .pricing-card {
   border: 1px solid #e9ecef;
   border-radius: 1rem;
@@ -79,7 +79,7 @@
   background: linear-gradient(90deg, #28a745, #20c997);
 }
 
-/* Most Popular Badge */
+
 .badge.text-bg-success {
   background-color: #28a745 !important;
   color: white !important;
@@ -88,7 +88,7 @@
   border-radius: 1rem;
 }
 
-/* Pricing Icons */
+
 .pricing-icon {
   width: 4rem;
   height: 4rem;
@@ -113,21 +113,21 @@
   background: linear-gradient(135deg, #6f42c1, #e83e8c);
 }
 
-/* Plan Names */
+
 .pricing-card h6 {
   color: #343a40;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
-/* Plan Descriptions */
+
 .pricing-card .text-muted {
   color: #6c757d !important;
   font-size: 0.875rem;
   line-height: 1.4;
 }
 
-/* Pricing */
+
 .pricing-price {
   color: #343a40;
   font-weight: 700;
@@ -139,7 +139,7 @@
   font-weight: 400;
 }
 
-/* Features List */
+
 .pricing-features {
   margin: 1.5rem 0;
   flex-grow: 1;
@@ -167,7 +167,7 @@
   color: #6c757d;
 }
 
-/* Call to Action Buttons */
+
 .cta-btn {
   padding: 0.75rem 1.5rem;
   font-weight: 600;
@@ -201,7 +201,7 @@
   box-shadow: 0 0.5rem 1rem rgba(73, 80, 87, 0.3);
 }
 
-/* Advantage Section */
+
 .advantage {
   background: #f8f9fa;
   border-radius: 1rem;
@@ -230,7 +230,7 @@
   line-height: 1.5;
 }
 
-/* Responsive Design */
+
 @media (max-width: 991.98px) {
   .pricing-card {
     margin-bottom: 1rem;

@@ -48,7 +48,6 @@
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start">
         <div class="d-flex gap-3">
-          <!-- Academy Logo Initial -->
           <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
                style="width:45px;height:45px;">
             {{ enrollment.academy.name|slice:":3"|upper }}
@@ -68,7 +67,7 @@
           </div>
         </div>
 
-        <!-- Right Side -->
+      
         <div class="text-end">
           <span class="badge {% if enrollment.status == 'Active' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-dark{% endif %}">
             {{ enrollment.status }}
@@ -107,7 +106,7 @@
 
 </div>
 
-<!-- Modal: Enroll Child -->
+
 <div class="modal fade" id="enrollModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -161,7 +160,7 @@
   </div>
 </div>
 
-<!-- Modal: Browse Academies -->
+
 <div class="modal fade" id="findAcademyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow">
@@ -209,7 +208,7 @@
 </div>
 
 <script>
-// Handle enrollment form submission
+
 document.getElementById('enrollmentForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -225,7 +224,7 @@ document.getElementById('enrollmentForm').addEventListener('submit', function(e)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Close modal and reload page
+  
             bootstrap.Modal.getInstance(document.getElementById('enrollModal')).hide();
             location.reload();
         } else {
@@ -238,7 +237,7 @@ document.getElementById('enrollmentForm').addEventListener('submit', function(e)
     });
 });
 
-// Handle pause/resume enrollment
+
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('pause-enrollment')) {
         const enrollmentId = e.target.dataset.enrollmentId;

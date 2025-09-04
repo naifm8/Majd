@@ -26,7 +26,7 @@ class Command(BaseCommand):
         self.stdout.write(f'Testing invoice email to: {email}')
         
         try:
-            # Create test data if it doesn't exist
+
             user, created = User.objects.get_or_create(
                 username='test_parent',
                 defaults={
@@ -39,7 +39,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test user')
             
-            # Create parent profile
+
             parent_profile, created = ParentProfile.objects.get_or_create(
                 user=user,
                 defaults={'phone': '1234567890'}
@@ -48,7 +48,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created parent profile')
             
-            # Create academy admin profile for the academy owner
+
             admin_user, created = User.objects.get_or_create(
                 username='test_admin',
                 defaults={
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 user=admin_user
             )
             
-            # Create academy
+
             academy, created = Academy.objects.get_or_create(
                 name='Test Academy',
                 defaults={
@@ -77,7 +77,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test academy')
             
-            # Create program
+  
             program, created = Program.objects.get_or_create(
                 title='Test Program',
                 academy=academy,
@@ -90,7 +90,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test program')
             
-            # Create child
+
             child, created = Child.objects.get_or_create(
                 parent=parent_profile,
                 first_name='Test',
@@ -105,7 +105,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test child')
             
-            # Create subscription
+ 
             subscription, created = PlayerSubscription.objects.get_or_create(
                 title='Test Subscription',
                 academy=academy,
@@ -119,7 +119,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test subscription')
             
-            # Create enrollment
+
             enrollment, created = PlayerEnrollment.objects.get_or_create(
                 subscription=subscription,
                 child=child,
@@ -137,7 +137,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test enrollment')
             
-            # Create transaction
+ 
             transaction, created = PaymentTransaction.objects.get_or_create(
                 enrollment=enrollment,
                 transaction_type='initial',
@@ -152,7 +152,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write('Created test transaction')
             
-            # Send test email
+
             self.stdout.write('Sending test invoice email...')
             success = send_payment_invoice_email(transaction, enrollment, user)
             

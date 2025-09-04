@@ -14,9 +14,9 @@ class PlayerProfile(models.Model):
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True, related_name="players")
     
     
-    attendance_rate = models.FloatField(default=0)         # 0..100
+    attendance_rate = models.FloatField(default=0)       
     current_grade   = models.CharField(max_length=5, blank=True)  
-    avg_progress    = models.FloatField(default=0.0)       # متوسط درجات التقييمات (0..100)
+    avg_progress    = models.FloatField(default=0.0)      
     
     def compute_skill_progress(self):
         skills = self.skills.all()
@@ -122,7 +122,7 @@ class Evaluation(models.Model):
     training_class = models.ForeignKey(TrainingClass, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluations")
 
 
-    # ربط التقييم بمهارة (اختياري)
+   
     skill = models.ForeignKey(PlayerSkill, on_delete=models.SET_NULL, null=True, blank=True, related_name="skill_evaluations")
 
 
@@ -143,19 +143,19 @@ class Evaluation(models.Model):
 
 
 
-# Signals لتحديث التقدير عند أي إضافة/تعديل/حذف تقييم
+
 @receiver([post_save, post_delete], sender=Evaluation)
 def update_player_after_eval_change(sender, instance, **kwargs):
-    # تحديث متوسط اللاعب
+
     instance.player.recompute_progress_and_grade()
-    # ✅ تحديث المهارة لو مربوطة
+
     if instance.skill:
         instance.skill.update_from_evaluations()
         
         
         
         
-# ✅ Signal جديد لحساب attendance_rate من PlayerClassAttendance
+
 @receiver([post_save, post_delete], sender=PlayerClassAttendance)
 def update_player_attendance_rate(sender, instance, **kwargs):
     player = instance.player
@@ -179,7 +179,7 @@ def assign_skills_on_session_join(sender, instance, created, **kwargs):
     session = instance.session
 
     if not player.position:
-        # اللاعب ما له مركز، ما نقدر ننسخ المهارات
+   
         return
 
     session_skills = SessionSkill.objects.filter(

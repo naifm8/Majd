@@ -1191,7 +1191,7 @@ def take_evaluations_view(request: HttpRequest, class_id: int):
         general_formset = GeneralFormSet(prefix="gen", initial=general_initial)
         skill_formset = SkillFormSet(prefix="sf", initial=skill_initial)
 
-    # --- إحصائيات ---
+   
     today_date, now_dt = get_today_and_now()
     status_label, status_css = get_status_label_and_css(now_dt, training_class)
     stats = class_eval_stats(training_class)

@@ -40,7 +40,7 @@
     </div>
   </form>
 
-  <!-- Filter chips (GET forms) -->
+  
   <div class="mt-3 d-flex flex-wrap gap-2 filter-chips">
     {% for filter_item in filters %}
       <form method="get" class="d-inline" id="filter_chip_form_{{ forloop.counter }}">
@@ -92,7 +92,6 @@
         <div class="card border-0 shadow-sm mb-3">
           <div class="card-body">
             <div class="row g-3 align-items-start">
-              <!-- Left: summary -->
               <div class="col-12 col-lg-4">
                 <div class="d-flex justify-content-between align-items-start">
                   <div class="d-flex align-items-center gap-3">
@@ -138,7 +137,7 @@
                 </div>
               </div>
 
-              <!-- Middle: Skills Assessment -->
+          
               <div class="col-12 col-lg-5">
                 <h6 class="fw-semibold mb-3">Skills Assessment</h6>
 
@@ -163,7 +162,7 @@
                 {% endif %}
               </div>
 
-              <!-- Right: Notes & actions -->
+          
               <div class="col-12 col-lg-3">
                 <h6 class="fw-semibold mb-3">Recent Notes</h6>
                 {% if student_item.recent_notes %}

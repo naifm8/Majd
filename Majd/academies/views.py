@@ -491,7 +491,7 @@ def program_sessions(request, academy_slug, program_id):
         .order_by("age_min")
     )
 
-    # --- Filters ---
+
     level = request.GET.get("level")
     gender = request.GET.get("gender")
     age = request.GET.get("age") 

@@ -5,7 +5,7 @@ from player.models import PlayerClassAttendance
 
 class AttendanceForm(forms.Form):
     player_id = forms.IntegerField(widget=forms.HiddenInput())
-    # الاسم لن نستخدمه للحفظ، فقط للعرض في الجدول
+  
     player_name = forms.CharField(required=False, widget=forms.HiddenInput())
 
     status = forms.ChoiceField(
@@ -28,7 +28,7 @@ class GeneralEvaluationRowForm(forms.Form):
     mental    = forms.ChoiceField(choices=SCALE_0_5, initial=3, widget=forms.Select(attrs={"class": "form-select form-select-sm"}))
     notes     = forms.CharField(required=False, widget=forms.TextInput(attrs={"class":"form-control form-control-sm", "placeholder":"Notes (optional)"}))
 
-# -------- Evaluations: Focus Skill (single skill) --------
+
 class FocusSkillForm(forms.Form):
     skill_name = forms.ChoiceField(
         required=False,

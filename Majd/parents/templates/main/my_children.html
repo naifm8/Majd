@@ -218,7 +218,7 @@
           </div>
         </div>
 
-        <!-- 🔹 Sessions Modal for this child -->
+   
         <div class="modal fade" id="sessionsModal{{ child.id }}" tabindex="-1" aria-labelledby="sessionsModalLabel{{ child.id }}" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -240,7 +240,7 @@
                         {% for session in enrollment.sessions.all %}
                           <div class="card mb-3 shadow-sm border-0 rounded-3">
                             <div class="card-body">
-                              <!-- Title + Status -->
+          
                               <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                   <h6 class="fw-bold mb-0">{{ session.title }}</h6>
@@ -249,7 +249,6 @@
                                 <span class="badge bg-success">Enrolled</span>
                               </div>
 
-                              <!-- Date / Time -->
                               <div class="d-flex flex-wrap text-muted small mb-2 mt-2">
                                 <span class="me-3">
                                   <i class="bi bi-calendar3 me-1"></i> 
@@ -284,7 +283,7 @@
         </div>
 
 
-        <!-- Contact Coach Modal -->
+ 
         <div class="modal fade" id="chatModal{{ session.id }}" tabindex="-1" aria-labelledby="chatModalLabel{{ session.id }}" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -296,23 +295,23 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
-                <!-- Example chat messages -->
+        
                 <div class="mb-3">
                   <div class="d-flex flex-column">
-                    <!-- Coach message -->
+              
                     <div class="align-self-start bg-light border rounded p-2 mb-2" style="max-width: 70%;">
                       <strong>{{ session.trainer.user.get_full_name|default:"Coach" }}</strong><br>
                       Hello! Alex has been doing great in training. His ball control has improved significantly.
                       <div class="small text-muted mt-1">2:30 PM</div>
                     </div>
 
-                    <!-- Parent message -->
+            
                     <div class="align-self-end bg-success text-white rounded p-2 mb-2" style="max-width: 70%;">
                       Thank you for the update! How is he doing with teamwork?
                       <div class="small text-light mt-1">2:45 PM</div>
                     </div>
 
-                    <!-- Coach reply -->
+              
                     <div class="align-self-start bg-light border rounded p-2 mb-2" style="max-width: 70%;">
                       <strong>{{ session.trainer.user.get_full_name|default:"Coach" }}</strong><br>
                       He's becoming a great team player. Very supportive of his teammates and shows leadership qualities.
@@ -322,7 +321,7 @@
                 </div>
               </div>
 
-              <!-- Chat input -->
+          
               <div class="modal-footer">
                 <div class="input-group">
                   <input type="text" class="form-control" placeholder="Type your message...">
@@ -342,7 +341,7 @@
     </div>
 </div>
 
-<!-- Add Child Modal -->
+
 <div class="modal fade" id="addChildModal" tabindex="-1" aria-labelledby="addChildModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -359,19 +358,19 @@
         <div class="modal-body">
           <div class="row g-3">
 
-            <!-- First Name -->
+          
             <div class="col-md-6">
               <label class="form-label">First Name</label>
               <input type="text" name="first_name" class="form-control" required>
             </div>
 
-            <!-- Last Name -->
+         
             <div class="col-md-6">
               <label class="form-label">Last Name</label>
               <input type="text" name="last_name" class="form-control" required>
             </div>
 
-            <!-- Gender -->
+       
             <div class="col-md-6">
               <label class="form-label">Gender</label>
               <select name="gender" class="form-select" required>
@@ -381,19 +380,19 @@
               </select>
             </div>
 
-            <!-- Date of Birth -->
+         
             <div class="col-md-6">
               <label class="form-label">Date of Birth</label>
               <input type="date" name="date_of_birth" class="form-control" required>
             </div>
 
-            <!-- Primary Sport -->
+   
             <div class="col-md-6">
               <label class="form-label">Primary Sport</label>
               <input type="text" name="primary_sport" class="form-control" placeholder="e.g. Football, Swimming">
             </div>
 
-            <!-- Skill Level -->
+      
             <div class="col-md-6">
               <label class="form-label">Skill Level</label>
               <select name="skill_level" class="form-select">
@@ -403,13 +402,13 @@
               </select>
             </div>
 
-            <!-- Medical Notes -->
+       
             <div class="col-12">
               <label class="form-label">Medical Notes</label>
               <textarea name="medical_notes" class="form-control" rows="2" placeholder="Any important medical notes"></textarea>
             </div>
 
-            <!-- Profile Image -->
+     
             <div class="col-12">
               <label class="form-label">Profile Image</label>
               <input type="file" name="profile_image" class="form-control">

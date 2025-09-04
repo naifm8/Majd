@@ -141,7 +141,7 @@
 }
 
 .payment-due-card {
-    border-left: 5px solid #f0ad4e;   /* Bootstrap warning color */
+    border-left: 5px solid #f0ad4e;   
     border-radius: 8px;
     overflow: hidden;
 }

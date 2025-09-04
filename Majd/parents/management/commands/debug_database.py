@@ -10,25 +10,25 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("=== DATABASE DEBUG INFO ===")
         
-        # Check academies
+
         academies = Academy.objects.all()
         self.stdout.write(f"Academies found: {academies.count()}")
         for academy in academies:
             self.stdout.write(f"  - {academy.name} (slug: {academy.slug})")
         
-        # Check plan types
+
         plan_types = PlanType.objects.all()
         self.stdout.write(f"\nPlan Types found: {plan_types.count()}")
         for plan_type in plan_types:
             self.stdout.write(f"  - {plan_type.name} (monthly: {plan_type.monthly_price})")
         
-        # Check subscription plans
+
         subscription_plans = SubscriptionPlan.objects.all()
         self.stdout.write(f"\nSubscription Plans found: {subscription_plans.count()}")
         for plan in subscription_plans:
             self.stdout.write(f"  - {plan.title} for {plan.academy.name} (price: {plan.price}, active: {plan.is_active})")
         
-        # Check parent profiles
+
         parents = ParentProfile.objects.all()
         self.stdout.write(f"\nParent Profiles found: {parents.count()}")
         for parent in parents:

@@ -20,10 +20,10 @@ class PlayerSubscription(models.Model):
 
     description = models.TextField(blank=True)
 
-    # Program-specific features (can vary by plan)
+ 
     program_features = models.JSONField(default=list, blank=True)
 
-    # Core subscription benefits (default across all plans)
+   
     subscription_features = models.JSONField(
         default=list,
         blank=True,
@@ -82,26 +82,26 @@ class PlayerEnrollment(models.Model):
         ("cash", "Cash Payment"),
     ]
 
-    # Subscription and student info
+
     subscription = models.ForeignKey(PlayerSubscription, on_delete=models.CASCADE, related_name="enrollments")
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="payment_enrollments")
     parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name="child_enrollments")
 
-    # Payment and status
+  
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default="card")
     transaction_id = models.CharField(max_length=100, blank=True, null=True)
 
-    # Enrollment period
+ 
     start_date = models.DateField()
     end_date = models.DateField()
     auto_renewal = models.BooleanField(default=False)
 
-    # Financial tracking
+ 
     amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
     payment_date = models.DateTimeField(null=True, blank=True)
 
-    # Metadata
+  
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     notes = models.TextField(blank=True)
@@ -150,15 +150,15 @@ class PaymentTransaction(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     currency = models.CharField(max_length=3, default="SAR")
     
-    # Payment gateway info
+ 
     gateway_transaction_id = models.CharField(max_length=200, blank=True, null=True)
     gateway_response = models.JSONField(default=dict, blank=True)
     
-    # Timestamps
+ 
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
     
-    # Additional info
+
     notes = models.TextField(blank=True)
     failure_reason = models.TextField(blank=True)
 

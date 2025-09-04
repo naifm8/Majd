@@ -140,7 +140,6 @@
                 <i class="bi bi-pencil-square me-1"></i> Take Attendance
               </a>
 
-              <!-- Expand/Collapse (GET, no JS) -->
               {% if not class.is_expanded %}
                 <form method="get" class="m-0">
                   <input type="hidden" name="filter_session" value="{{ filter_options.selected_session }}">
@@ -156,7 +155,7 @@
                   <input type="hidden" name="filter_session" value="{{ filter_options.selected_session }}">
                   <input type="hidden" name="filter_date" value="{{ filter_options.selected_date }}">
                   <input type="hidden" name="q" value="{{ filter_options.student_query }}">
-                  <!-- لا نرسل expand لإغلاق الكارد -->
+       
                   <button type="submit" class="btn btn-outline-secondary btn-sm" title="Collapse">
                     <i class="bi bi-chevron-up"></i>
                   </button>
