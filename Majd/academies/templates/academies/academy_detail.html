@@ -7,7 +7,6 @@
 {% block content %}
 <!-- 🌟 Hero Section with Stats -->
 <section class="position-relative text-white" style="height: 75vh; background: url('{{ academy.cover.url }}') center/cover no-repeat;">
-  <!-- Dark overlay -->
   <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.55);"></div>
 
   <!-- Back Button -->
@@ -19,8 +18,6 @@
 
   <!-- Hero Content -->
   <div class="position-relative d-flex flex-column justify-content-center align-items-start h-100 w-100 px-5">
-
-    <!-- Logo + Academy Name -->
     <div class="d-flex align-items-center mb-3">
       {% if academy.logo %}
       <img src="{{ academy.logo.url }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
@@ -34,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Quick Info Row -->
+    <!-- Quick Info -->
     <div class="mb-3 d-flex flex-wrap align-items-center gap-4">
       <span><i class="bi bi-geo-alt"></i> {{ academy.city }}</span>
       <span><i class="bi bi-star-fill text-warning"></i> {{ fake_rating }}/5 Rating</span>
@@ -43,21 +40,16 @@
       <span><i class="bi bi-book"></i> {{ academy.programs.count }} Programs</span>
     </div>
 
-    <!-- Description -->
     <p class="mb-4" style="max-width: 700px;">{{ academy.description }}</p>
 
-    <!-- CTA Buttons -->
     <div>
-      <!-- Jump to Subscription Plans -->
       <a href="#subscriptions" class="btn btn-success btn-lg me-3">Join Academy Now</a>
-      <!-- Jump to Training Programs -->
       <a href="#programs" class="btn btn-outline-light btn-lg">View Programs</a>
     </div>
-
   </div>
 </section>
 
-<!-- Success Message for Subscribed Users -->
+<!-- ✅ Success Message -->
 {% if is_subscribed %}
 <section class="container py-3">
   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -80,70 +72,38 @@
 </section>
 
 <!-- 🎓 Training Programs Section -->
-<section id="programs" class="container py-5"><!-- 👈 added id -->
+<section id="programs" class="container py-5">
   <div class="text-center mb-5">
     <h2 class="fw-bold text-success">Training Programs</h2>
-    <p class="text-muted">
-      Choose from our comprehensive range of programs designed to develop skills at every level.
-    </p>
+    <p class="text-muted">Choose from our comprehensive range of programs designed to develop skills at every level.</p>
   </div>
 
   <div class="row g-4">
     {% for program in programs %}
-      <div class="col-md-4">
-        <div class="card border rounded-3 h-100">
+    <div class="col-md-4">
+      <div class="program-card h-100 text-white d-flex flex-column justify-content-end"
+           style="background-image: url('{{ program.image.url }}');">
 
-          <!-- Card Header Badges -->
-          <div class="d-flex justify-content-between align-items-start p-3">
-            <!-- Age badge -->
-            <span class="badge rounded-pill bg-light text-dark small px-2 py-1 shadow-sm">
-              {{ program.age_group_display|default:"N/A" }}
-            </span>
+        <div class="program-overlay p-3 rounded-3">
+          <h5 class="fw-bold">{{ program.title }}</h5>
+          <p class="small mb-2">{{ program.short_description|default:"No description provided." }}</p>
 
-            <!-- Membership badge -->
-            <span class="badge rounded-pill small px-2 py-1 membership-badge">
-              Included with Membership
-            </span>
-          </div>
+          <ul class="list-unstyled small mb-3">
+            <li><i class="bi bi-calendar-event me-1"></i> Sessions: {{ program.sessions_count }}</li>
+            <li><i class="bi bi-people me-1"></i> Players: {{ program.players_count }}</li>
+          </ul>
 
-          <!-- Card Body -->
-          <div class="card-body pt-0 d-flex flex-column">
-
-            <!-- Title & Description -->
-            <h5 class="fw-bold text-success">{{ program.title }}</h5>
-            <!-- Program Image -->
-            {% if program.image %}
-            <img src="{{ program.image.url }}" class="card-img-top" style="height:180px; object-fit:cover; border-top-left-radius:.5rem; border-top-right-radius:.5rem;">
-            {% endif %}
-
-            <p class="text-muted small">{{ program.short_description|default:"No description provided." }}</p>
-
-            <!-- Duration -->
-            <div class="text-muted small mb-3">
-              <strong>Duration:</strong> {{ program.duration }}
-            </div>
-
-            <!-- Features -->
-            {% if program.features.all %}
-              <h6 class="fw-bold text-success">Program Features:</h6>
-              <ul class="list-unstyled small mb-4">
-                {% for feature in program.features.all %}
-                <li class="mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i> {{ feature.name }}</li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-
-            <!-- Buttons -->
-            <div class="mt-auto d-grid gap-2">
-              <a href="{% url 'academies:join_program_view' academy.slug program.id %}" class="btn btn-success fw-semibold">Enroll Children</a>
-              <a href="{% url 'academies:program_sessions' academy.slug program.id %}" class="btn btn-outline-success btn-custom">
-                <i class="bi bi-calendar-event me-1"></i> View Sessions
-              </a>
-            </div>
+          <div class="d-grid gap-2">
+            <a href="{% url 'academies:join_program_view' academy.slug program.id %}" 
+               class="btn btn-success btn-sm fw-semibold">Enroll Children</a>
+            <a href="{% url 'academies:program_sessions' academy.slug program.id %}" 
+               class="btn btn-outline-light btn-sm">
+              <i class="bi bi-calendar-event me-1"></i> View Sessions
+            </a>
           </div>
         </div>
       </div>
-
+    </div>
     {% empty %}
     <p class="text-center text-muted">No programs available for this academy yet.</p>
     {% endfor %}
@@ -152,22 +112,28 @@
 
 <!-- 🏆 Top Coaches Section -->
 <section class="container py-5">
-  <h2 class="mb-4">Top Coaches</h2>
+  <div class="text-center mb-5">
+    <h2 class="fw-bold text-success">Top Coaches</h2>
+    <p class="text-muted">Meet our highly qualified and experienced coaching team.</p>
+  </div>
+
   <div class="row g-4">
     {% for coach in coaches %}
     <div class="col-md-4">
-      <div class="card h-100 shadow-sm text-center p-3">
+      <div class="card-pricing h-100 text-center">
         {% if coach.profile_image %}
-        <img src="{{ coach.profile_image.url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover;">
+        <img src="{{ coach.profile_image.url }}" class="rounded-circle mx-auto mb-3 shadow-sm" width="100" height="100" style="object-fit:cover;">
         {% endif %}
-        <h5>{{ coach.user.get_full_name }}</h5>
-        <p class="text-muted">{{ coach.position }}</p>
-        <p><strong>Sport:</strong> {{ coach.specialty }}</p>
-        <p><strong>Licenses:</strong> {{ coach.certifications|default:"N/A" }}</p>
+        <h5 class="plan-title">{{ coach.user.get_full_name }}</h5>
+        <p class="plan-subtitle">{{ coach.position }}</p>
+        <ul class="plan-features">
+          <li><i class="bi bi-trophy text-success"></i> Sport: {{ coach.specialty }}</li>
+          <li><i class="bi bi-award text-success"></i> Licenses: {{ coach.certifications|default:"N/A" }}</li>
+        </ul>
       </div>
     </div>
     {% empty %}
-    <p>No coaches added yet.</p>
+    <p class="text-center text-muted">No coaches added yet.</p>
     {% endfor %}
   </div>
 </section>
@@ -176,9 +142,7 @@
 <section id="subscriptions" class="py-5">
   <div class="container text-center mb-5">
     <h2 class="fw-bold mb-2">Choose Your Academy Plan</h2>
-    <p class="text-muted mb-4">
-      Select the perfect subscription plan for {{ academy.name }}. Upgrade or downgrade at any time.
-    </p>
+    <p class="text-muted mb-4">Select the perfect subscription plan for {{ academy.name }}. Upgrade or downgrade at any time.</p>
   </div>
 
   <div class="container">
@@ -186,47 +150,32 @@
       {% for plan in subscription_plans %}
       <div class="col-md-6 col-lg-4">
         <div class="card-pricing h-100 {% if plan.is_active %}featured{% endif %}">
-          
           {% if forloop.first %}
           <div class="most-popular">Most Popular</div>
           {% endif %}
-          
           <div class="plan-icon bg-soft-success">
             <i class="bi {{ plan.plan_type.icon_class|default:'bi-star' }}"></i>
           </div>
-          
           <h5 class="plan-title">{{ plan.title }}</h5>
           <p class="plan-subtitle">{{ plan.description|default:"Great plan for your academy" }}</p>
-
           <div class="plan-price">
             <span class="currency">SAR</span>
             <span class="amount">{{ plan.price }}</span>
             <span class="per">/{{ plan.get_billing_type_display }}</span>
           </div>
-
           <ul class="plan-features">
             {% if plan.program_features %}
-              {% for feature in plan.program_features %}
-                <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
-              {% endfor %}
-            {% elif plan.description %}
-              {% for feature in plan.description|split:"," %}
-                <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
-              {% endfor %}
-            {% else %}
-              <li class="muted"><i class="bi bi-dash-circle"></i> No features listed</li>
+            {% for feature in plan.program_features %}
+            <li><i class="bi bi-check-circle text-success"></i> {{ feature }}</li>
+            {% endfor %}
             {% endif %}
           </ul>
-          
-          
-
           {% if is_subscribed %}
-            <button class="btn btn-success w-100" disabled>
-              <i class="bi bi-check-circle me-1"></i> Already Subscribed
-            </button>
+          <button class="btn btn-success w-100" disabled>
+            <i class="bi bi-check-circle me-1"></i> Already Subscribed
+          </button>
           {% else %}
-            <a href="{% url 'academies:subscription_enroll_redirect' academy.slug plan.id %}" 
-               class="btn btn-success w-100">Get Started</a>
+          <a href="{% url 'academies:subscription_enroll_redirect' academy.slug plan.id %}" class="btn btn-success w-100">Get Started</a>
           {% endif %}
         </div>
       </div>
@@ -237,102 +186,52 @@
       {% endfor %}
     </div>
   </div>
-
-  <!-- Benefits -->
-  <section class="benefits-section py-5">
-    <div class="container">
-      <div class="card border-0 shadow-sm rounded-4 p-4">
-        <div class="row g-4 text-center">
-          <div class="col-md-4">
-            <div class="benefit-item">
-              <div class="benefit-icon bg-soft-blue"><i class="bi bi-shield-check"></i></div>
-              <h6 class="benefit-title">Secure & Reliable</h6>
-              <p class="text-muted small mb-0">Bank-level security with 99.9% uptime guarantee.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="benefit-item">
-              <div class="benefit-icon bg-soft-green"><i class="bi bi-chat-dots"></i></div>
-              <h6 class="benefit-title">24/7 Support</h6>
-              <p class="text-muted small mb-0">Our dedicated support team is available anytime.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="benefit-item">
-              <div class="benefit-icon bg-soft-purple"><i class="bi bi-lightning-charge"></i></div>
-              <h6 class="benefit-title">Easy Setup</h6>
-              <p class="text-muted small mb-0">Get started in minutes with our intuitive tools.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 </section>
 
 <style>
-  /* Hero / Section headers */
-  #subscriptions h2 { color: #155d4a; font-weight: 600; }
+  #subscriptions h2, #programs h2, .container h2 { color: #155d4a; font-weight: 600; }
 
-  /* Card Pricing */
-  .card-pricing {
-    background: #fff;
-    border: 1px solid #d8efe4;
+  /* Program cards with background image */
+  .program-card {
+    background-size: cover;
+    background-position: center;
     border-radius: 14px;
-    padding: 24px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.06);
     position: relative;
-    transition: all .2s ease;
+    overflow: hidden;
+    min-height: 280px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    transition: all .3s ease;
   }
-  .card-pricing:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.08); }
-
-  .card-pricing .plan-icon {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    display: grid; place-items: center;
-    margin: 0 auto 10px;
-    font-size: 1.2rem;
+  .program-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,.35);
   }
-  .bg-soft-success { background: #e9fbf3; color: #198754; }
+  .program-card .program-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.5));
+    color: #fff;
+  }
+  .program-card h5 { margin-bottom: .25rem; }
+  .program-card ul li { margin-bottom: 4px; }
 
-  .plan-title { text-align:center; font-weight: 600; color: #16a34a; margin-top: 8px; }
+  /* Pricing cards (subscriptions) */
+  .card-pricing {
+    background:#fff; border:1px solid #d8efe4; border-radius:14px; padding:24px;
+    box-shadow:0 6px 18px rgba(0,0,0,.06); position:relative; transition:all .2s ease;
+    display:flex; flex-direction:column;
+  }
+  .card-pricing:hover { transform:translateY(-4px); box-shadow:0 12px 24px rgba(0,0,0,.08); }
+  .plan-title { text-align:center; font-weight:600; color:#16a34a; margin-top:8px; }
   .plan-subtitle { text-align:center; color:#6c757d; font-size:.9rem; }
-
-  .plan-price { text-align:center; margin: 16px 0; }
-  .plan-price .currency { margin-right: 6px; font-weight:700; color:#0f5132; }
-  .plan-price .amount { font-size: 2rem; font-weight: 700; color:#0f5132; }
-  .plan-price .per { color:#6c757d; margin-left: 6px; }
-
-  /* Features */
+  .plan-price { text-align:center; margin:16px 0; }
+  .plan-price .currency { margin-right:6px; font-weight:700; color:#0f5132; }
+  .plan-price .amount { font-size:2rem; font-weight:700; color:#0f5132; }
+  .plan-price .per { color:#6c757d; margin-left:6px; }
   .plan-features { list-style:none; padding:0; margin:0 0 20px; }
-  .plan-features li {
-    display:flex; gap:8px; align-items:start;
-    padding:4px 0; font-size:.9rem;
-  }
-  .plan-features li.muted { color: #98a2b3; }
-
-  /* Featured Plan */
-  .card-pricing.featured {
-    border: 2px solid #22c55e;
-    box-shadow: 0 10px 28px rgba(34,197,94,.25);
-  }
+  .plan-features li { display:flex; gap:8px; align-items:start; padding:4px 0; font-size:.9rem; }
+  .card-pricing.featured { border:2px solid #22c55e; box-shadow:0 10px 28px rgba(34,197,94,.25); }
   .card-pricing .most-popular {
     position:absolute; top:-12px; left:50%; transform:translateX(-50%);
-    background:#0f5132; color:#fff; font-size:.75rem;
-    padding:4px 10px; border-radius:999px;
+    background:#0f5132; color:#fff; font-size:.75rem; padding:4px 10px; border-radius:999px;
   }
-
-  /* Benefits */
-  .benefit-item { padding:.5rem; }
-  .benefit-icon {
-    width:46px; height:46px;
-    border-radius:12px;
-    display:grid; place-items:center;
-    margin:0 auto .5rem; font-size:1.1rem;
-  }
-  .benefit-title { color:#0f5132; font-weight:600; margin-bottom:.35rem; }
-  .bg-soft-blue   { background:#eaf2ff; color:#0d6efd; }
-  .bg-soft-green  { background:#e9fbf3; color:#198754; }
-  .bg-soft-purple { background:#f3ecff; color:#6f42c1; }
 </style>
 {% endblock %}

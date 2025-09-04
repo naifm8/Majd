@@ -70,6 +70,14 @@ class Program(models.Model):
     def __str__(self):
         academy_name = self.academy.name if self.academy else "❌ أكاديمية محذوفة"
         return f"{self.title} ({academy_name})"
+    
+    @property
+    def sessions_count(self):
+        return self.sessions.count()
+
+    @property
+    def players_count(self):
+        return self.sessions.aggregate(total=models.Sum("enrolled"))["total"] or 0
 
 
 class Session(models.Model):

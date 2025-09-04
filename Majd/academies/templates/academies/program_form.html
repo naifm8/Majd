@@ -1,18 +1,71 @@
 {% extends "academies/base_dashboard.html" %}
 {% block content %}
-<div class="container mt-4">
-  <div class="card shadow-sm border-0">
-    <div class="card-header" style="background:#f1fdf8; border-left:6px solid #138d68;">
-      <h5 class="mb-0 fw-bold" style="color:#138d68;">Edit Program</h5>
-    </div>
-    <div class="card-body">
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn" style="background:#138d68; color:white;">Save Changes</button>
-        <a href="{% url 'academies:programs' %}" class="btn btn-secondary">Cancel</a>
-      </form>
+<div class="container d-flex justify-content-center mt-5">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-header" style="background:#f1fdf8; border-left:6px solid #138d68;">
+        <h5 class="mb-0 fw-bold" style="color:#138d68;">Edit Program</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <a href="{% url 'academies:programs' %}" class="btn btn-secondary px-4">Cancel</a>
+            <button type="submit" class="btn px-4" style="background:#138d68; color:white;">Save Changes</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* Make form labels bold and uniform */
+  form p label {
+    font-weight: 600;
+    color: #155d4a;
+    margin-bottom: .3rem;
+    display: block;
+  }
+
+  /* Style inputs */
+  form p input, 
+  form p select, 
+  form p textarea {
+    width: 100%;
+    border: 1px solid #d8efe4;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.95rem;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  form p input:focus, 
+  form p select:focus, 
+  form p textarea:focus {
+    border-color: #138d68;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(19,141,104,.15);
+  }
+
+  /* Description field smaller */
+  #id_short_description {
+    min-height: 80px;
+    max-height: 120px;
+    resize: vertical;
+  }
+
+  /* Space out each field */
+  form p {
+    margin-bottom: 1.2rem;
+  }
+
+  /* Buttons */
+  .btn {
+    border-radius: 8px;
+    font-weight: 600;
+  }
+</style>
 {% endblock %}
+

@@ -140,15 +140,15 @@ def academy_setup_view(request):
         messages.error(request, "You must be an academy admin to access this page.")
         return redirect("main:main_home_view")
 
-    # ensure subscription exists and is successful
-    from payment.models import Subscription
-    has_subscription = Subscription.objects.filter(
-        contact_email=request.user.email, status="successful"
-    ).exists()
+    # # ✅ ensure subscription exists and is successful
+    # from payment.models import Subscription
+    # has_subscription = Subscription.objects.filter(
+    #     contact_email=request.user.email, status="successful"
+    # ).exists()
 
-    if not has_subscription:
-        messages.error(request, "You must subscribe before setting up your academy.")
-        return redirect("payment:subscription_step")
+    # if not has_subscription:
+    #     messages.error(request, "You must subscribe before setting up your academy.")
+    #     return redirect("payment:subscription_step")
 
     profile = request.user.academy_admin_profile
     academy = getattr(profile, "academy", None)
