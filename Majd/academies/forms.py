@@ -26,7 +26,7 @@ from accounts.models import TrainerProfile
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
-        exclude = ("program", "enrolled")  # 🚀 don't ask user for these
+        exclude = ("program", "enrolled") 
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
             "age_min": forms.NumberInput(attrs={"class": "form-control"}),
@@ -105,8 +105,6 @@ class SubscriptionPlanForm(forms.ModelForm):
         self.academy = academy
 
 
-
-# abdulaziz alkhateeb added this
 class AdminTrainerDecisionForm(forms.Form):
     ACTION_CHOICES = (
         ("approve", "Approve"),

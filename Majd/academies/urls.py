@@ -12,6 +12,7 @@ urlpatterns = [
     path("dashboard/subscriptions/add/", views.add_subscription_plan, name="add_subscription_plan"),
     path("dashboard/subscriptions/<int:plan_id>/edit/", views.edit_subscription_plan, name="edit_subscription_plan"),
     path("dashboard/subscriptions/<int:plan_id>/delete/", views.delete_subscription_plan, name="delete_subscription_plan"),
+    
     # Subscription Enrollment
     path("<slug:academy_slug>/subscription/<int:plan_id>/enroll/", views.subscription_enroll_redirect, name="subscription_enroll_redirect"),
 

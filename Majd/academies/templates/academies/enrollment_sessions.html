@@ -11,10 +11,8 @@
 {% block content %}
 <div class="bg-light py-4" style="min-height: 100vh;">
 
-  <!-- Academy Header (Step 2 of 2) -->
   <div class="bg-white border-bottom py-3 mb-4">
     <div class="container d-flex justify-content-between align-items-center" style="max-width: 1100px;">
-      <!-- Left -->
       <div class="d-flex flex-column align-items-start">
         <div class="d-flex align-items-center">
           <a href="{% url 'academies:detail' academy.slug %}" class="text-dark me-3">
@@ -38,7 +36,6 @@
           <p class="text-muted small">Choose sessions for <strong>{{ program.title }}</strong>.</p>
         </div>
       </div>
-      <!-- Right -->
       <div class="text-end">
         <span class="text-muted small">Step 2 of 3</span>
         <div class="progress mt-1" style="height:4px; width:120px; margin-left:auto;">
@@ -88,7 +85,6 @@
               {% endwith %}
             {% endfor %}
           </select>
-          <!-- 🔹 Clear Filters Button -->
         <a href="{% url 'academies:enrollment_sessions' academy.slug program.id %}" 
             class="btn btn-sm btn-outline-success ms-2">
             <i class="bi bi-x-circle me-1"></i> Clear
@@ -287,20 +283,19 @@
 <style>
 
 
-/* Back link hover */
+
 .btn-outline-secondary:hover {
   background-color: #eafaf1;
   color: #198754;
 }
 
-/* Highlight selected card */
+
 .session-card.selected {
-  border: 2px solid #198754 !important; /* green border */
-  background: #eafaf1; /* light green background */
+  border: 2px solid #198754 !important; 
+  background: #eafaf1; 
   transition: all 0.2s ease;
 }
 
-/* Hover effect */
 .session-card:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
   cursor: pointer;
@@ -330,20 +325,20 @@ document.addEventListener("DOMContentLoaded", function() {
     card.addEventListener("click", function(e) {
       const checkbox = card.querySelector(".session-checkbox");
 
-      // Prevent double toggle if directly clicking checkbox
+ 
       if (e.target === checkbox) {
         return;
       }
 
-      // 🔹 Prevent toggle if clicking on modal triggers or buttons
+
       if (e.target.closest('[data-bs-toggle="modal"]') || e.target.tagName === "BUTTON") {
         return;
       }
 
-      // Toggle checkbox programmatically
+
       checkbox.checked = !checkbox.checked;
 
-      // Update styles
+
       if (checkbox.checked) {
         card.classList.add("selected");
       } else {
@@ -352,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  // Initialize: apply .selected to any pre-checked
+
   document.querySelectorAll(".session-checkbox:checked").forEach(cb => {
     cb.closest(".session-card").classList.add("selected");
   });

@@ -1,75 +1,119 @@
 {% extends "academies/base_dashboard.html" %}
 {% block content %}
-<div class="container mt-4">
-  <div class="card shadow-sm border-0">
-    <!-- Header -->
-    <div class="card-header" style="background:#f1fdf8; border-left:6px solid #138d68;">
-      <h5 class="mb-0 fw-bold" style="color:#138d68;">Setup Your Academy</h5>
-    </div>
+<div class="container d-flex justify-content-center py-5">
+  <div class="col-lg-10">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="card-header" style="background:#f1fdf8; border-left:6px solid #138d68;">
+        <h5 class="mb-0 fw-bold" style="color:#138d68;">Complete Your Academy Profile</h5>
+      </div>
+      
+      <div class="card-body p-4 p-md-5">
+        <p class="text-muted mb-4 fs-6">
+          Please fill out the details below to set up your academy. Fields marked with an asterisk 
+          (<span class="text-danger">*</span>) are required.
+        </p>
 
-    <!-- Body -->
-    <div class="card-body">
-      <p class="text-muted">Please complete your academy profile before continuing.</p>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
 
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <!-- Logo -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Logo</label>
-          {{ form.logo }}
-        </div>
-
-        <!-- Cover -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Cover Image</label>
-          {{ form.cover }}
-        </div>
-
-        <!-- Description -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Description</label>
-          {{ form.description }}
-        </div>
-
-        <!-- Mission -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Mission</label>
-          {{ form.mission }}
-          <small class="text-muted">Tell parents and players about your academy’s mission and values.</small>
-        </div>
-
-        <!-- Contact Info -->
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Email</label>
-            {{ form.email }}
+          <!-- Logo & Cover -->
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Academy Logo</label>
+              {{ form.logo }}
+              <small class="form-text text-muted">Upload a clear logo for your academy.</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Cover Image</label>
+              {{ form.cover }}
+              <small class="form-text text-muted">A banner image that represents your academy.</small>
+            </div>
           </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Phone Number</label>
-            {{ form.contact_number }}
+          
+          <!-- Description & Mission -->
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+              <small class="form-text text-muted">Provide a brief overview of your academy.</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Mission</label>
+              {{ form.mission }}
+              <small class="form-text text-muted">Tell parents and players about your academy’s mission and values.</small>
+            </div>
           </div>
-        </div>
 
-        <!-- City & Year -->
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">City</label>
-            {{ form.city }}
+          <!-- Contact Info -->
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              {{ form.contact_number }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">City</label>
+              {{ form.city }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Establishment Year</label>
+              {{ form.establishment_year }}
+            </div>
           </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label fw-bold">Establishment Year</label>
-            {{ form.establishment_year }}
+          
+          <!-- Buttons -->
+          <div class="d-flex justify-content-end gap-3 mt-4">
+            <a href="{% url 'academies:dashboard' %}" class="btn btn-secondary px-5 fw-semibold">Cancel</a>
+            <button type="submit" class="btn px-5 fw-semibold" style="background:#138d68; color:#fff;">Save Profile</button>
           </div>
-        </div>
-
-        <!-- Buttons -->
-        <div class="d-flex justify-content-start gap-2 mt-3">
-          <button type="submit" class="btn" style="background:#138d68; color:white;">Save</button>
-          <a href="{% url 'academies:dashboard' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* Form styling */
+  form label {
+    font-weight: 600;
+    color: #155d4a;
+    margin-bottom: .3rem;
+  }
+
+  form input, 
+  form select, 
+  form textarea {
+    width: 100%;
+    border: 1px solid #d8efe4;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.95rem;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+
+  form input:focus, 
+  form select:focus, 
+  form textarea:focus {
+    border-color: #138d68;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(19,141,104,.15);
+  }
+
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .card {
+    border-radius: 14px;
+  }
+
+  .btn {
+    border-radius: 8px;
+    font-weight: 600;
+  }
+</style>
 {% endblock %}

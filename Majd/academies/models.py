@@ -68,8 +68,16 @@ class Program(models.Model):
         return f"{min_age}-{max_age} years"
     
     def __str__(self):
-        academy_name = self.academy.name if self.academy else "❌ أكاديمية محذوفة"
+        academy_name = self.academy.name if self.academy else " أكاديمية محذوفة"
         return f"{self.title} ({academy_name})"
+    
+    @property
+    def sessions_count(self):
+        return self.sessions.count()
+
+    @property
+    def players_count(self):
+        return self.sessions.aggregate(total=models.Sum("enrolled"))["total"] or 0
 
 
 class Session(models.Model):
@@ -103,7 +111,7 @@ class Session(models.Model):
         if self.start_datetime and self.end_datetime:
             delta = self.end_datetime.date() - self.start_datetime.date()
             weeks = delta.days // 7
-            return max(1, weeks)  # at least 1 week
+            return max(1, weeks) 
         return None
 
     def duration_display(self):
@@ -117,13 +125,13 @@ class Session(models.Model):
 
     def generate_classes(self):
         from datetime import timedelta
-        from .models import TrainingClass  # import داخلي عشان ما يصير circular import
+        from .models import TrainingClass  
 
-        current_date = self.start_datetime.date()  # نحول datetime إلى date
+        current_date = self.start_datetime.date()
         end_date = self.end_datetime.date()
 
         while current_date <= end_date:
-            weekday_str = current_date.strftime("%a").lower()[:3]  # مثال: "mon"
+            weekday_str = current_date.strftime("%a").lower()[:3] 
             for slot in self.slots.all():
                 if slot.weekday == weekday_str:
                     TrainingClass.objects.get_or_create(
@@ -195,15 +203,15 @@ class TrainingClass(models.Model):
     slot = models.ForeignKey("academies.SessionSlot", on_delete=models.SET_NULL, null=True, blank=True, related_name="classes")
 
     date = models.DateField()
-    start_time = models.TimeField()   # منسوخة من slot وقت التوليد
-    end_time   = models.TimeField()   # منسوخة من slot وقت التوليد
+    start_time = models.TimeField()  
+    end_time   = models.TimeField() 
 
     topic = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
     
     class Meta:
-        ordering = ["date", "start_time"]  # ✅ يترتب تلقائي
-        unique_together = ("session", "date", "start_time")  # ✅ يمنع التكرار
+        ordering = ["date", "start_time"]  
+        unique_together = ("session", "date", "start_time")  
 
     def __str__(self):
         return f"{self.session.title} - {self.date} ({self.topic or 'General'})"
@@ -216,6 +224,3 @@ class PlanType(models.Model):
 
     def __str__(self):
         return self.name
-
-
-# SubscriptionPlan model moved to payment app to avoid conflicts

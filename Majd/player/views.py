@@ -18,7 +18,11 @@ def player_dashboard_view(request, child_id):
 
     # ✅ Skills progress
     if player.position:
-        session_skills = SessionSkill.objects.filter(skill__position=player.position)
+        session_skills = (SessionSkill.objects
+    .filter(skill__position=player.position)
+    .select_related("skill")
+    .order_by("skill_id", "id")   # لازم يبدأ بـ skill_id
+    .distinct("skill_id"))
     else:
         session_skills = SessionSkill.objects.none()
 

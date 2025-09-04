@@ -46,10 +46,13 @@
                 <ul class="navbar-nav mx-auto gap-4">
                     <li class="nav-item">
                         <a class="nav-link {% if '/academies/' in request.path %} active {% endif %}" href="{% url 'academies:list' %}">Academies</a>
-                    </li>                    
+                    </li>
+                    
+                    {% if not request.user.is_authenticated or request.user.groups.all.0.name == "academy_admin" %}                 
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/payment/plan-types/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'payment:plan_type_list' %}">Academy Plans</a>
                     </li>
+                    {% endif %}
 
                     <li class="nav-item">
                         <a class="nav-link text-dark {% if '/ourVision/' in request.path %} active {% endif %}" style="font-weight: 550;" href="{% url 'main:our_vision_view' %}">Our Vision</a>

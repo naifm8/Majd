@@ -3,8 +3,6 @@ from django.utils.html import format_html
 from .models import Academy, Program, Session, SessionSlot, TrainingClass
 from django.contrib import admin
 from .models import PlanType, SessionSkill, Position, SkillDefinition
-
-
 from django import forms
 from django.urls import path
 from django.shortcuts import redirect
@@ -34,7 +32,7 @@ class AcademyAdmin(admin.ModelAdmin):
 class SessionInline(admin.TabularInline):
     model = Session
     extra = 1
-    fields = ("title", "trainer", "level", "start_datetime", "end_datetime")  # ✅ ✅
+    fields = ("title", "trainer", "level", "start_datetime", "end_datetime")  
     
 class SessionSkillInline(admin.TabularInline):
     model = SessionSkill
@@ -89,7 +87,7 @@ class SessionAdmin(admin.ModelAdmin):
                     )
                     if created:
                         count += 1
-                self.message_user(request, f"✅ تم استيراد {count} مهارة من مركز {position.name}")
+                self.message_user(request, f" تم استيراد {count} مهارة من مركز {position.name}")
                 return redirect(f"../../{session_id}/change/")
         else:
             form = ImportSkillsForm()
@@ -112,7 +110,7 @@ class SessionAdmin(admin.ModelAdmin):
         for session in queryset:
             session.generate_classes()
             count += 1
-        self.message_user(request, f"تم توليد الحصص لـ {count} جلسة بنجاح ✅")
+        self.message_user(request, f"تم توليد الحصص لـ {count} جلسة بنجاح ")
 
     generate_training_classes.short_description = "🔄 توليد الحصص (Training Classes) للجلسات المحددة"
 
@@ -161,9 +159,3 @@ class TrainingClassAdmin(admin.ModelAdmin):
 class PlanTypeAdmin(admin.ModelAdmin):
     list_display = ("name", "description")
     search_fields = ("name",)
-
-
-# @admin.register(SubscriptionPlan)
-# class SubscriptionPlanAdmin(admin.ModelAdmin):
-#     list_display = ("academy", "name", "price", "duration_days", "is_active")
-#     list_filter = ("is_active", "academy")
