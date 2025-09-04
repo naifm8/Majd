@@ -19,7 +19,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # Get or create a basic plan type
+
         plan_type, created = PlanType.objects.get_or_create(
             name='Basic Plan',
             defaults={
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write(f'Using existing plan type: {plan_type.name}')
 
-        # Get academies to create subscription plans for
+
         if options['academy_slug']:
             try:
                 academies = [Academy.objects.get(slug=options['academy_slug'])]
@@ -50,7 +50,7 @@ class Command(BaseCommand):
         elif options['all_academies']:
             academies = Academy.objects.all()
         else:
-            # Default: create subscription plan for Falcon Academy
+
             try:
                 academies = [Academy.objects.get(slug='Falcon-Academy')]
             except Academy.DoesNotExist:
@@ -71,7 +71,7 @@ class Command(BaseCommand):
         for academy in academies:
             self.stdout.write(f'Creating subscription plan for academy: {academy.name}')
             
-            # Create or update subscription plan
+
             subscription_plan, created = SubscriptionPlan.objects.get_or_create(
                 academy=academy,
                 title=f'{academy.name} Basic Plan',
@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     f'  ✓ Created subscription plan: {subscription_plan.title} - SAR {subscription_plan.price}'
                 )
             else:
-                # Update existing subscription plan to be active
+
                 subscription_plan.is_active = True
                 subscription_plan.price = 100.00
                 subscription_plan.save()

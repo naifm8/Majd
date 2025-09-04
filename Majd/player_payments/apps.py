@@ -7,6 +7,6 @@ class PlayerPaymentsConfig(AppConfig):
     verbose_name = 'Player Payments'
     
     def ready(self):
-        # Import signal handlers if needed
+      
         pass
 

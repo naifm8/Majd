@@ -55,7 +55,7 @@ def trainer_conversation_detail_view(request, conversation_id):
         trainer=trainer_profile
     )
 
-    # ✅ إرسال رسالة جديدة
+
     if request.method == "POST":
         body = request.POST.get("body", "").strip()
         if body:
@@ -77,7 +77,7 @@ def trainer_conversation_detail_view(request, conversation_id):
         },
         "conversation": conversation,
         "messages": messages,
-        "hide_django_messages": True,  # ✅ هذا هو الجديد
+        "hide_django_messages": True,
     }
 
     return render(request, "communication/trainer_conversation_detail.html", context)
@@ -172,14 +172,14 @@ def start_conversation_view(request):
             parent_id = request.POST.get("parent_id")
             parent = get_object_or_404(ParentProfile, id=parent_id)
 
-            # ✅ إنشاء المحادثة أو استرجاعها
+
             convo, _ = Conversation.objects.get_or_create(
                 trainer=trainer_profile,
                 parent=parent
             )
             return redirect("communication:trainer_conversation_detail", conversation_id=convo.id)
 
-        # قائمة أولياء الأمور
+
         parents = ParentProfile.objects.select_related("user").all()
         return render(request, "communication/start_conversation_trainer.html", {
             "parents": parents
@@ -198,7 +198,7 @@ def start_conversation_view(request):
             )
             return redirect("communication:parent_conversation_detail", conversation_id=convo.id)
 
-        # قائمة المدربين
+
         trainers = TrainerProfile.objects.select_related("user").all()
         return render(request, "communication/start_conversation_parent.html", {
             "trainers": trainers

@@ -16,20 +16,20 @@ def player_dashboard_view(request, child_id):
             "error": "No player profile found for this child."
         })
 
-    # ✅ Skills progress
+ 
     if player.position:
         session_skills = (SessionSkill.objects
     .filter(skill__position=player.position)
     .select_related("skill")
-    .order_by("skill_id", "id")   # لازم يبدأ بـ skill_id
+    .order_by("skill_id", "id")  
     .distinct("skill_id"))
     else:
         session_skills = SessionSkill.objects.none()
 
-    # ✅ 2. مهارات اللاعب الحالية
+
     player_skills = {ps.name: ps for ps in player.skills.all()}
 
-    # ✅ 3. تجهيز المهارات للعرض
+ 
     skills_data = []
     for s_skill in session_skills:
         skill_name = s_skill.skill.name
@@ -44,26 +44,26 @@ def player_dashboard_view(request, child_id):
     skills_avg_progress = player.compute_skill_progress()
 
 
-    # ✅ Evaluations history (على مستوى TrainingClass)
+  
     evaluations = player.evaluations.select_related("coach", "training_class").all()
 
-    # ✅ Next TrainingClass
+
     next_class = (TrainingClass.objects
                   .filter(session__in=player.player_sessions.values("session"),
                           date__gte=timezone.now().date())
                   .order_by("date", "start_time")
                   .first())
 
-    # ✅ Upcoming TrainingClasses
+   
     upcoming_classes = (TrainingClass.objects
                         .filter(session__in=player.player_sessions.values("session"),
                                 date__gte=timezone.now().date())
                         .order_by("date", "start_time"))
 
-    # ✅ Attendance records
+ 
     attendances = player.class_attendances.select_related("training_class").order_by("-training_class__date")
 
-    # ✅ Achievements
+ 
     achievements = player.achievements.order_by("-date_awarded")[:5]
     
     opened_from = request.GET.get("from") or "parent"
@@ -72,15 +72,15 @@ def player_dashboard_view(request, child_id):
         "child": child,
         "player": player,
         "skills": skills_data,
-        "skills_avg_progress": skills_avg_progress,   # من PlayerSkill
-        "avg_progress": player.avg_progress,          # من Evaluations
-        "grade": player.current_grade,                # الدرجة
+        "skills_avg_progress": skills_avg_progress,  
+        "avg_progress": player.avg_progress,          
+        "grade": player.current_grade,                
         "next_class": next_class,
         "upcoming_classes": upcoming_classes,
         "attendances": attendances,
         "achievements": achievements,
         "evaluations": evaluations,
-        "opened_from": opened_from,  # ✅ هذا هو السطر المطلوب
+        "opened_from": opened_from,  
         "positions": Position.objects.all(),
     }
     return render(request, "player/dashboard.html", context)

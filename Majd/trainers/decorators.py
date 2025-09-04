@@ -16,7 +16,7 @@ def trainer_approved_required(view_func):
         if not u.is_authenticated:
             return redirect("accounts:login_view")
 
-        # اسمح للمشرفين دائماً (اختياري)
+    
         if getattr(u, "is_superuser", False):
             return view_func(request, *args, **kwargs)
 

@@ -25,7 +25,7 @@
     </div>
   </div>
 
-  <!-- Summary Cards -->
+ 
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="card shadow-sm border-0 p-3 h-100">
@@ -166,7 +166,7 @@
           {% for plan_data in available_subscription_plans %}
           <div class="d-flex justify-content-between align-items-center border-bottom py-3 {% if plan_data.is_required %}bg-warning bg-opacity-10 border-warning{% endif %}">
             <div class="d-flex align-items-center gap-3">
-              <!-- Academy Logo Initial -->
+          
               <div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center"
                    style="width: 45px; height: 45px;">
                 {{ plan_data.academy.name|slice:":3"|upper }}
@@ -332,7 +332,7 @@
                       {% endfor %}
                     </div>
 
-                    <!-- Card Details (shown when card is selected) -->
+               
                     <div id="card-details" class="card-details">
                       <div class="row">
                         <div class="col-md-6 mb-3">
@@ -365,7 +365,7 @@
                       </div>
                     </div>
 
-                    <!-- Bank Transfer Details (shown when transfer is selected) -->
+             
                     <div id="transfer-details" class="transfer-details" style="display: none;">
                       <div class="row">
                         <div class="col-md-6 mb-3">
@@ -384,7 +384,7 @@
                     </div>
                   </div>
 
-                  <!-- Additional Information -->
+          
                   <div class="section mb-4">
                     <div class="section-header mb-3">
                       <i class="bi bi-chat-text me-2"></i>
@@ -399,7 +399,7 @@
                     </div>
                   </div>
 
-                  <!-- Agreements -->
+              
                   <div class="section mb-4">
                     <div class="form-check mb-3">
                       {{ payment_form.terms_agreement }}
@@ -409,7 +409,7 @@
                     </div>
                   </div>
 
-                  <!-- Submit Button -->
+  
                   <div class="d-grid">
                     <button type="submit" class="btn btn-success btn-lg" id="submit-button">
                       Complete Payment - SAR 0
@@ -437,16 +437,16 @@ function makePayment(academy, program, amount, enrollmentId = null, academySlug 
         academySlug: academySlug
     };
     
-    // Update summary
+   
     document.getElementById('summaryProgram').textContent = program;
     document.getElementById('summaryAcademy').textContent = academy;
     document.getElementById('summaryAmount').textContent = `SAR ${amount}`;
     
-    // Calculate VAT and total (using same rounding as backend)
-    const vat = Math.round((amount * 0.15) * 100) / 100; // Round to 2 decimal places
-    const total = Math.round((amount + vat) * 100) / 100; // Round to 2 decimal places
     
-    // Debug logging
+    const vat = Math.round((amount * 0.15) * 100) / 100; 
+    const total = Math.round((amount + vat) * 100) / 100; 
+    
+  
     console.log('Payment calculation:', {
         baseAmount: amount,
         vat: vat,
@@ -457,16 +457,16 @@ function makePayment(academy, program, amount, enrollmentId = null, academySlug 
     document.getElementById('summaryTotal').textContent = `SAR ${total}`;
     document.getElementById('submit-button').textContent = `Complete Payment - SAR ${total}`;
     
-    // Set hidden fields
+  
     if (enrollmentId) {
         document.getElementById('enrollmentId').value = enrollmentId;
     }
-    // Send the total amount (including VAT) to the backend
+   
     document.getElementById('paymentAmount').value = total;
     
-    // Add academy slug if it's a new subscription
+  
     if (academySlug) {
-        // Create or update academy slug hidden field
+
         let academySlugField = document.getElementById('academySlug');
         if (!academySlugField) {
             academySlugField = document.createElement('input');
@@ -478,33 +478,33 @@ function makePayment(academy, program, amount, enrollmentId = null, academySlug 
         academySlugField.value = academySlug;
     }
     
-    // Reset form
+   
     document.getElementById('paymentForm').reset();
     document.querySelector('input[name="payment_method"][value="card"]').checked = true;
     
-    // Show modal
+    
     new bootstrap.Modal(document.getElementById('paymentModal')).show();
     
-    // Update form display
+    
     togglePaymentMethodDisplay();
 }
 
 function selectPaymentMethod(methodName) {
-    // You can implement payment method selection logic here
+   
     alert(`Selected payment method: ${methodName}`);
 }
 
 function subscribeToAcademy(academyName, price, academySlug) {
-    // Create a mock enrollment for subscription payment
+ 
     const mockEnrollment = {
         academy: academyName,
         program: `${academyName} Subscription`,
         amount: price,
-        enrollmentId: null, // No enrollment ID for new subscriptions
-        academySlug: academySlug // Pass the academy slug
+        enrollmentId: null, 
+        academySlug: academySlug 
     };
     
-    // Use the existing makePayment function
+  
     makePayment(mockEnrollment.academy, mockEnrollment.program, mockEnrollment.amount, mockEnrollment.enrollmentId, mockEnrollment.academySlug);
 }
 
@@ -525,7 +525,7 @@ function togglePaymentMethodDisplay() {
     }
 }
 
-// Payment method toggle
+
 document.addEventListener('DOMContentLoaded', function() {
     const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
     
@@ -533,10 +533,10 @@ document.addEventListener('DOMContentLoaded', function() {
         radio.addEventListener('change', togglePaymentMethodDisplay);
     });
     
-    // Initial state
+  
     togglePaymentMethodDisplay();
     
-    // Auto-switch to subscriptions tab if there's a required academy
+   
     {% if required_academy %}
     const subscriptionsTab = document.querySelector('a[href="#subscriptions"]');
     if (subscriptionsTab) {
@@ -545,18 +545,18 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endif %}
 });
 
-// Handle form submission
+
 document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
     const submitButton = document.getElementById('submit-button');
     
-    // Disable button and show processing state
+ 
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
     
-    // Submit to Django backend
+   
     fetch(this.action, {
         method: 'POST',
         body: formData,
@@ -567,25 +567,25 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
+    
             alert(data.message || 'Payment processed successfully!' + (data.email_sent ? ' An invoice has been sent to your email.' : ' Note: Invoice email could not be sent.'));
             
-            // Close modal
+        
             bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
             
-            // Handle redirect for academy subscriptions
+      
             if (data.subscription_created && data.redirect_url) {
-                // Redirect to academy programs page
+      
                 window.location.href = data.redirect_url;
             } else {
-                // Reload page to show updated payment data for regular payments
+        
                 location.reload();
             }
         } else {
-            // Show error message
+
             alert('Payment failed: ' + (data.error || 'Unknown error occurred'));
             
-            // Re-enable button
+     
             submitButton.disabled = false;
             submitButton.innerHTML = `Complete Payment - SAR ${document.getElementById('paymentAmount').value}`;
         }
@@ -594,7 +594,7 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
         console.error('Error:', error);
         alert('Payment failed: Network error occurred');
         
-        // Re-enable button
+     
         submitButton.disabled = false;
         submitButton.innerHTML = `Complete Payment - SAR ${document.getElementById('paymentAmount').value}`;
     });

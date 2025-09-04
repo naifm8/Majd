@@ -6,26 +6,21 @@ from main import models
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
-    # Columns in the changelist
+
     list_display = (
         "full_name", "email", "inquiry_badge", "subject",
         "organization", "created_at",
     )
-    # Clickable columns (links to the change page)
+
     list_display_links = ("full_name", "subject")
-    # Right-side filters
     list_filter = ("inquiry_type", "created_at")
-    # Search bar (supports icontains on text fields)
     search_fields = ("full_name", "email", "subject", "message", "organization", "phone")
-    # Ordering (desc by date)
     ordering = ("-created_at",)
-    # Pagination
     list_per_page = 25
-    # Date navigator above the list
     date_hierarchy = "created_at"
 
 
-    # Detail page layout
+
     fieldsets = (
         ("Contact", {
             "fields": ("full_name", "email", "phone", "organization")
@@ -39,15 +34,15 @@ class ContactMessageAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_at",)
 
-    # Custom colored badge column
+
     def inquiry_badge(self, obj):
         colors = {
-            "general":  "#0d6efd",  # blue
-            "partner":  "#20c997",  # teal
-            "sponsor":  "#fd7e14",  # orange
-            "academy":  "#6f42c1",  # purple
-            "tech":     "#198754",  # green
-            "media":    "#d63384",  # pink
+            "general":  "#0d6efd",  
+            "partner":  "#20c997", 
+            "sponsor":  "#fd7e14", 
+            "academy":  "#6f42c1", 
+            "tech":     "#198754",  
+            "media":    "#d63384", 
         }
         label = dict(ContactMessage.INQUIRY_CHOICES).get(obj.inquiry_type, obj.inquiry_type)
         color = colors.get(obj.inquiry_type, "#6c757d")

@@ -1,14 +1,14 @@
-/* خلفية ناعمة للـ Hero */
+
 .about-hero {
   background: linear-gradient(180deg, #eefbf3 0%, #f8fffb 100%);
 }
 
-/* عرض مناسب للنص */
+
 .hero-subtitle {
   max-width: 900px;
 }
 
-/* بطاقات القسم */
+
 .about-cards {
   padding-top: 1rem;
   padding-bottom: 3rem;
@@ -48,7 +48,7 @@
   margin-bottom: 16px;
 }
 
-/* قائمة النقاط */
+
 .about-list {
   list-style: none;
   padding-left: 0;
@@ -67,17 +67,15 @@
   font-size: 1.05rem;
 }
 
-/* استجابة الشاشات الصغيرة */
+
 @media (max-width: 991.98px) {
   .about-card { padding: 22px 20px; }
 }
-/* @media (max-width: 575.98px) {
-  .hero-subtitle { font-size: 1rem; }
-} */
 
 
 
-/* Features Section */
+
+
 .about-features {
   background: #f2fbf6;
   border-top: 1px solid #e0f3e7;
@@ -109,29 +107,29 @@
 }
 
 
-/* لون الهوية */
+
 :root{
-  --brand-green: #0f5132; /* غامق مثل اللي في التصميم */
+  --brand-green: #0f5132; 
 }
 
-/* يطبّق داخل قسم about-features فقط */
+
 .about-features h5 {
   color: var(--brand-green) !important;
 }
 
-/* أي نص داخل الكروت */
+
 .about-features .feature-card p {
   color: var(--brand-green) !important;
   line-height: 1.6;
 }
 
-/* لون الأيقونات */
+
 .about-features .feature-icon,
 .about-features .feature-icon i {
   color: var(--brand-green);
 }
 
-/* لمسة هوفر للكرت (اختياري) */
+
 .about-features .feature-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0,0,0,.08);
@@ -139,7 +137,7 @@
 
 
 
-/* CTA Section */
+
 .about-cta {
   background: linear-gradient(135deg, #008a5c, #02774f);
 }
@@ -154,7 +152,7 @@
   margin-right: auto;
 }
 
-/* زر */
+
 .about-cta .cta-btn {
   border-radius: 8px;
   font-weight: 500;

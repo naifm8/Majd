@@ -25,14 +25,14 @@ def parent_dashboard_view(request):
 
     children = parent_profile.children.all()
 
-    # --- Stats ---
+  
     children_count = children.count()
 
     today = timezone.localdate()
-    week_start = today - timedelta(days=today.weekday())   # Monday
+    week_start = today - timedelta(days=today.weekday())   
     week_end = week_start + timedelta(days=6)
 
-    # Sessions this week for all enrolled children
+  
     sessions_this_week = Session.objects.filter(
         enrollments__child__in=children,
         start_datetime__date__gte=week_start,
@@ -40,7 +40,7 @@ def parent_dashboard_view(request):
         enrollments__is_active=True
     ).distinct()
 
-    # Attendance avg (if PlayerProfile has attendance_rate)
+ 
     avg_attendance = 0
     if children.exists():
         rates = [
@@ -51,7 +51,7 @@ def parent_dashboard_view(request):
         if rates:
             avg_attendance = round(sum(rates) / len(rates), 1)
 
-    # Payments this month
+
     month_start = today.replace(day=1)
     total_payments = PaymentTransaction.objects.filter(
         enrollment__child__in=children,
@@ -59,21 +59,21 @@ def parent_dashboard_view(request):
         created_at__date__gte=month_start
     ).aggregate(total=Sum("amount"))["total"] or 0
 
-    # --- Payment Due ---
+  
     payment_due = PlayerEnrollment.objects.filter(
         child__in=children,
         status="active"
-    ).order_by("end_date").first()  # soonest expiring plan
+    ).order_by("end_date").first()  
 
     due_days, due_days_abs = None, None
     if payment_due:
         due_days = (payment_due.end_date - today).days
         due_days_abs = abs(due_days)
 
-    # --- Recent Activity ---
+
     recent_activities = []
     for child in children:
-        # last 3 enrollments (adjust if you track activity elsewhere)
+
         recent_activities += list(
             Enrollment.objects.filter(child=child).order_by("-enrolled_at")[:3]
         )
@@ -115,7 +115,7 @@ def add_child_view(request):
             messages.error(request, "You must be a parent to add a child.")
             return redirect("parents:dashboard")
 
-        # Collect form data
+   
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name", "")
         gender = request.POST.get("gender", "")
@@ -127,7 +127,7 @@ def add_child_view(request):
 
         try:
             with transaction.atomic():
-                # Create the child
+   
                 child = Child.objects.create(
                     parent=parent_profile,
                     first_name=first_name,
@@ -140,7 +140,7 @@ def add_child_view(request):
                     profile_image=profile_image if profile_image else "images/profileImage/profileImage.webp"
                 )
 
-                # Create linked player profile
+           
                 PlayerProfile.objects.create(child=child)
 
 
@@ -197,7 +197,7 @@ def schedule_view(request):
     today = timezone.localdate()
     tomorrow = today + timedelta(days=1)
 
-    selected_child_id = request.GET.get("child_id")  # 🔎 filter param
+    selected_child_id = request.GET.get("child_id")  
 
     if hasattr(request.user, "parent_profile"):
         children = request.user.parent_profile.children.all()
@@ -236,10 +236,10 @@ def schedule_view(request):
                             "next_occurrence": next_occurrence,
                         })
 
-    # Deduplicate child-session pairs
+ 
     schedule_items = list({(i["child"].id, i["session"].id): i for i in schedule_items}.values())
 
-    # Sort by next occurrence date + time
+ 
     schedule_items.sort(key=lambda i: (i["next_occurrence"]["date"], i["next_occurrence"]["start_time"]))
 
     return render(
@@ -260,16 +260,16 @@ def unenroll_view(request, session_id, child_id):
     child = get_object_or_404(Child, id=child_id, parent=request.user.parent_profile)
     session = get_object_or_404(Session, id=session_id)
 
-    # find the enrollment linking child+program
+  
     enrollment = Enrollment.objects.filter(child=child, program=session.program).first()
     if not enrollment:
         messages.error(request, "Enrollment not found.", extra_tags="alert-danger")
         return redirect("academies:schedule_view")
 
-    # remove session from enrollment
+  
     enrollment.sessions.remove(session)
 
-    # if no sessions left, deactivate enrollment
+ 
     if enrollment.sessions.count() == 0:
         enrollment.is_active = False
         enrollment.save()
@@ -282,7 +282,7 @@ def unenroll_view(request, session_id, child_id):
 
 @login_required
 def payments_view(request):
-    # Get user's parent profile
+
     try:
         parent_profile = request.user.parent_profile
     except:
@@ -299,7 +299,7 @@ def payments_view(request):
             "parent_profile": None,
         })
     
-    # Get real payment data from enrollments
+  
     payments = []
     total_paid = 0
     outstanding = 0
@@ -308,7 +308,7 @@ def payments_view(request):
     for child in parent_profile.children.all():
         for enrollment in child.parent_enrollments.all():
             if enrollment.is_active:
-                # Get subscription plan price
+   
                 from payment.models import SubscriptionPlan
                 subscription_plan = SubscriptionPlan.objects.filter(
                     academy=enrollment.program.academy,
@@ -317,8 +317,8 @@ def payments_view(request):
                 
                 price = subscription_plan.price if subscription_plan else 0
                 
-                # Calculate payment status
-                payment_status = "not_paid"  # Default to not paid
+        
+                payment_status = "not_paid"  
                 payment_date = enrollment.enrolled_at.strftime("%Y-%m-%d")
                 
                 payments.append({
@@ -337,7 +337,7 @@ def payments_view(request):
                 else:
                     outstanding += price
                 
-                # Add to upcoming payments (next month)
+          
                 from datetime import date, timedelta
                 next_month = date.today() + timedelta(days=30)
                 upcoming_payments.append({
@@ -348,18 +348,18 @@ def payments_view(request):
                     "program": enrollment.program.title,
                 })
     
-    # Calculate next payment (sum of all upcoming)
+  
     next_payment_amount = sum(p["amount"] for p in upcoming_payments)
     next_payment_date = upcoming_payments[0]["date"] if upcoming_payments else None
     
-    # Payment methods available
+  
     payment_methods = [
         {"name": "Credit/Debit Card", "icon": "bi-credit-card", "description": "Secure online payment"},
         {"name": "Bank Transfer", "icon": "bi-bank", "description": "Direct bank transfer"},
         {"name": "Cash Payment", "icon": "bi-cash", "description": "Pay at academy location"},
     ]
     
-    # Create payment form
+ 
     payment_form = ParentPaymentForm()
     
     context = {
@@ -382,12 +382,12 @@ def reports_view(request):
     if not parent:
         return render(request, "reports/reports.html", {"reports": []})
 
-    # Fetch all children of this parent
+
     children = Child.objects.filter(parent=parent)
 
     reports = []
     for child in children:
-        # if child has a linked player_profile, use attendance/progress
+     
         player_profile = getattr(child, "player_profile", None)
 
         reports.append({
@@ -398,7 +398,7 @@ def reports_view(request):
             "grade": player_profile.current_grade if player_profile else None,
             "overall_progress": player_profile.avg_progress if player_profile else 0,
             "attendance_rate": player_profile.attendance_rate if player_profile else 0,
-            # For demo purposes — you could fetch these from models later
+
             "strengths": ["Speed", "Team Work", "Leadership"] if child.first_name == "Alex" else ["Freestyle", "Butterfly"],
             "areas_for_improvement": ["Ball Control", "Defensive Positioning"] if child.first_name == "Alex" else ["Endurance"],
             "last_report": date.today(),
@@ -410,7 +410,7 @@ def reports_view(request):
 
 @login_required
 def subscriptions_view(request):
-    # Get academies with subscription plan info
+  
     academies = []
     for academy in Academy.objects.all():
         subscription_plan = SubscriptionPlan.objects.filter(
@@ -432,13 +432,13 @@ def subscriptions_view(request):
     
     programs = Program.objects.filter(academy__isnull=False)
     
-    # Get user's parent profile
+
     parent_profile = getattr(request.user, "parent_profile", None)
     
-    # Create enrollment form
+  
     enrollment_form = EnrollmentForm(parent=parent_profile) if parent_profile else None
     
-    # Build enrollments list
+  
     enrollments = []
     if parent_profile:
         for child in parent_profile.children.all():
@@ -465,7 +465,7 @@ def subscriptions_view(request):
                         "child": child,
                     })
     
-    # Calculate totals
+
     total_subscriptions = len(enrollments)
     active_subscriptions = sum(1 for e in enrollments if e["status"] == "Active")
     monthly_spend = sum(e.get("price", 0) for e in enrollments if e["status"] == "Active")
@@ -495,7 +495,7 @@ def enroll_child(request):
             
             form = EnrollmentForm(request.POST, parent=parent_profile)
             if form.is_valid():
-                # Check if enrollment already exists
+             
                 existing_enrollment = Enrollment.objects.filter(
                     child=form.cleaned_data['child'],
                     program=form.cleaned_data['program']
@@ -505,12 +505,12 @@ def enroll_child(request):
                     if existing_enrollment.is_active:
                         return JsonResponse({"success": False, "error": "Child is already enrolled in this program"})
                     else:
-                        # Reactivate existing enrollment
+                  
                         existing_enrollment.is_active = True
                         existing_enrollment.save()
                         messages.success(request, f"Successfully re-enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
                 else:
-                    # Create new enrollment
+          
                     enrollment = form.save(commit=False)
                     enrollment.save()
                     messages.success(request, f"Successfully enrolled {form.cleaned_data['child'].first_name} in {form.cleaned_data['program'].title}")
@@ -538,14 +538,14 @@ def process_payment(request):
             if not all([enrollment_id, amount]):
                 return JsonResponse({"success": False, "error": "Missing required payment information"})
             
-            # Get the enrollment
+       
             enrollment = get_object_or_404(Enrollment, id=enrollment_id)
             
-            # Verify the enrollment belongs to the user's child
+   
             if enrollment.child.parent != request.user.parent_profile:
                 return JsonResponse({"success": False, "error": "Unauthorized"})
             
-            # Get subscription plan for pricing verification
+         
             from payment.models import SubscriptionPlan
             subscription_plan = SubscriptionPlan.objects.filter(
                 academy=enrollment.program.academy,
@@ -555,40 +555,39 @@ def process_payment(request):
             if not subscription_plan:
                 return JsonResponse({"success": False, "error": "No subscription plan found for this academy"})
             
-            # Calculate expected total with VAT (15%) - using same rounding as frontend
+          
             base_price = float(subscription_plan.price)
-            vat_amount = round(base_price * 0.15, 2)  # Round to 2 decimal places
-            expected_total = round(base_price + vat_amount, 2)  # Round to 2 decimal places
+            vat_amount = round(base_price * 0.15, 2)  
+            expected_total = round(base_price + vat_amount, 2)  
             
-            # Debug logging
+           
             import logging
             logger = logging.getLogger(__name__)
             logger.info(f"Payment calculation - Base: {base_price}, VAT: {vat_amount}, Expected Total: {expected_total}, Received: {amount}")
             
-            # Verify amount matches expected total (base price + VAT)
-            if abs(float(amount) - expected_total) > 0.01:  # Allow for small rounding differences
+      
+            if abs(float(amount) - expected_total) > 0.01: 
                 return JsonResponse({"success": False, "error": f"Payment amount does not match expected total. Expected: SAR {expected_total:.2f}, Received: SAR {amount}"})
             
-            # Create payment record (you can extend this with your payment gateway)
+          
             from player_payments.models import PaymentTransaction, PlayerEnrollment
             
-            # Create or get player enrollment
-            # First, we need to find or create a PlayerSubscription for this academy
+ 
             from player_payments.models import PlayerSubscription
             player_subscription, created = PlayerSubscription.objects.get_or_create(
                 academy=enrollment.program.academy,
                 defaults={
                     'title': f"{enrollment.program.academy.name} Subscription",
                     'price': subscription_plan.price,
-                    'billing_type': '3m',  # Default to 3 months
+                    'billing_type': '3m',  
                     'description': f"Subscription for {enrollment.program.academy.name}",
                 }
             )
             
-            # Log the subscription creation/retrieval
+         
             logger.info(f"PlayerSubscription {'created' if created else 'found'}: {player_subscription.id} for academy {enrollment.program.academy.name}")
             
-            # Now create the PlayerEnrollment with the subscription
+          
             player_enrollment, created = PlayerEnrollment.objects.get_or_create(
                 subscription=player_subscription,
                 child=enrollment.child,
@@ -598,15 +597,15 @@ def process_payment(request):
                     'status': 'active',
                     'payment_method': payment_method,
                     'end_date': date.today() + timedelta(days=30),
-                    'amount_paid': amount,  # This is the total amount including VAT
+                    'amount_paid': amount,  
                     'payment_date': timezone.now(),
                 }
             )
             
-            # Log the enrollment creation/retrieval
+            
             logger.info(f"PlayerEnrollment {'created' if created else 'found'}: {player_enrollment.id} for child {enrollment.child.first_name}")
             
-            # Create payment transaction
+        
             transaction = PaymentTransaction.objects.create(
                 enrollment=player_enrollment,
                 transaction_type='initial',
@@ -617,14 +616,14 @@ def process_payment(request):
                 notes=f'Payment for {enrollment.program.title} at {enrollment.program.academy.name}'
             )
             
-            # Update enrollment status to paid
-            enrollment.is_active = True  # Keep enrollment active after payment
+         
+            enrollment.is_active = True 
             
-            # Send invoice email to parent
+  
             from .utils import send_payment_invoice_email
             email_sent = send_payment_invoice_email(transaction, player_enrollment, request.user)
             
-            # Log the email sending result for debugging
+       
             import logging
             logger = logging.getLogger(__name__)
             logger.info(f"Payment processed for {enrollment.child.first_name}. Email sent: {email_sent}. Parent email: {request.user.email}")
@@ -639,7 +638,7 @@ def process_payment(request):
             return JsonResponse({"success": True, "transaction_id": transaction.id, "email_sent": email_sent})
             
         except Exception as e:
-            # Log the error for debugging
+    
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Payment processing error: {str(e)}")
@@ -653,7 +652,7 @@ def pause_enrollment(request, enrollment_id):
     try:
         enrollment = get_object_or_404(Enrollment, id=enrollment_id)
         
-        # Check if the enrollment belongs to the user's child
+  
         if enrollment.child.parent != request.user.parent_profile:
             return JsonResponse({"success": False, "error": "Unauthorized"})
         
@@ -674,7 +673,7 @@ def resume_enrollment(request, enrollment_id):
     try:
         enrollment = get_object_or_404(Enrollment, id=enrollment_id)
         
-        # Check if the enrollment belongs to the user's child
+  
         if enrollment.child.parent != request.user.parent_profile:
             return JsonResponse({"success": False, "error": "Unauthorized"})
         
@@ -707,20 +706,20 @@ def edit_profile_view(request):
         user = request.user
         parent_profile = getattr(user, "parent_profile", None)
 
-        # Update User fields
+
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
         user.email = request.POST.get("email", user.email)
         user.save()
 
-        # Update ParentProfile fields
+ 
         if parent_profile:
             parent_profile.phone = request.POST.get("phone", parent_profile.phone)
             parent_profile.location = request.POST.get("location", parent_profile.location)
             parent_profile.save()
 
         messages.success(request, "Profile updated successfully.", extra_tags="alert-success")
-        return redirect("parents:settings")  # adjust to your settings URL
+        return redirect("parents:settings")  
 
     return redirect("parents:settings")
 

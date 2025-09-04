@@ -1,5 +1,5 @@
 
-/* Hero Section */
+
 .hero {
     position: relative;
     background: url("/static/images/contact.jpg") center/contain no-repeat; 
@@ -8,7 +8,7 @@
     padding: 100px 20px;
 }
 
-/* Overlay color on top of image */
+
 .hero .overlay {
     position: absolute;
     top: 0; left: 0;
@@ -18,16 +18,16 @@
     z-index: 1;
 }
 
-/* Content inside hero */
+
 .hero-content {
     position: relative;
-    z-index: 2;  /* يخلي النص فوق الـ overlay */
+    z-index: 2; 
     width: 70%;
     max-width: 900px;
     margin: 0 auto;
 }
 
-/* Hero content */
+
 .hero h1 {
     font-size: 3rem;
     font-weight: 400;
@@ -44,20 +44,20 @@
     line-height: 1.6;
 }
 
-/* Button inside hero */
+
 .hero .btn {
     border-radius: 20px;
     margin-bottom: 20px;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
     .hero-content {
-        width: 90%;   /* على الشاشات الصغيرة العرض يكبر */
+        width: 90%;   
     }
 
     .hero h1 {
-        font-size: 2rem; /* يصغر الخط */
+        font-size: 2rem; 
     }
 
     .hero p {
@@ -65,7 +65,7 @@
     }
 }
 
-/* Get In Touch div */
+
 .get-in-touch {
     display: inline-block;
     padding: 4px 12px;
@@ -83,12 +83,12 @@
     font-size: 0.85rem;
 }
 
-/* Section background just below the hero */
+
 .contact-section {
   background: linear-gradient(180deg, #f2fff8 0%, #eefaf5 40%, #f7fffb 100%);
 }
 
-/* Soft card look */
+
 .card-soft {
   background: #fff;
   border: 1px solid #cbeedd;
@@ -107,7 +107,7 @@
     color: #018a59 !important;
 }
 
-/* Form elements */
+
 .form-control, .form-select {
   border: 1px solid #bfead9;
   border-radius: 10px;
@@ -120,7 +120,7 @@
 }
 textarea.form-control { resize: vertical; }
 
-/* Submit button */
+
 .btn-submit {
   background: #009966;
   color: #fff;
@@ -138,7 +138,7 @@ textarea.form-control { resize: vertical; }
   transform: translateY(1px);
 }
 
-/* Info rows in right cards */
+
 .info-row {
   display: flex;
   gap: 12px;
@@ -148,7 +148,7 @@ textarea.form-control { resize: vertical; }
 }
 .info-row:last-child { border-bottom: none; }
 
-/* Icon circle */
+
 .icon-circle {
   width: 36px;
   height: 36px;
@@ -161,7 +161,7 @@ textarea.form-control { resize: vertical; }
   flex-shrink: 0;
 }
 
-/* Partnership list */
+
 .list-item {
   display: flex;
   align-items: center;
@@ -173,7 +173,7 @@ textarea.form-control { resize: vertical; }
   color: #009966;
 }
 
-/* Outline button */
+
 .btn-outline {
   background: #f7fffb;
   border: 1px solid #bfead9;
@@ -189,7 +189,7 @@ textarea.form-control { resize: vertical; }
   background-color: #aef7d5;
 }
 
-/* Responsive tweaks */
+
 @media (max-width: 991.98px) {
   .card-soft {
     padding: 1.25rem !important;
@@ -214,7 +214,7 @@ textarea.form-control { resize: vertical; }
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  pointer-events: none; /* keep select clickable */
+  pointer-events: none; 
   color: #009966;      
   font-size: 1rem;
 }
@@ -223,7 +223,7 @@ textarea.form-control { resize: vertical; }
     color: #155d4a;
 }
 
-/* Regional Presence */
+
 .regional-section {
   background: linear-gradient(180deg, #f7fffb 0%, #fbfffe 100%);
 }
@@ -241,7 +241,7 @@ textarea.form-control { resize: vertical; }
     color: #00895d;
 }
 
-/* Region cards */
+
 .region-card {
   background: #ffffff;
   border: 1px solid #cbeedd;

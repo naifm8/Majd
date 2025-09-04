@@ -9,12 +9,12 @@ def send_payment_invoice_email(transaction, enrollment, parent_user):
     Send payment invoice email to parent after successful payment
     """
     try:
-        # Calculate VAT and base amount
+  
         total_amount = float(transaction.amount)
-        base_amount = total_amount / 1.15  # Remove VAT to get base amount
+        base_amount = total_amount / 1.15 
         vat_amount = total_amount - base_amount
         
-        # Prepare email context
+  
         context = {
             'parent_name': f"{parent_user.first_name} {parent_user.last_name}".strip() or parent_user.username,
             'child_name': f"{enrollment.child.first_name} {enrollment.child.last_name}".strip(),
@@ -34,11 +34,11 @@ def send_payment_invoice_email(transaction, enrollment, parent_user):
             'current_year': datetime.now().year,
         }
         
-        # Render email templates
+  
         html_content = render_to_string('parents/emails/payment_invoice.html', context)
         text_content = render_to_string('parents/emails/payment_invoice.txt', context)
         
-        # Create email
+       
         subject = f"Payment Invoice - {context['academy_name']} - Transaction #{context['transaction_id']}"
         
         email = EmailMultiAlternatives(
@@ -48,16 +48,16 @@ def send_payment_invoice_email(transaction, enrollment, parent_user):
             to=[parent_user.email]
         )
         
-        # Attach HTML version
+    
         email.attach_alternative(html_content, "text/html")
         
-        # Send email
+       
         email.send()
         
         return True
         
     except Exception as e:
-        # Log the error for debugging
+     
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending invoice email: {str(e)}")

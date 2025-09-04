@@ -16,7 +16,7 @@
       Select the perfect subscription plan for your sports academy. Upgrade or downgrade at any time.
     </p>
 
-    <!-- Billing Toggle (no discount badge) -->
+
     <div class="billing-toggle d-inline-flex align-items-center gap-2">
       <button class="toggle-btn active" id="btn-monthly">Monthly</button>
       <button class="toggle-btn" id="btn-yearly">Yearly</button>
@@ -28,7 +28,7 @@
   <div class="container">
     <div class="row g-4 justify-content-center">
 
-      <!-- Starter -->
+
       <div class="col-md-6 col-lg-4">
         <div class="card-pricing h-100">
           <div class="plan-icon bg-soft-primary"><i class="bi bi-app"></i></div>
@@ -37,7 +37,7 @@
 
           <div class="plan-price">
             <span class="currency">SAR</span>
-            <!-- set YOUR yearly and monthly numbers here -->
+
             <span class="amount" data-monthly="199" data-yearly="2,199">199</span>
             <span class="per" data-month="/month" data-year="/year">/month</span>
           </div>
@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <!-- Professional (featured) -->
+
       <div class="col-md-6 col-lg-4">
         <div class="card-pricing featured h-100">
           <div class="most-popular">Most Popular</div>
@@ -91,7 +91,7 @@
         </div>
       </div>
 
-      <!-- Enterprise -->
+
       <div class="col-md-6 col-lg-4">
         <div class="card-pricing h-100">
           <div class="plan-icon bg-soft-purple"><i class="bi bi-building"></i></div>
@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  <!-- Benefits -->
+
 <section class="benefits-section py-4 py-md-5">
   <div class="container">
     <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
@@ -170,7 +170,7 @@
   </div>
 </section>
 
-<!-- FAQ -->
+
 <section class="faq-section py-4 py-md-5">
   <div class="container">
 
@@ -230,14 +230,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const perLabels  = document.querySelectorAll(".plan-price .per");
 
   function setMode(mode) {
-    // mode = 'month' or 'year'
+ 
     const isYear = mode === "year";
 
-    // toggle button active state
+
     btnMonthly.classList.toggle("active", !isYear);
     btnYearly.classList.toggle("active",  isYear);
 
-    // update amounts & units
+
     amounts.forEach(a => {
       a.textContent = isYear ? a.dataset.yearly : a.dataset.monthly;
     });
@@ -249,8 +249,6 @@ document.addEventListener("DOMContentLoaded", function () {
   btnMonthly.addEventListener("click", () => setMode("month"));
   btnYearly .addEventListener("click", () => setMode("year"));
 
-  // OPTIONAL: start on yearly (uncomment if you want default yearly)
-  // setMode("year");
 });
 </script>
 

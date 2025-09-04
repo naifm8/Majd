@@ -1,4 +1,4 @@
-# main/templatetags/dashboard_nav.py
+
 from django import template
 from django.urls import reverse
 
@@ -8,9 +8,9 @@ register = template.Library()
 def is_active(request, url_value):
     """Return True if request.path equals/starts-with the target URL."""
     try:
-        target = reverse(url_value)      # allow named URLs
+        target = reverse(url_value)  
     except Exception:
-        target = str(url_value)          # or raw path
+        target = str(url_value)         
 
     current = (request.path or "").rstrip("/")
     target  = (target or "").rstrip("/")

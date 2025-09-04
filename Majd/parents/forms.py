@@ -27,7 +27,7 @@ class EnrollmentForm(forms.ModelForm):
 class ParentPaymentForm(forms.Form):
     """Form for parent-player payment processing"""
 
-    # Payment Method
+
     PAYMENT_METHOD_CHOICES = [
         ('card', 'Credit/Debit Card'),
         ('transfer', 'Bank Transfer'),
@@ -40,7 +40,7 @@ class ParentPaymentForm(forms.Form):
         initial='card'
     )
 
-    # Card Details (for card payments)
+
     cardholder_name = forms.CharField(
         max_length=100,
         required=False,
@@ -77,7 +77,7 @@ class ParentPaymentForm(forms.Form):
         })
     )
 
-    # Bank Transfer Details (for bank transfer)
+ 
     bank_name = forms.CharField(
         max_length=100,
         required=False,
@@ -96,7 +96,7 @@ class ParentPaymentForm(forms.Form):
         })
     )
 
-    # Additional Information
+ 
     notes = forms.CharField(
         max_length=500,
         required=False,
@@ -107,7 +107,7 @@ class ParentPaymentForm(forms.Form):
         })
     )
 
-    # Agreements
+ 
     terms_agreement = forms.BooleanField(
         required=True,
         widget=forms.CheckboxInput(attrs={
@@ -119,7 +119,7 @@ class ParentPaymentForm(forms.Form):
         cleaned_data = super().clean()
         payment_method = cleaned_data.get('payment_method')
 
-        # Validate card details if card payment is selected
+     
         if payment_method == 'card':
             if not cleaned_data.get('cardholder_name'):
                 raise forms.ValidationError("Cardholder name is required for card payments")
@@ -130,7 +130,7 @@ class ParentPaymentForm(forms.Form):
             if not cleaned_data.get('cvv'):
                 raise forms.ValidationError("CVV is required for card payments")
 
-        # Validate bank transfer details if bank transfer is selected
+   
         elif payment_method == 'transfer':
             if not cleaned_data.get('bank_name'):
                 raise forms.ValidationError("Bank name is required for bank transfers")

@@ -36,7 +36,7 @@ class TrainerProfile(models.Model):
     academy = models.ForeignKey("academies.Academy", on_delete=models.SET_NULL, null=True, blank=True, related_name="trainers")
      
     def __str__(self):
-        # ✅ اسم المستخدم
+
         try:
             if self.user:
                 full_name = f"{self.user.first_name} {self.user.last_name}".strip()
@@ -47,7 +47,7 @@ class TrainerProfile(models.Model):
         except:
             full_name = "❌ محذوف"
 
-        # ✅ اسم الأكاديمية
+
         try:
             academy_name = self.academy.name if self.academy else "❌ أكاديمية محذوفة"
         except:
