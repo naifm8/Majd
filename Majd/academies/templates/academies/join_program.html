@@ -172,13 +172,13 @@ document.addEventListener("DOMContentLoaded", function() {
   function updateUI() {
     const checked = document.querySelectorAll('.child-checkbox:checked').length;
 
-    // Update button text
+
     button.textContent = `Continue with ${checked} Child${checked !== 1 ? "ren" : ""} Selected`;
 
-    // Update "X child selected" in header
+
     childCountSpan.textContent = checked;
 
-    // If none selected → hide the selection status
+
     if (checked > 0) {
       selectionStatus.classList.remove("d-none");
     } else {
@@ -186,27 +186,25 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // ✅ Handle card click (only once, with eligibility check)
+
   cards.forEach(card => {
     card.addEventListener("click", function(e) {
       const checkbox = card.querySelector(".child-checkbox");
       const status = card.querySelector(".status-bar");
 
-      // 🚫 Skip if not eligible
       if (card.classList.contains("not-eligible")) {
         return;
       }
 
-      // Prevent double toggle when clicking directly on checkbox
       if (e.target === checkbox) {
         updateUI();
         return;
       }
 
-      // Toggle checkbox programmatically
+
       checkbox.checked = !checkbox.checked;
 
-      // Update styles
+
       if (checkbox.checked) {
         card.classList.add("selected");
         status.textContent = "Selected";
@@ -219,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 
-  updateUI(); // initialize
+  updateUI(); 
 });
 </script>
 
@@ -240,8 +238,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
 /* Selected card style */
 .child-card.selected {
-  border: 2px solid #198754 !important; /* green border */
-  background: #eafaf1; /* light green background */
+  border: 2px solid #198754 !important; 
+  background: #eafaf1; 
 }
 
 .child-card.selected .avatar-circle {
@@ -263,31 +261,31 @@ document.addEventListener("DOMContentLoaded", function() {
   transition: all 0.2s ease;
 }
 
-/* Hover effect */
+
 .child-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* subtle shadow */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
   cursor: pointer;
 }
 
-/* Custom outline-success button */
+
 .btn-custom {
-  border: 1.5px solid #198754;   /* Bootstrap green */
+  border: 1.5px solid #198754;   
   color: #198754;
-  background-color: #f8fdfb;     /* very light green background */
+  background-color: #f8fdfb;    
   font-weight: 500;
-  border-radius: 8px;            /* rounded corners */
+  border-radius: 8px;           
   padding: 6px 18px;
   transition: all 0.2s ease;
 }
 
 /* Hover effect */
 .btn-custom:hover {
-  background-color: #198754;     /* solid green */
+  background-color: #198754;   
   color: #fff;
 }
 
 .btn-custom:hover i {
-  color: #fff;                   /* make icon white too */
+  color: #fff;               
 }
 
 .membership-badge {
@@ -296,13 +294,13 @@ document.addEventListener("DOMContentLoaded", function() {
   border: 1px solid #c6f1dd; 
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 50rem; /* pill */
+  border-radius: 50rem; 
 }
 
 /* Disabled/Not eligible card */
 .child-card.not-eligible {
   cursor: not-allowed !important;
-  background: #fbeaea; /* light red background */
+  background: #fbeaea;
   opacity: 0.8;
 }
 

@@ -20,6 +20,7 @@ import csv
 import openpyxl
 from django.http import HttpResponse, HttpRequest
 from payment.models import PlanType, SubscriptionPlan, Subscription
+from django.db.models import Sum
 
 def _academy(user):
     return user.academy_admin_profile.academy
@@ -37,10 +38,10 @@ def _is_parent_subscribed_to_academy(parent_profile, academy):
             parent=parent_profile,
             academy=academy,
         )
-        # Check if still valid
+
         if hasattr(subscription, "start_date") and hasattr(subscription, "end_date"):
             return subscription.start_date <= today <= subscription.end_date
-        # Otherwise just check is_active field
+
         return getattr(subscription, "is_active", True)
     except ParentSubscription.DoesNotExist:
         return False
@@ -62,9 +63,9 @@ def academy_list_view(request):
     if city:
         academies = academies.filter(city=city)
 
-    # Stats
+
     total_academies = Academy.objects.count()
-    total_children = Child.objects.count()  # all players in system
+    total_children = Child.objects.count() 
     total_enrolled = (
         Enrollment.objects.filter(is_active=True)
         .values("child")
@@ -75,8 +76,8 @@ def academy_list_view(request):
     context = {
         "academies": academies,
         "total_academies": total_academies,
-        "total_children": total_children,   # all players
-        "total_enrolled": total_enrolled,   # active enrolled players
+        "total_children": total_children,  
+        "total_enrolled": total_enrolled, 
         "satisfaction_rate": 95,
         "sport_choices": Program.SportType.choices,
         "cities": Academy.objects.exclude(city="")
@@ -90,34 +91,34 @@ def academy_list_view(request):
 def AcademyDetailView(request, slug):
     academy = get_object_or_404(Academy, slug=slug)
 
-    # Years of Experience
+
     current_year = timezone.now().year
     years_experience = max(0, current_year - academy.establishment_year)
 
-    # Active Students (via Enrollment instead of Child.programs)
+
     active_students = Enrollment.objects.filter(
         program__academy=academy,
         is_active=True
     ).values("child").distinct().count()
 
-    # Get active subscription plans for this academy
+
     from payment.models import SubscriptionPlan
     subscription_plans = SubscriptionPlan.objects.filter(
         academy=academy,
         is_active=True
     ).order_by('price')
     
-    # Check if user is subscribed to this academy (general subscription)
+
     is_subscribed = False
     if request.user.is_authenticated and hasattr(request.user, 'parent_profile'):
         from parents.models import ParentSubscription
-        # Check for valid (active and not expired) subscriptions
+
         valid_subscriptions = ParentSubscription.objects.filter(
             parent=request.user.parent_profile,
             academy=academy,
             is_active=True
         )
-        # Check if any subscription is valid (not expired)
+
         is_subscribed = any(sub.is_valid for sub in valid_subscriptions)
     
     context = {
@@ -140,7 +141,6 @@ def academy_setup_view(request):
         messages.error(request, "You must be an academy admin to access this page.")
         return redirect("main:main_home_view")
 
-    # # ✅ ensure subscription exists and is successful
     # from payment.models import Subscription
     # has_subscription = Subscription.objects.filter(
     #     contact_email=request.user.email, status="successful"
@@ -170,7 +170,7 @@ def academy_setup_view(request):
 
 @login_required
 def AcademyDashboardView(request):
-    # Ensure logged in user is academy admin
+
     if not hasattr(request.user, "academy_admin_profile"):
         messages.error(request, "You must be an Academy Admin to access the dashboard.")
         return redirect("main:main_home_view")
@@ -183,26 +183,26 @@ def AcademyDashboardView(request):
     return render(request, "academies/dashboard_overview.html", context)
 
 
-# ✅ Subscription Dashboard
+
 @login_required
 def subscription_dashboard(request):
-    # Ensure logged in user is academy admin
+
     if not hasattr(request.user, "academy_admin_profile"):
         messages.error(request, "You must be an Academy Admin to access the dashboard.")
         return redirect("main:main_home_view")
 
     academy = request.user.academy_admin_profile.academy
     
-    # Get all available plan types
+
     plan_types = PlanType.objects.all().order_by('display_order')
     
-    # Get academy's subscription plans (this is the main focus)
+
     academy_subscription_plans = SubscriptionPlan.objects.filter(academy=academy).order_by('-created_at')
     
-    # Get academy's subscription history (for reference)
+
     subscriptions = Subscription.objects.filter(academy_name=academy.name).order_by('-created_at')
     
-    # Get current active subscription
+
     active_subscription = subscriptions.filter(status=Subscription.Status.SUCCESSFUL).first()
     
     context = {
@@ -215,10 +215,10 @@ def subscription_dashboard(request):
     return render(request, "academies/subscription_dashboard.html", context)
 
 
-# ✅ Add Subscription Plan
+
 @login_required
 def add_subscription_plan(request):
-    # Ensure logged in user is academy admin
+
     if not hasattr(request.user, "academy_admin_profile"):
         messages.error(request, "You must be an Academy Admin to access this page.")
         return redirect("main:main_home_view")
@@ -243,10 +243,9 @@ def add_subscription_plan(request):
     return render(request, 'academies/add_subscription_plan.html', context)
 
 
-# ✅ Edit Subscription Plan
+
 @login_required
 def edit_subscription_plan(request, plan_id):
-    # Ensure logged in user is academy admin
     if not hasattr(request.user, "academy_admin_profile"):
         messages.error(request, "You must be an Academy Admin to access this page.")
         return redirect("main:main_home_view")
@@ -271,10 +270,9 @@ def edit_subscription_plan(request, plan_id):
     return render(request, 'academies/edit_subscription_plan.html', context)
 
 
-# ✅ Delete Subscription Plan
+
 @login_required
 def delete_subscription_plan(request, plan_id):
-    # Ensure logged in user is academy admin
     if not hasattr(request.user, "academy_admin_profile"):
         messages.error(request, "You must be an Academy Admin to access this page.")
         return redirect("main:main_home_view")
@@ -295,7 +293,7 @@ def delete_subscription_plan(request, plan_id):
     return render(request, 'academies/delete_subscription_plan.html', context)
 
 
-# ✅ Subscription Enrollment Redirect
+
 def subscription_enroll_redirect(request, academy_slug, plan_id):
     """
     Redirect users based on their authentication status and profile type:
@@ -305,23 +303,12 @@ def subscription_enroll_redirect(request, academy_slug, plan_id):
     if request.user.is_authenticated:
         # Check if user has a parent profile
         if hasattr(request.user, 'parent_profile'):
-            # Redirect to parent subscriptions page
             return redirect('parents:subscriptions')
         else:
-            # User is authenticated but not a parent, redirect to get started
             return redirect('accounts:selection_view')
     else:
-        # Not authenticated, redirect to get started
         return redirect('accounts:selection_view')
 
-
-# ✅ Programs Dashboard
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
-from django.shortcuts import render
-
-from academies.models import Program, Session
-from parents.models import Enrollment  # <-- use Enrollment to count players
 
 def _academy(user):
     return user.academy_admin_profile.academy
@@ -351,7 +338,6 @@ def program_dashboard(request):
     total_programs = programs.count()
     total_sessions = sessions.count()
 
-    # ✅ Use Enrollment instead of Child.programs
     total_enrollment = (
         Enrollment.objects
         .filter(program__in=programs, is_active=True)
@@ -370,15 +356,15 @@ def program_dashboard(request):
         "total_sessions": total_sessions,
         "total_enrollment": total_enrollment,
         "utilization_pct": utilization,
-        "revenue": 60450,  # placeholder
-        "total_capacity": total_capacity,  # if your template uses it
+        "revenue": 60450, 
+        "total_capacity": total_capacity, 
     }
     return render(request, "academies/dashboard_programs.html", context)
 
 
 
 
-# ✅ Program Create
+#  Program Create
 @login_required
 def program_create(request):
     academy = _academy(request.user)
@@ -432,15 +418,15 @@ def session_create(request, program_id):
     program = get_object_or_404(Program, id=program_id, academy=academy)
 
     if request.method == "POST":
-        form = SessionForm(request.POST, academy=academy)  # ✅ pass academy
+        form = SessionForm(request.POST, academy=academy)  
         if form.is_valid():
             session = form.save(commit=False)
             session.program = program
             session.save()
-            messages.success(request, "Session created successfully ✅")
+            messages.success(request, "Session created successfully ")
             return redirect("academies:programs")
     else:
-        form = SessionForm(academy=academy)  # ✅ pass academy
+        form = SessionForm(academy=academy) 
 
     return render(request, "academies/session_form.html", {
         "form": form,
@@ -459,7 +445,7 @@ def session_edit(request, pk):
         form = SessionForm(request.POST, academy=academy, instance=session)
         if form.is_valid():
             form.save()
-            messages.success(request, "Session updated successfully ✅")
+            messages.success(request, "Session updated successfully ")
             return redirect("academies:programs")
     else:
         form = SessionForm(academy=academy, instance=session)
@@ -467,7 +453,7 @@ def session_edit(request, pk):
     return render(request, "academies/session_form.html", {
         "form": form,
         "program": session.program,
-        "is_edit": True,  # 👈 helps toggle template title/button
+        "is_edit": True, 
     })
 
 
@@ -498,7 +484,7 @@ def program_sessions(request, academy_slug, program_id):
         .prefetch_related("slots")
     )
 
-    # Collect distinct dynamic age ranges
+
     age_ranges = (
         sessions.values_list("age_min", "age_max")
         .distinct()
@@ -508,7 +494,7 @@ def program_sessions(request, academy_slug, program_id):
     # --- Filters ---
     level = request.GET.get("level")
     gender = request.GET.get("gender")
-    age = request.GET.get("age")  # e.g. "6-10"
+    age = request.GET.get("age") 
 
     if level and level != "all":
         sessions = sessions.filter(level=level)
@@ -532,7 +518,7 @@ def program_sessions(request, academy_slug, program_id):
             "gender": gender or "all",
             "age": age or "all",
         },
-        "age_ranges": age_ranges,  # 👈 send to template
+        "age_ranges": age_ranges, 
     }
     return render(request, "academies/sessions_page.html", context)
 
@@ -548,7 +534,7 @@ def trainer_dashboard(request):
         messages.error(request, "No Academy assigned to your account.")
         return redirect("academies:dashboard")
 
-    # All trainers in academy (for pending count), approved trainers for display
+    
     trainers_all = TrainerProfile.objects.filter(academy=academy)
     trainers = trainers_all.filter(
         approval_status=TrainerProfile.ApprovalStatus.APPROVED
@@ -594,54 +580,10 @@ def trainer_dashboard(request):
     }
     return render(request, "academies/trainer_dashboard.html", context)
 
-# def trainer_dashboard(request):
-#     academy_admin = getattr(request.user, "academy_admin_profile", None)
-
-#     # ✅ Protect against missing academy
-#     academy = academy_admin.academy if academy_admin and academy_admin.academy else None
-
-#     if not academy:
-#         messages.error(request, "No Academy assigned to your account.")
-#         return redirect("academies:dashboard")  # fallback or main dashboard
-
-#     trainers = TrainerProfile.objects.filter(academy=academy).prefetch_related("sessions", "sessions__program")
-
-#     total_trainers = trainers.count()
-#     total_players = PlayerProfile.objects.filter(academy=academy).count()
-#     total_sessions = Session.objects.filter(program__academy=academy).count()
-
-#     # ✅ Pending recruitments
-#     pending_recruitments = TrainerProfile.objects.filter(
-#         academy=academy,
-#         approval_status=TrainerProfile.ApprovalStatus.PENDING
-#     ).count()
-
-#     trainer_data = []
-#     for trainer in trainers:
-#         player_count = PlayerProfile.objects.filter(academy=trainer.academy).distinct().count()
-
-#         session_data = []
-#         for session in trainer.sessions.all():
-#             enrolled = PlayerProfile.objects.filter(academy=session.program.academy).count()
-#             session_data.append((session, enrolled))
-
-#         trainer_data.append((trainer, player_count, session_data))
-
-#     context = {
-#         "academy": academy,
-#         "trainer_data": trainer_data,
-#         "total_trainers": total_trainers,
-#         "total_players": total_players,
-#         "total_sessions": total_sessions,
-#         "pending_recruitments": pending_recruitments,  # ✅ add to context
-#     }
-#     return render(request, "academies/trainer_dashboard.html", context)
-
-
 
 @login_required
 def add_trainer(request):
-    # Ensure only academy admins can add trainers
+
     academy_admin = getattr(request.user, "academy_admin_profile", None)
     if not academy_admin:
         messages.error(request, "You must be an Academy Admin to add trainers.")
@@ -667,7 +609,7 @@ def calculate_age(born):
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 
-# abdulaziz alkhateeb edit for adding trainer
+
 @login_required
 def academy_pending_trainers_view(request: HttpRequest):
     academy_admin = getattr(request.user, "academy_admin_profile", None)
@@ -705,7 +647,7 @@ def academy_pending_trainers_view(request: HttpRequest):
 
         return redirect("academies:academy_pending_trainers_view")
 
-    # GET: list only trainers who applied (PENDING) to THIS academy
+
     pending_trainers = (
         TrainerProfile.objects
         .filter(academy_id=academy.id, approval_status=TrainerProfile.ApprovalStatus.PENDING)
@@ -728,7 +670,7 @@ def players_dashboard(request):
 
     players = PlayerProfile.objects.filter(academy=academy) if academy else PlayerProfile.objects.all()
 
-    # 🔍 Search
+
     query = request.GET.get("q")
     if query:
         players = players.filter(
@@ -737,7 +679,7 @@ def players_dashboard(request):
             Q(position__name__icontains=query)
         )
 
-    # 🔽 Filter by injury risk
+
     injury_filter = request.GET.get("injury")
     if injury_filter:
         if injury_filter == "low":
@@ -749,12 +691,12 @@ def players_dashboard(request):
 
     players = players.prefetch_related("player_sessions__session")
 
-    # --- Export CSV / Excel ---
+
     export_type = request.GET.get("export")
     if export_type in ["csv", "excel"]:
         return export_players(players, export_type)
 
-    # Stats
+
     total_players = players.count()
     active_players = players.filter(avg_progress__gte=50).count()
     injured_players = players.filter(class_attendances__status="excused").distinct().count()
@@ -764,7 +706,7 @@ def players_dashboard(request):
         session = player.player_sessions.first().session if player.player_sessions.exists() else None
         status = "On Schedule" if session else "Not Enrolled"
 
-        # Injury risk rule
+
         if player.avg_progress < 40:
             risk = "High"
         elif player.avg_progress < 70:
@@ -800,7 +742,7 @@ def export_players(players, export_type):
             level = session.get_level_display() if session else "N/A"
             status = "On Schedule" if session else "Not Enrolled"
 
-            # Injury risk
+
             if player.avg_progress < 40:
                 risk = "High"
             elif player.avg_progress < 70:
@@ -853,7 +795,7 @@ def join_program_view(request, academy_slug, program_id):
 
     children = Child.objects.filter(parent=parent_profile)
 
-    # derive min/max from sessions
+
     sessions = program.sessions.all()
     if sessions.exists():
         min_age = min(s.age_min for s in sessions)
@@ -862,29 +804,29 @@ def join_program_view(request, academy_slug, program_id):
         min_age = None
         max_age = None
 
-    # annotate children with eligibility
+
     for child in children:
         child.age = calculate_age(child.date_of_birth) if child.date_of_birth else None
 
-        # Age check
+
         if min_age is not None and max_age is not None and child.age is not None:
             child.is_eligible = min_age <= child.age <= max_age
         else:
             child.is_eligible = True
 
-        # Check enrollments
+
         existing_enrollments = (
             Enrollment.objects.filter(child=child, is_active = True)
             .select_related("program__academy")
         )
 
-        # ✅ Already in this program (active)
+
         if existing_enrollments.filter(program=program).exists():
             child.already_enrolled = True
             child.enrolled_academy = academy
             child.enrolled_program = program
 
-        # 🚫 Enrolled in another academy (active)
+
         elif existing_enrollments.exclude(program__academy=academy).exists():
             child.already_enrolled = True
             active_enrollment = existing_enrollments.exclude(program__academy=academy).first()
@@ -892,7 +834,6 @@ def join_program_view(request, academy_slug, program_id):
             child.enrolled_program = None
 
         else:
-            # ✅ Eligible (not in this program, same academy allowed, or inactive enrollments ignored)
             child.already_enrolled = False
             child.enrolled_academy = None
             child.enrolled_program = None
@@ -907,18 +848,18 @@ def join_program_view(request, academy_slug, program_id):
             child = get_object_or_404(Child, id=child_id, parent=parent_profile)
             existing_enrollments = Enrollment.objects.filter(child=child, is_active = True).select_related("program__academy")
 
-            # 🚫 Block if already in this program
+
             if existing_enrollments.filter(program=program).exists():
                 messages.error(request, f"{child.first_name} is already enrolled in {program.title}.")
                 return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
 
-            # 🚫 Block if enrolled in another academy
+
             if existing_enrollments.exclude(program__academy=academy).exists():
                 other_academy = existing_enrollments.first().program.academy
                 messages.error(request, f"{child.first_name} is already enrolled in {other_academy.name}.")
                 return redirect("academies:join_program_view", academy_slug=academy.slug, program_id=program.id)
 
-        # Store selected children temporarily
+
         request.session["selected_children"] = selected_ids
         return redirect("academies:enrollment_sessions", academy_slug=academy.slug, program_id=program.id)
 
@@ -934,7 +875,7 @@ def join_program_view(request, academy_slug, program_id):
 
 @login_required
 def enrollment_sessions_view(request, academy_slug, program_id):
-    # step 2: choose sessions
+
     academy = get_object_or_404(Academy, slug=academy_slug)
     program = get_object_or_404(Program, id=program_id, academy=academy)
 
@@ -943,28 +884,28 @@ def enrollment_sessions_view(request, academy_slug, program_id):
         messages.error(request, "Only parents can join programs.")
         return redirect("academies:detail", slug=academy.slug)
 
-    # selected children from step 1
+
     selected_child_ids = [int(cid) for cid in request.session.get("selected_children", [])]
     children = Child.objects.filter(id__in=selected_child_ids, parent=parent_profile)
 
-    # All sessions for this program
+
     sessions = (
         Session.objects.filter(program=program)
         .select_related("trainer")
         .prefetch_related("slots", "required_skills")
     )
 
-    # Distinct age ranges for filters
+
     age_ranges = (
         sessions.values_list("age_min", "age_max")
         .distinct()
         .order_by("age_min")
     )
 
-    # --- Filters ---
+
     level = request.GET.get("level")
     gender = request.GET.get("gender")
-    age = request.GET.get("age")  # e.g. "6-10"
+    age = request.GET.get("age")
 
     if level and level != "all":
         sessions = sessions.filter(level=level)
@@ -981,7 +922,7 @@ def enrollment_sessions_view(request, academy_slug, program_id):
 
 
 
-    # Handle POST (user selecting sessions)
+
     if request.method == "POST":
         selected_sessions = request.POST.getlist("sessions")
 
@@ -1047,7 +988,7 @@ def enrollment_details_view(request, academy_slug, program_id):
         
 
         for child in children:
-            # 🔎 Get existing sessions for this child
+
             existing_sessions = Session.objects.filter(
                 enrollments__child=child,
                 enrollments__is_active=True
@@ -1055,12 +996,12 @@ def enrollment_details_view(request, academy_slug, program_id):
 
             for new_session in sessions.prefetch_related("slots"):
                 for existing in existing_sessions:
-                    # 1. Check if overall dates overlap
+
                     if not (
                         new_session.end_datetime.date() < existing.start_datetime.date()
                         or new_session.start_datetime.date() > existing.end_datetime.date()
                     ):
-                        # 2. Check slot conflicts (weekday + time overlap)
+
                         for new_slot in new_session.slots.all():
                             for exist_slot in existing.slots.all():
                                 if new_slot.weekday == exist_slot.weekday:
@@ -1078,7 +1019,7 @@ def enrollment_details_view(request, academy_slug, program_id):
                                                         academy_slug=academy.slug,
                                                         program_id=program.id)
 
-            # If no conflicts → create enrollment
+
             enrollment, created = Enrollment.objects.get_or_create(
                 child=child,
                 program=program,
