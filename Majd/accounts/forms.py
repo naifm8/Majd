@@ -17,6 +17,8 @@ class TrainerProfileForm(forms.ModelForm):
             "specialty": forms.TextInput(attrs={"class": "form-control"}),
             "years_of_experience": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
             "position": forms.TextInput(attrs={"class": "form-control"}),
+            "profile_image": forms.FileInput(attrs={"class": "form-control"}),
+
         }
 
 class TrainerApplyForm(forms.Form):
