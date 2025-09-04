@@ -421,11 +421,13 @@ def subscriptions_view(request):
         academies.append({
             "academy": academy,
             "price": subscription_plan.price if subscription_plan else 0,
+
             "plan_type": (
                 subscription_plan.plan_type.name
                 if subscription_plan and subscription_plan.plan_type
                 else "No Plan"
             ),
+
         })
     
     programs = Program.objects.filter(academy__isnull=False)

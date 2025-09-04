@@ -543,33 +543,43 @@ def program_sessions(request, academy_slug, program_id):
 @login_required
 def trainer_dashboard(request):
     academy_admin = getattr(request.user, "academy_admin_profile", None)
-
-    # ✅ Protect against missing academy
     academy = academy_admin.academy if academy_admin and academy_admin.academy else None
-
     if not academy:
         messages.error(request, "No Academy assigned to your account.")
-        return redirect("academies:dashboard")  # fallback or main dashboard
+        return redirect("academies:dashboard")
 
-    trainers = TrainerProfile.objects.filter(academy=academy).prefetch_related("sessions", "sessions__program")
+    # All trainers in academy (for pending count), approved trainers for display
+    trainers_all = TrainerProfile.objects.filter(academy=academy)
+    trainers = trainers_all.filter(
+        approval_status=TrainerProfile.ApprovalStatus.APPROVED
+    ).prefetch_related("sessions", "sessions__program")
 
     total_trainers = trainers.count()
     total_players = PlayerProfile.objects.filter(academy=academy).count()
     total_sessions = Session.objects.filter(program__academy=academy).count()
 
-    # ✅ Pending recruitments
-    pending_recruitments = TrainerProfile.objects.filter(
-        academy=academy,
+    pending_recruitments = trainers_all.filter(
         approval_status=TrainerProfile.ApprovalStatus.PENDING
     ).count()
 
     trainer_data = []
     for trainer in trainers:
-        player_count = PlayerProfile.objects.filter(academy=trainer.academy).distinct().count()
+        player_count = (
+            PlayerProfile.objects
+            .filter(player_sessions__session__trainer=trainer)
+            .distinct()
+            .count()
+        )
 
         session_data = []
         for session in trainer.sessions.all():
-            enrolled = PlayerProfile.objects.filter(academy=session.program.academy).count()
+            enrolled = (
+                PlayerSession.objects
+                .filter(session=session)
+                .values("player")
+                .distinct()
+                .count()
+            )
             session_data.append((session, enrolled))
 
         trainer_data.append((trainer, player_count, session_data))
@@ -580,9 +590,52 @@ def trainer_dashboard(request):
         "total_trainers": total_trainers,
         "total_players": total_players,
         "total_sessions": total_sessions,
-        "pending_recruitments": pending_recruitments,  # ✅ add to context
+        "pending_recruitments": pending_recruitments,
     }
     return render(request, "academies/trainer_dashboard.html", context)
+
+# def trainer_dashboard(request):
+#     academy_admin = getattr(request.user, "academy_admin_profile", None)
+
+#     # ✅ Protect against missing academy
+#     academy = academy_admin.academy if academy_admin and academy_admin.academy else None
+
+#     if not academy:
+#         messages.error(request, "No Academy assigned to your account.")
+#         return redirect("academies:dashboard")  # fallback or main dashboard
+
+#     trainers = TrainerProfile.objects.filter(academy=academy).prefetch_related("sessions", "sessions__program")
+
+#     total_trainers = trainers.count()
+#     total_players = PlayerProfile.objects.filter(academy=academy).count()
+#     total_sessions = Session.objects.filter(program__academy=academy).count()
+
+#     # ✅ Pending recruitments
+#     pending_recruitments = TrainerProfile.objects.filter(
+#         academy=academy,
+#         approval_status=TrainerProfile.ApprovalStatus.PENDING
+#     ).count()
+
+#     trainer_data = []
+#     for trainer in trainers:
+#         player_count = PlayerProfile.objects.filter(academy=trainer.academy).distinct().count()
+
+#         session_data = []
+#         for session in trainer.sessions.all():
+#             enrolled = PlayerProfile.objects.filter(academy=session.program.academy).count()
+#             session_data.append((session, enrolled))
+
+#         trainer_data.append((trainer, player_count, session_data))
+
+#     context = {
+#         "academy": academy,
+#         "trainer_data": trainer_data,
+#         "total_trainers": total_trainers,
+#         "total_players": total_players,
+#         "total_sessions": total_sessions,
+#         "pending_recruitments": pending_recruitments,  # ✅ add to context
+#     }
+#     return render(request, "academies/trainer_dashboard.html", context)
 
 
 
